@@ -1,0 +1,14 @@
+# Standard docker-compose file which defines all services that Gymboard uses in
+# a deployment.
+version: '3'
+
+services:
+  # Database for gymboard-api.
+  api-db:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: gymboard-api-dev
+      POSTGRES_PASSWORD: testpass
