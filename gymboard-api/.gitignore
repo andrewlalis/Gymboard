@@ -30,3 +30,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
+.sample_data

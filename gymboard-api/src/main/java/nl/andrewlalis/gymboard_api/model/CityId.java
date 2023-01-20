@@ -8,41 +8,39 @@ import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Compound primary key used to identify a single {@link Gym}.
- */
 @Embeddable
-public class GymId implements Serializable {
+public class CityId implements Serializable {
 	@Column(nullable = false, length = 127)
 	private String shortName;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private City city;
+	private Country country;
 
-	public GymId() {}
+	public CityId() {}
 
-	public GymId(String shortName, City city) {
+	public CityId(String shortName, Country country) {
 		this.shortName = shortName;
-		this.city = city;
+		this.country = country;
 	}
 
 	public String getShortName() {
 		return shortName;
 	}
 
-	public City getCity() {
-		return city;
+	public Country getCountry() {
+		return country;
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof GymId gymId)) return false;
-		return getShortName().equals(gymId.getShortName()) && getCity().equals(gymId.getCity());
+		if (o == null || getClass() != o.getClass()) return false;
+		CityId cityId = (CityId) o;
+		return shortName.equals(cityId.shortName) && country.equals(cityId.country);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getShortName(), getCity());
+		return Objects.hash(shortName, country);
 	}
 }
