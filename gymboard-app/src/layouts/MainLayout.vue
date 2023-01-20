@@ -28,8 +28,8 @@
         >
           Pages
         </q-item-label>
-        <q-item clickable>First Page</q-item>
-        <q-item clickable>Second Page</q-item>
+        <q-item clickable>Gyms</q-item>
+        <q-item clickable>Global Leaderboard</q-item>
       </q-list>
     </q-drawer>
 
