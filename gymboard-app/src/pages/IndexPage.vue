@@ -1,7 +1,10 @@
 <template>
   <q-page>
     Index
-    <router-link to="/gyms/a">Test</router-link>
+    <router-link to="/g/nl/groningen/trainmore-munnekeholm">Test</router-link>
+    <p>
+      Search bar for gyms.
+    </p>
   </q-page>
 </template>
 

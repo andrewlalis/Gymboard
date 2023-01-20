@@ -13,7 +13,7 @@ const routes: RouteRecordRaw[] = [
         component: IndexPage
       },
       {
-        path: 'gyms/:id',
+        path: 'g/:countryId/:cityId/:gymName',
         component: GymPage
       }
     ],

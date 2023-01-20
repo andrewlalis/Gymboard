@@ -1,16 +1,17 @@
 <template>
   <q-page>
     Hello Gym Page
+    <p>
+        Leaderboard total
+    </p>
   </q-page>
 </template>
 
-<script>
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { defineComponent, onMounted, ref } from 'vue';
+const mountCount = ref(0);
 
-export default defineComponent({
-    name: 'GymPage',
-    setup() {
-        return {};
-    }
+onMounted(() => {
+    console.log("mounted");
 });
 </script>
