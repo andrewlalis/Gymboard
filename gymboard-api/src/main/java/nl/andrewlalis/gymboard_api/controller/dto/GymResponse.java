@@ -10,10 +10,10 @@ public record GymResponse (
 		String cityShortName,
 		String cityName,
 		String createdAt,
+		String shortName,
 		String displayName,
 		String websiteUrl,
-		double locationLatitude,
-		double locationLongitude,
+		GeoPointResponse location,
 		String streetAddress
 ) {
 	public GymResponse(Gym gym) {
@@ -23,10 +23,10 @@ public record GymResponse (
 				gym.getCity().getShortName(),
 				gym.getCity().getName(),
 				gym.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+				gym.getShortName(),
 				gym.getDisplayName(),
 				gym.getWebsiteUrl(),
-				gym.getLocation().getLatitude().doubleValue(),
-				gym.getLocation().getLongitude().doubleValue(),
+				new GeoPointResponse(gym.getLocation()),
 				gym.getStreetAddress()
 		);
 	}
