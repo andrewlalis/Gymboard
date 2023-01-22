@@ -13,23 +13,23 @@ import jakarta.persistence.Table;
 public class Exercise {
 	@Id
 	@Column(nullable = false, length = 127)
-	private String shortname;
+	private String shortName;
 
 	@Column(nullable = false, unique = true)
-	private String name;
+	private String displayName;
 
 	public Exercise() {}
 
-	public Exercise(String shortname, String name) {
-		this.shortname = shortname;
-		this.name = name;
+	public Exercise(String shortName, String displayName) {
+		this.shortName = shortName;
+		this.displayName = displayName;
 	}
 
-	public String getShortname() {
-		return shortname;
+	public String getShortName() {
+		return shortName;
 	}
 
-	public String getName() {
-		return name;
+	public String getDisplayName() {
+		return displayName;
 	}
 }

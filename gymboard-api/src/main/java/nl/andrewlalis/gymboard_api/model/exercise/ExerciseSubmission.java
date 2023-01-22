@@ -2,6 +2,7 @@ package nl.andrewlalis.gymboard_api.model.exercise;
 
 import jakarta.persistence.*;
 import nl.andrewlalis.gymboard_api.model.Gym;
+import nl.andrewlalis.gymboard_api.model.StoredFile;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -31,4 +32,49 @@ public class ExerciseSubmission {
 
 	@Column(nullable = false, precision = 7, scale = 2)
 	private BigDecimal weight;
+
+	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private StoredFile videoFile;
+
+	public ExerciseSubmission() {}
+
+	public ExerciseSubmission(Gym gym, Exercise exercise, String submitterName, BigDecimal weight, StoredFile videoFile) {
+		this.gym = gym;
+		this.exercise = exercise;
+		this.submitterName = submitterName;
+		this.weight = weight;
+		this.videoFile = videoFile;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public Gym getGym() {
+		return gym;
+	}
+
+	public Exercise getExercise() {
+		return exercise;
+	}
+
+	public String getSubmitterName() {
+		return submitterName;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
+	public BigDecimal getWeight() {
+		return weight;
+	}
+
+	public StoredFile getVideoFile() {
+		return videoFile;
+	}
 }

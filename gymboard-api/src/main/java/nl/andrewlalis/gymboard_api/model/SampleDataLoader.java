@@ -5,6 +5,8 @@ import nl.andrewlalis.gymboard_api.dao.CountryRepository;
 import nl.andrewlalis.gymboard_api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.dao.exercise.ExerciseRepository;
 import nl.andrewlalis.gymboard_api.model.exercise.Exercise;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -12,11 +14,16 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
+/**
+ * Simple component that loads sample data that's useful when testing the application.
+ */
 @Component
 public class SampleDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 	private static final Logger log = LoggerFactory.getLogger(SampleDataLoader.class);
@@ -43,8 +50,8 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 		if (Files.exists(markerFile)) return;
 
 		log.info("Generating sample data.");
-		generateSampleData();
 		try {
+			generateSampleData();
 			Files.writeString(markerFile, "Yes");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -52,40 +59,37 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 	}
 
 	@Transactional
-	protected void generateSampleData() {
-		Exercise benchPress = exerciseRepository.save(new Exercise("barbell-bench-press", "Barbell Bench Press"));
-		Exercise squat = exerciseRepository.save(new Exercise("barbell-squat", "Barbell Squat"));
-		Exercise deadlift = exerciseRepository.save(new Exercise("deadlift", "Deadlift"));
+	protected void generateSampleData() throws IOException {
+		loadCsv("exercises", record -> {
+			exerciseRepository.save(new Exercise(record.get(0), record.get(1)));
+		});
+		loadCsv("countries", record -> {
+			countryRepository.save(new Country(record.get(0), record.get(1)));
+		});
+		loadCsv("cities", record -> {
+			var country = countryRepository.findById(record.get(0)).orElseThrow();
+			cityRepository.save(new City(record.get(1), record.get(2), country));
+		});
+		loadCsv("gyms", record -> {
+			var city = cityRepository.findByShortNameAndCountryCode(record.get(1), record.get(0)).orElseThrow();
+			gymRepository.save(new Gym(
+					city,
+					record.get(2),
+					record.get(3),
+					record.get(4),
+					new GeoPoint(
+							new BigDecimal(record.get(5)),
+							new BigDecimal(record.get(6))
+					),
+					record.get(7)
+			));
+		});
+	}
 
-		Country nl = countryRepository.save(new Country("nl", "Netherlands"));
-		City groningen = cityRepository.save(new City("groningen", "Groningen", nl));
-		Gym g1 = gymRepository.save(new Gym(
-				groningen,
-				"trainmore-munnekeholm",
-				"Trainmore Munnekeholm",
-				"https://trainmore.nl/clubs/munnekeholm/",
-				new GeoPoint(new BigDecimal("53.215939"), new BigDecimal("6.561549")),
-				"Munnekeholm 1, 9711 JA Groningen"
-		));
-		Gym g2 = gymRepository.save(new Gym(
-				groningen,
-				"trainmore-oude-ebbinge",
-				"Trainmore Oude Ebbinge Non-Stop",
-				"https://trainmore.nl/clubs/oude-ebbinge/",
-				new GeoPoint(new BigDecimal("53.220900"), new BigDecimal("6.565976")),
-				"Oude Ebbingestraat 54-58, 9712 HL Groningen"
-		));
-
-
-		Country us = countryRepository.save(new Country("us", "United States"));
-		City tampa = cityRepository.save(new City("tampa", "Tampa", us));
-		Gym g3 = gymRepository.save(new Gym(
-				tampa,
-				"powerhouse-gym",
-				"Powerhouse Gym Athletic Club",
-				"http://www.pgathleticclub.com/",
-				new GeoPoint(new BigDecimal("27.997223"), new BigDecimal("-82.496237")),
-				"3251-A W Hillsborough Ave, Tampa, FL 33614, United States"
-		));
+	private void loadCsv(String csvName, Consumer<CSVRecord> recordConsumer) throws IOException {
+		var reader = new FileReader("sample_data/" + csvName + ".csv");
+		for (var record : CSVFormat.DEFAULT.parse(reader)) {
+			recordConsumer.accept(record);
+		}
 	}
 }

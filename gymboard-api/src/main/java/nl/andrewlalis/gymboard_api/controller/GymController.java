@@ -1,11 +1,13 @@
 package nl.andrewlalis.gymboard_api.controller;
 
-import nl.andrewlalis.gymboard_api.controller.dto.GymResponse;
+import nl.andrewlalis.gymboard_api.controller.dto.*;
 import nl.andrewlalis.gymboard_api.service.GymService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import nl.andrewlalis.gymboard_api.service.UploadService;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * Controller for accessing a particular gym.
@@ -14,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/gyms/{countryCode}/{cityCode}/{gymName}")
 public class GymController {
 	private final GymService gymService;
+	private final UploadService uploadService;
 
-	public GymController(GymService gymService) {
+	public GymController(GymService gymService, UploadService uploadService) {
 		this.gymService = gymService;
+		this.uploadService = uploadService;
 	}
 
 	@GetMapping
@@ -25,6 +29,29 @@ public class GymController {
 			@PathVariable String cityCode,
 			@PathVariable String gymName
 	) {
-		return gymService.getGym(countryCode, cityCode, gymName);
+		return gymService.getGym(new RawGymId(countryCode, cityCode, gymName));
+	}
+
+	@PostMapping(path = "/submissions")
+	public ExerciseSubmissionResponse createSubmission(
+			@PathVariable String countryCode,
+			@PathVariable String cityCode,
+			@PathVariable String gymName,
+			@RequestBody ExerciseSubmissionPayload payload
+	) throws IOException {
+		return gymService.createSubmission(new RawGymId(countryCode, cityCode, gymName), payload);
+	}
+
+	@PostMapping(
+			path = "/submissions/upload",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+	)
+	public UploadedFileResponse uploadVideo(
+			@PathVariable String countryCode,
+			@PathVariable String cityCode,
+			@PathVariable String gymName,
+			@RequestParam MultipartFile file
+	) throws IOException {
+		return uploadService.handleUpload(new RawGymId(countryCode, cityCode, gymName), file);
 	}
 }

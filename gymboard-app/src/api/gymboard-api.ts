@@ -1,11 +1,30 @@
-import axios from "axios";
-import process from "process";
+import axios from 'axios';
 
+export const BASE_URL = 'http://localhost:8080';
+
+// TODO: Figure out how to get the base URL from environment.
 const api = axios.create({ 
-    baseURL: 'http://localhost:8080'
+    baseURL: BASE_URL
 });
 
-export type Gym = {
+export interface Exercise {
+    shortName: string,
+    displayName: string
+};
+
+export interface GeoPoint {
+    latitude: number,
+    longitude: number
+};
+
+export interface ExerciseSubmissionPayload {
+    name: string,
+    exerciseShortName: string,
+    weight: number,
+    videoId: number
+};
+
+export interface Gym {
     countryCode: string,
     countryName: string,
     cityShortName: string,
@@ -14,12 +33,17 @@ export type Gym = {
     shortName: string,
     displayName: string,
     websiteUrl: string | null,
-    location: {
-        latitude: number,
-        longitude: number
-    },
+    location: GeoPoint,
     streetAddress: string
 };
+
+export function getUploadUrl(gym: Gym) {
+    return BASE_URL + `/gyms/${gym.countryCode}/${gym.cityShortName}/${gym.shortName}/submissions/upload`;
+}
+
+export function getFileUrl(fileId: number) {
+    return BASE_URL + `/files/${fileId}`;
+}
 
 export async function getGym(countryCode: string, cityShortName: string, gymShortName: string): Promise<Gym> {
     const response = await api.get(`/gyms/${countryCode}/${cityShortName}/${gymShortName}`);
@@ -37,4 +61,9 @@ export async function getGym(countryCode: string, cityShortName: string, gymShor
         streetAddress: d.streetAddress
     };
     return gym;
+}
+
+export async function getExercises(): Promise<Array<Exercise>> {
+    const response = await api.get(`/exercises`);
+    return response.data;
 }
