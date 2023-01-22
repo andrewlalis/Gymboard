@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/gymboard-cdn
+gymboard-cdn.so
+gymboard-cdn.dylib
+gymboard-cdn.dll
+gymboard-cdn.a
+gymboard-cdn.lib
+gymboard-cdn-test-*
+*.exe
+*.o
+*.obj
+*.lst
