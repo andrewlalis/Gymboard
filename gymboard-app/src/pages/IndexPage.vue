@@ -2,7 +2,7 @@
   <StandardCenteredPage>
     <q-input
       v-model="searchQuery"
-      label="Search for a Gym"
+      :label="$t('indexPage.searchHint')"
       clearable
       :loading="searchBarLoadingState"
       @update:modelValue="onSearchQueryUpdated"
@@ -20,10 +20,10 @@
 
 <script setup lang="ts">
 import {onMounted, ref, Ref} from 'vue';
-import SimpleGymItem from 'components/SimpleGymItem.vue';
 import {useRoute, useRouter} from 'vue-router';
-import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import {GymSearchResult, searchGyms} from 'src/api/gymboard-search';
+import SimpleGymItem from 'src/components/SimpleGymItem.vue';
+import StandardCenteredPage from 'src/components/StandardCenteredPage.vue';
 
 const route = useRoute();
 const router = useRouter();

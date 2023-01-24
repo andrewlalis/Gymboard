@@ -36,7 +36,7 @@ public class GymIndexSearcher {
 		fieldWeights.put("country_name", 0.5f);
 		fieldWeights.put("street_address", 0.1f);
 		for (String term : terms) {
-			String searchTerm = term.strip() + "*";
+			String searchTerm = term.strip().toLowerCase() + "*";
 			for (var entry : fieldWeights.entrySet()) {
 				Query baseQuery = new WildcardQuery(new Term(entry.getKey(), searchTerm));
 				queryBuilder.add(new BoostQuery(baseQuery, entry.getValue()), BooleanClause.Occur.SHOULD);

@@ -3,6 +3,9 @@ export default {
     language: 'Language',
     pages: 'Pages'
   },
+  indexPage: {
+    searchHint: 'Search for a Gym'
+  },
   gymPage: {
     home: 'Home',
     submit: 'Submit',

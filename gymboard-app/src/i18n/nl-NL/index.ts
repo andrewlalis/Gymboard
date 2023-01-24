@@ -3,6 +3,9 @@ export default {
     language: 'Taal',
     pages: 'Pagina\'s'
   },
+  indexPage: {
+    searchHint: 'Zoek een sportschool'
+  },
   gymPage: {
     home: 'Thuis',
     submit: 'Indienen',
