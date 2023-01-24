@@ -41,7 +41,6 @@
 			<version>1.9.0</version>
 		</dependency>
 
-
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
