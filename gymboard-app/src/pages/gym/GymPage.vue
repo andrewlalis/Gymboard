@@ -1,14 +1,13 @@
 <template>
-  <q-page v-if="gym">
-    <h3>{{ gym.displayName }}</h3>
-    <p>Recent top lifts go here.</p>
-    <q-btn
-      color="primary"
-      label="Submit Your Lift"
-      :to="route.fullPath + '/submit'"
-    />
-    <p>All the rest of the gym leaderboards should show up here.</p>
-  </q-page>
+  <StandardCenteredPage v-if="gym">
+    <h3 class="q-my-sm">{{ gym.displayName }}</h3>
+    <q-btn-group>
+      <q-btn label="Home" :to="baseGymPath"/>
+      <q-btn label="Submit" :to="baseGymPath + '/submit'"/>
+      <q-btn label="Leaderboard" :to="baseGymPath + '/lb'"/>
+    </q-btn-group>
+    <router-view/>
+  </StandardCenteredPage>
   <q-page v-if="notFound">
     <h3>Gym not found! Oh no!!!</h3>
     <router-link to="/">Back</router-link>
@@ -19,8 +18,10 @@
 import { onMounted, ref, Ref } from 'vue';
 import { getGym, Gym } from 'src/api/gymboard-api';
 import { useRoute } from 'vue-router';
+import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 
 const route = useRoute();
+const baseGymPath = `/g/${route.params.countryCode}/${route.params.cityShortName}/${route.params.gymShortName}`;
 
 const gym: Ref<Gym | undefined> = ref<Gym>();
 const notFound: Ref<boolean | undefined> = ref<boolean>();
