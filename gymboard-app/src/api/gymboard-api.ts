@@ -3,7 +3,7 @@ import axios from 'axios';
 export const BASE_URL = 'http://localhost:8080';
 
 // TODO: Figure out how to get the base URL from environment.
-const api = axios.create({ 
+const api = axios.create({
     baseURL: BASE_URL
 });
 

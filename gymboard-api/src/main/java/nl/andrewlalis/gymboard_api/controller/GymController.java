@@ -13,7 +13,6 @@ import java.io.IOException;
  * Controller for accessing a particular gym.
  */
 @RestController
-@RequestMapping(path = "/gyms/{countryCode}/{cityCode}/{gymName}")
 public class GymController {
 	private final GymService gymService;
 	private final UploadService uploadService;
@@ -23,7 +22,7 @@ public class GymController {
 		this.uploadService = uploadService;
 	}
 
-	@GetMapping
+	@GetMapping(path = "/gyms/{countryCode}/{cityCode}/{gymName}")
 	public GymResponse getGym(
 			@PathVariable String countryCode,
 			@PathVariable String cityCode,
@@ -32,7 +31,7 @@ public class GymController {
 		return gymService.getGym(new RawGymId(countryCode, cityCode, gymName));
 	}
 
-	@PostMapping(path = "/submissions")
+	@PostMapping(path = "/gyms/{countryCode}/{cityCode}/{gymName}/submissions")
 	public ExerciseSubmissionResponse createSubmission(
 			@PathVariable String countryCode,
 			@PathVariable String cityCode,
@@ -43,7 +42,7 @@ public class GymController {
 	}
 
 	@PostMapping(
-			path = "/submissions/upload",
+			path = "/gyms/{countryCode}/{cityCode}/{gymName}/submissions/upload",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE
 	)
 	public UploadedFileResponse uploadVideo(
