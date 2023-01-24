@@ -1,7 +1,18 @@
-// This is just an example,
-// so you can safely delete all default props below
-
 export default {
-  failed: 'Action failed',
-  success: 'Action was successful'
+  mainLayout: {
+    language: 'Language',
+    pages: 'Pages'
+  },
+  gymPage: {
+    home: 'Home',
+    submit: 'Submit',
+    leaderboard: 'Leaderboard',
+    submitPage: {
+      exercise: 'Exercise',
+      weight: 'Weight',
+      reps: 'Repetitions',
+      date: 'Date',
+      submit: 'Submit'
+    }
+  }
 };

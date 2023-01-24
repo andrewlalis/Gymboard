@@ -13,12 +13,12 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: IndexPage },
       {
-        path: 'g/:countryCode/:cityShortName/:gymShortName',
+        path: 'gyms/:countryCode/:cityShortName/:gymShortName',
         component: GymPage,
         children: [
           { path: '', component: GymHomePage },
           { path: 'submit', component: GymSubmissionPage },
-          { path: 'lb', component: GymLeaderboardsPage }
+          { path: 'leaderboard', component: GymLeaderboardsPage }
         ]
       }
     ],

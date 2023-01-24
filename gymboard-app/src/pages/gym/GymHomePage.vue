@@ -2,7 +2,13 @@
   <q-page>
     <h3>Gym Home Page</h3>
     <p>
-      Put stuff here.
+      Maybe put an image of the gym here?
+    </p>
+    <p>
+      Put a description of the gym here?
+    </p>
+    <p>
+      Maybe show a snapshot of some recent lifts?
     </p>
   </q-page>
 </template>
