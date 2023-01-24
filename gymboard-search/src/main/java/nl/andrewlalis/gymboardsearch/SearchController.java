@@ -1,6 +1,7 @@
 package nl.andrewlalis.gymboardsearch;
 
 import nl.andrewlalis.gymboardsearch.dto.GymResponse;
+import nl.andrewlalis.gymboardsearch.index.GymIndexSearcher;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

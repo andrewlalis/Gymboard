@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboardsearch;
+package nl.andrewlalis.gymboardsearch.index;
 
 import nl.andrewlalis.gymboardsearch.dto.GymResponse;
 import org.apache.lucene.document.Document;

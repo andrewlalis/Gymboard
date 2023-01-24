@@ -1,5 +1,6 @@
-package nl.andrewlalis.gymboardsearch;
+package nl.andrewlalis.gymboardsearch.index;
 
+import nl.andrewlalis.gymboardsearch.DbUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -24,7 +25,7 @@ import java.sql.ResultSet;
 public class GymIndexGenerator {
 	private static final Logger log = LoggerFactory.getLogger(GymIndexGenerator.class);
 
-	void generateIndex() throws Exception {
+	public void generateIndex() throws Exception {
 		log.info("Starting Gym index generation.");
 		Path gymIndexDir = Path.of("gym-index");
 		FileSystemUtils.deleteRecursively(gymIndexDir);
@@ -51,13 +52,13 @@ public class GymIndexGenerator {
 				BigDecimal longitude = resultSet.getBigDecimal("longitude");
 
 				Document doc = new Document();
-				doc.add(new StringField("short_name", shortName, Field.Store.YES));
-				doc.add(new StringField("display_name", displayName, Field.Store.YES));
-				doc.add(new StringField("city_short_name", cityShortName, Field.Store.YES));
-				doc.add(new StringField("city_name", cityName, Field.Store.YES));
-				doc.add(new StringField("country_code", countryCode, Field.Store.YES));
-				doc.add(new StringField("country_name", countryName, Field.Store.YES));
-				doc.add(new StringField("street_address", streetAddress, Field.Store.YES));
+				doc.add(new TextField("short_name", shortName, Field.Store.YES));
+				doc.add(new TextField("display_name", displayName, Field.Store.YES));
+				doc.add(new TextField("city_short_name", cityShortName, Field.Store.YES));
+				doc.add(new TextField("city_name", cityName, Field.Store.YES));
+				doc.add(new TextField("country_code", countryCode, Field.Store.YES));
+				doc.add(new TextField("country_name", countryName, Field.Store.YES));
+				doc.add(new TextField("street_address", streetAddress, Field.Store.YES));
 				doc.add(new DoublePoint("latitude_point", latitude.doubleValue()));
 				doc.add(new StoredField("latitude", latitude.doubleValue()));
 				doc.add(new DoublePoint("longitude_point", longitude.doubleValue()));
