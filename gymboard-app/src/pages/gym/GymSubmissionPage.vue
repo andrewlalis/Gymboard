@@ -4,7 +4,7 @@
       <SlimForm>
         <div class="row">
           <q-select
-            :options="exercises"
+            :options="exercisesF"
             v-model="submissionModel.exercise"
             :label="$t('gymPage.submitPage.exercise')"
             class="col-12"
@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref, Ref} from 'vue';
-import {Gym} from 'src/api/gymboard-api';
+import {Exercise, getExercises, Gym} from 'src/api/gymboard-api';
 import {getGymFromRoute} from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
 
@@ -64,6 +64,7 @@ import SlimForm from 'components/SlimForm.vue';
 // const props = defineProps<Props>();
 
 const gym: Ref<Gym | undefined> = ref<Gym>();
+const exercises: Ref<Array<Exercise> | undefined> = ref<Array<Exercise>>();
 let submissionModel = ref({
   exercise: null,
   weight: null,
@@ -72,12 +73,17 @@ let submissionModel = ref({
   date: new Date().toLocaleDateString('en-CA')
 });
 const weightUnits = ['Kg', 'Lbs'];
-const exercises = ['Bench Press', 'Squat', 'Deadlift'];
+const exercisesF = ['Bench Press', 'Squat', 'Deadlift'];
 
 // TODO: Make it possible to pass the gym to this via props instead.
 onMounted(async () => {
   try {
     gym.value = await getGymFromRoute();
+  } catch (error) {
+    console.error(error);
+  }
+  try {
+    exercises.value = await getExercises();
   } catch (error) {
     console.error(error);
   }
