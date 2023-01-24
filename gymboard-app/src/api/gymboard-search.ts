@@ -1,3 +1,7 @@
+/**
+ * Module for interacting with the Gymboard search service's API.
+ */
+
 import axios from 'axios';
 
 const api = axios.create({
