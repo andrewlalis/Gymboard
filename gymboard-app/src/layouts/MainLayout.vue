@@ -14,6 +14,23 @@
         <q-toolbar-title>
           <router-link to="/" style="text-decoration: none; color: inherit;">Gymboard</router-link>
         </q-toolbar-title>
+        <q-select
+          v-model="i18n.locale.value"
+          :options="localeOptions"
+          :label="$t('mainLayout.language')"
+          dense
+          borderless
+          emit-value
+          map-options
+          options-dense
+          filled
+          hide-bottom-space
+          dark
+          options-dark
+          label-color="white"
+          options-selected-class="text-grey"
+          style="min-width: 150px"
+        />
       </q-toolbar>
     </q-header>
 
@@ -26,7 +43,7 @@
         <q-item-label
           header
         >
-          Pages
+          {{ $t('mainLayout.pages') }}
         </q-item-label>
         <q-item clickable>Gyms</q-item>
         <q-item clickable>Global Leaderboard</q-item>
@@ -39,21 +56,19 @@
   </q-layout>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import {useI18n} from 'vue-i18n';
 
-export default defineComponent({
-  name: 'MainLayout',
+const i18n = useI18n({useScope: 'global'});
+const localeOptions = [
+  { value: 'en-US', label: 'English' },
+  { value: 'nl-NL', label: 'Nederlands' }
+];
 
-  setup () {
-    const leftDrawerOpen = ref(false)
+const leftDrawerOpen = ref(false);
 
-    return {
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
-  }
-});
+function toggleLeftDrawer () {
+  leftDrawerOpen.value = !leftDrawerOpen.value
+}
 </script>
