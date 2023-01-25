@@ -50,7 +50,7 @@ public class GymController {
 			@PathVariable String cityCode,
 			@PathVariable String gymName,
 			@RequestParam MultipartFile file
-	) throws IOException {
-		return uploadService.handleUpload(new RawGymId(countryCode, cityCode, gymName), file);
+	) {
+		return uploadService.handleSubmissionUpload(new RawGymId(countryCode, cityCode, gymName), file);
 	}
 }

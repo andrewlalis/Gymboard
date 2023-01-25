@@ -2,7 +2,6 @@ package nl.andrewlalis.gymboard_api.model.exercise;
 
 import jakarta.persistence.*;
 import nl.andrewlalis.gymboard_api.model.Gym;
-import nl.andrewlalis.gymboard_api.model.StoredFile;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -24,26 +23,30 @@ public class ExerciseSubmission {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Exercise exercise;
 
-	@Column(nullable = false, updatable = false, length = 63)
-	private String submitterName;
+	@Column(nullable = false)
+	private String status;
 
 	@Column(nullable = false)
 	private boolean verified;
 
+	@Column(nullable = false, updatable = false, length = 63)
+	private String submitterName;
+
 	@Column(nullable = false, precision = 7, scale = 2)
 	private BigDecimal weight;
 
-	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	private StoredFile videoFile;
+	@Column(nullable = false)
+	private int reps;
 
 	public ExerciseSubmission() {}
 
-	public ExerciseSubmission(Gym gym, Exercise exercise, String submitterName, BigDecimal weight, StoredFile videoFile) {
+	public ExerciseSubmission(Gym gym, Exercise exercise, String submitterName, BigDecimal weight, int reps) {
 		this.gym = gym;
 		this.exercise = exercise;
 		this.submitterName = submitterName;
 		this.weight = weight;
-		this.videoFile = videoFile;
+		this.reps = reps;
+		this.status = "PROCESSING";
 	}
 
 	public Long getId() {
@@ -62,6 +65,14 @@ public class ExerciseSubmission {
 		return exercise;
 	}
 
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public String getSubmitterName() {
 		return submitterName;
 	}
@@ -74,7 +85,7 @@ public class ExerciseSubmission {
 		return weight;
 	}
 
-	public StoredFile getVideoFile() {
-		return videoFile;
+	public int getReps() {
+		return reps;
 	}
 }
