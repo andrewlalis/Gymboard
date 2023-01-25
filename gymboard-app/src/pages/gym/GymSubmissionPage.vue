@@ -1,3 +1,15 @@
+<!--
+This is the submission page, where users can submit their lift to a particular
+gym's leaderboards.
+
+A high-level overview of the submission process is as follows:
+
+1. The user uploads a video of their lift, and receives a `videoId` in return.
+2. The user submits their lift's JSON data, including the `videoId`.
+3. The API responds (if the data is valid) with the created submission, with the status WAITING.
+4. Eventually the API will process the submission and status will change to either COMPLETED or FAILED.
+
+-->
 <template>
   <q-page v-if="gym">
     <q-form @submit="onSubmitted">
@@ -50,6 +62,7 @@
         </div>
         <div class="row">
           <q-uploader
+            id="uploader"
             :url="getUploadUrl(gym)"
             :label="$t('gymPage.submitPage.upload')"
             field-name="file"
@@ -83,6 +96,7 @@ import {
 } from 'src/api/gymboard-api';
 import {getGymFromRoute} from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
+import {QUploader} from "quasar";
 
 interface Option {
   value: string,
@@ -99,6 +113,7 @@ let submissionModel = ref({
   weightUnit: 'Kg',
   reps: 1,
   videoId: -1,
+  videoFile: null,
   date: new Date().toLocaleDateString('en-CA')
 });
 const weightUnits = ['Kg', 'Lbs'];

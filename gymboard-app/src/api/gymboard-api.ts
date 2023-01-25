@@ -31,10 +31,18 @@ export interface ExerciseSubmission {
   createdAt: string,
   gym: SimpleGym,
   exercise: Exercise,
-  status: string,
+  status: ExerciseSubmissionStatus,
   submitterName: string,
   weight: number,
   reps: number
+}
+
+export enum ExerciseSubmissionStatus {
+  WAITING = 'WAITING',
+  PROCESSING = 'PROCESSING',
+  FAILED = 'FAILED',
+  COMPLETED = 'COMPLETED',
+  VERIFIED = 'VERIFIED'
 }
 
 export interface Gym {
