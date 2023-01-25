@@ -167,7 +167,7 @@ public class ExerciseSubmissionService {
 		Path dir = tempFilePath.getParent();
 		String tempFileName = tempFilePath.getFileName().toString();
 		String tempFileBaseName = tempFileName.substring(0, tempFileName.length() - ".tmp".length());
-		Path outFilePath = dir.resolve(tempFileBaseName + "-out.tmp");
+		Path outFilePath = dir.resolve(tempFileBaseName + "-out.mp4");
 		StoredFile file;
 		try {
 			processVideo(dir, tempFilePath, outFilePath);
@@ -229,7 +229,6 @@ public class ExerciseSubmissionService {
 				.command(command)
 				.redirectOutput(tmpStdout.toFile())
 				.redirectError(tmpStderr.toFile())
-				.redirectInput(ProcessBuilder.Redirect.DISCARD)
 				.directory(dir.toFile())
 				.start();
 		int result = ffmpegProcess.waitFor();

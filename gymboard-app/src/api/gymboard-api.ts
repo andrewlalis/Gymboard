@@ -6,6 +6,7 @@ export const BASE_URL = 'http://localhost:8080';
 const api = axios.create({
     baseURL: BASE_URL
 });
+api.defaults.headers.post['Content-Type'] = 'application/json';
 
 export interface Exercise {
     shortName: string,
@@ -25,6 +26,17 @@ export interface ExerciseSubmissionPayload {
     videoId: number
 }
 
+export interface ExerciseSubmission {
+  id: number,
+  createdAt: string,
+  gym: SimpleGym,
+  exercise: Exercise,
+  status: string,
+  submitterName: string,
+  weight: number,
+  reps: number
+}
+
 export interface Gym {
     countryCode: string,
     countryName: string,
@@ -36,6 +48,13 @@ export interface Gym {
     websiteUrl: string | null,
     location: GeoPoint,
     streetAddress: string
+}
+
+export interface SimpleGym {
+  countryCode: string,
+  cityShortName: string,
+  shortName: string,
+  displayName: string
 }
 
 /**
@@ -81,4 +100,12 @@ export async function getGym(
     location: d.location,
     streetAddress: d.streetAddress,
   };
+}
+
+export async function createSubmission(gym: Gym, payload: ExerciseSubmissionPayload): Promise<ExerciseSubmission> {
+  const response = await api.post(
+    `/gyms/${gym.countryCode}/${gym.cityShortName}/${gym.shortName}/submissions`,
+    payload
+  );
+  return response.data;
 }
