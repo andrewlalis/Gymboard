@@ -13,7 +13,7 @@
       </template>
     </q-input>
     <q-list>
-      <SimpleGymItem v-for="gym in searchResults" :gym="gym" :key="gym.shortName" />
+      <GymSearchResultListItem v-for="result in searchResults" :gym="result" :key="result.compoundId" />
     </q-list>
   </StandardCenteredPage>
 </template>
@@ -21,9 +21,10 @@
 <script setup lang="ts">
 import {onMounted, ref, Ref} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
-import {GymSearchResult, searchGyms} from 'src/api/gymboard-search';
-import SimpleGymItem from 'src/components/SimpleGymItem.vue';
+import GymSearchResultListItem from 'components/GymSearchResultListItem.vue';
 import StandardCenteredPage from 'src/components/StandardCenteredPage.vue';
+import {GymSearchResult} from 'src/api/search/models';
+import {searchGyms} from 'src/api/search';
 
 const route = useRoute();
 const router = useRouter();

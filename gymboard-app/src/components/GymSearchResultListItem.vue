@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import {GymSearchResult} from 'src/api/gymboard-search';
 import {getGymRoute} from 'src/router/gym-routing';
+import {GymSearchResult} from 'src/api/search/models';
 
 interface Props {
   gym: GymSearchResult

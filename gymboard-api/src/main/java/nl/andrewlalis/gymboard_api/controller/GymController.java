@@ -1,6 +1,7 @@
 package nl.andrewlalis.gymboard_api.controller;
 
 import nl.andrewlalis.gymboard_api.controller.dto.*;
+import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.service.GymService;
 import nl.andrewlalis.gymboard_api.service.UploadService;
 import org.springframework.http.MediaType;
@@ -16,10 +17,12 @@ import java.io.IOException;
 public class GymController {
 	private final GymService gymService;
 	private final UploadService uploadService;
+	private final ExerciseSubmissionService submissionService;
 
-	public GymController(GymService gymService, UploadService uploadService) {
+	public GymController(GymService gymService, UploadService uploadService, ExerciseSubmissionService submissionService) {
 		this.gymService = gymService;
 		this.uploadService = uploadService;
+		this.submissionService = submissionService;
 	}
 
 	@GetMapping(path = "/gyms/{countryCode}/{cityCode}/{gymName}")
@@ -37,8 +40,8 @@ public class GymController {
 			@PathVariable String cityCode,
 			@PathVariable String gymName,
 			@RequestBody ExerciseSubmissionPayload payload
-	) throws IOException {
-		return gymService.createSubmission(new RawGymId(countryCode, cityCode, gymName), payload);
+	) {
+		return submissionService.createSubmission(new RawGymId(countryCode, cityCode, gymName), payload);
 	}
 
 	@PostMapping(

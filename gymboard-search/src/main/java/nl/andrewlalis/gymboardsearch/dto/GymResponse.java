@@ -3,6 +3,7 @@ package nl.andrewlalis.gymboardsearch.dto;
 import org.apache.lucene.document.Document;
 
 public record GymResponse(
+		String compoundId,
 		String shortName,
 		String displayName,
 		String cityShortName,
@@ -15,6 +16,7 @@ public record GymResponse(
 ) {
 	public GymResponse(Document doc) {
 		this(
+				doc.get("compound_id"),
 				doc.get("short_name"),
 				doc.get("display_name"),
 				doc.get("city_short_name"),

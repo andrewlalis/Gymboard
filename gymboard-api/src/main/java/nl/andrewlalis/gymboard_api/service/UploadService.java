@@ -72,29 +72,5 @@ public class UploadService {
 		} catch (IOException e) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "File upload failed.", e);
 		}
-
-//		Path tempDir = Files.createTempDirectory("gymboard-file-upload");
-//		Path tempFile = tempDir.resolve("video-file");
-//		multipartFile.transferTo(tempFile);
-//		Process ffmpegProcess = new ProcessBuilder()
-//				.command("ffmpeg", "-i", "video-file", "-vf", "scale=640x480:flags=lanczos", "-vcodec", "libx264", "-crf", "28", "output.mp4")
-//				.inheritIO()
-//				.directory(tempDir.toFile())
-//				.start();
-//		try {
-//			int result = ffmpegProcess.waitFor();
-//			if (result != 0) throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ffmpeg exited with code " + result);
-//		} catch (InterruptedException e) {
-//			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ffmpeg process interrupted", e);
-//		}
-//		Path compressedFile = tempDir.resolve("output.mp4");
-//		StoredFile file = fileRepository.save(new StoredFile(
-//				"compressed.mp4",
-//				"video/mp4",
-//				Files.size(compressedFile),
-//				Files.readAllBytes(compressedFile)
-//		));
-//		FileSystemUtils.deleteRecursively(tempDir);
-//		return new UploadedFileResponse(file.getId());
 	}
 }

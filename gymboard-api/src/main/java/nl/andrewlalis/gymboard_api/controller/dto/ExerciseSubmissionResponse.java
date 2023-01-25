@@ -9,10 +9,10 @@ public record ExerciseSubmissionResponse(
 		String createdAt,
 		GymSimpleResponse gym,
 		ExerciseResponse exercise,
+		String status,
 		String submitterName,
-		boolean verified,
 		double weight,
-		String videoFileUrl
+		int reps
 ) {
 	public ExerciseSubmissionResponse(ExerciseSubmission submission) {
 		this(
@@ -20,10 +20,10 @@ public record ExerciseSubmissionResponse(
 				submission.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
 				new GymSimpleResponse(submission.getGym()),
 				new ExerciseResponse(submission.getExercise()),
+				submission.getStatus().name(),
 				submission.getSubmitterName(),
-				submission.isVerified(),
 				submission.getWeight().doubleValue(),
-				"bleh"
+				submission.getReps()
 		);
 	}
 }

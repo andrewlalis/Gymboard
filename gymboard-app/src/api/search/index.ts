@@ -1,24 +1,9 @@
-/**
- * Module for interacting with the Gymboard search service's API.
- */
-
 import axios from 'axios';
+import {GymSearchResult} from 'src/api/search/models';
 
 const api = axios.create({
   baseURL: 'http://localhost:8081'
 });
-
-export interface GymSearchResult {
-  shortName: string,
-  displayName: string,
-  cityShortName: string,
-  cityName: string,
-  countryCode: string,
-  countryName: string,
-  streetAddress: string,
-  latitude: number,
-  longitude: number
-}
 
 /**
  * Searches for gyms using the given query, and eventually returns results.

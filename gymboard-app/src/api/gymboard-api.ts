@@ -10,19 +10,20 @@ const api = axios.create({
 export interface Exercise {
     shortName: string,
     displayName: string
-};
+}
 
 export interface GeoPoint {
     latitude: number,
     longitude: number
-};
+}
 
 export interface ExerciseSubmissionPayload {
     name: string,
     exerciseShortName: string,
     weight: number,
+    reps: number,
     videoId: number
-};
+}
 
 export interface Gym {
     countryCode: string,
@@ -35,18 +36,27 @@ export interface Gym {
     websiteUrl: string | null,
     location: GeoPoint,
     streetAddress: string
-};
+}
 
+/**
+ * Gets the URL for uploading a video file when creating an exercise submission
+ * for a gym.
+ * @param gym The gym that the submission is for.
+ */
 export function getUploadUrl(gym: Gym) {
     return BASE_URL + `/gyms/${gym.countryCode}/${gym.cityShortName}/${gym.shortName}/submissions/upload`;
 }
 
+/**
+ * Gets the URL at which the raw file data for the given file id can be streamed.
+ * @param fileId The file id.
+ */
 export function getFileUrl(fileId: number) {
     return BASE_URL + `/files/${fileId}`;
 }
 
 export async function getExercises(): Promise<Array<Exercise>> {
-    const response = await api.get(`/exercises`);
+    const response = await api.get('/exercises');
     return response.data;
 }
 

@@ -10,6 +10,13 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "exercise_submission")
 public class ExerciseSubmission {
+	public enum Status {
+		WAITING,
+		PROCESSING,
+		FAILED,
+		COMPLETED
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -23,11 +30,9 @@ public class ExerciseSubmission {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Exercise exercise;
 
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private String status;
-
-	@Column(nullable = false)
-	private boolean verified;
+	private Status status;
 
 	@Column(nullable = false, updatable = false, length = 63)
 	private String submitterName;
@@ -46,7 +51,7 @@ public class ExerciseSubmission {
 		this.submitterName = submitterName;
 		this.weight = weight;
 		this.reps = reps;
-		this.status = "PROCESSING";
+		this.status = Status.WAITING;
 	}
 
 	public Long getId() {
@@ -65,20 +70,16 @@ public class ExerciseSubmission {
 		return exercise;
 	}
 
-	public String getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 
 	public String getSubmitterName() {
 		return submitterName;
-	}
-
-	public boolean isVerified() {
-		return verified;
 	}
 
 	public BigDecimal getWeight() {
