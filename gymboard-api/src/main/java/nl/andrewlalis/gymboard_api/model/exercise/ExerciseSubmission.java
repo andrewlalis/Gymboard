@@ -10,11 +10,22 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "exercise_submission")
 public class ExerciseSubmission {
+	/**
+	 * The status of a submission.
+	 * <ul>
+	 *     <li>Each submission starts as WAITING.</li>
+	 *     <li>The status changes to PROCESSING once it's picked up for processing.</li>
+	 *     <li>If processing fails, the status changes to FAILED.</li>
+	 *     <li>If processing is successful, the status changes to COMPLETED.</li>
+	 *     <li>Once a completed submission is verified either automatically or manually, it's set to VERIFIED.</li>
+	 * </ul>
+	 */
 	public enum Status {
 		WAITING,
 		PROCESSING,
 		FAILED,
-		COMPLETED
+		COMPLETED,
+		VERIFIED
 	}
 
 	@Id

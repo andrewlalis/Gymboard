@@ -211,6 +211,17 @@ public class ExerciseSubmissionService {
 		log.info("Processing of submission {} complete.", submission.getId());
 	}
 
+	/**
+	 * Uses the `ffmpeg` system command to process a raw input video and produce
+	 * a compressed, reduced-size output video that's ready for usage in the
+	 * application.
+	 * @param dir The working directory.
+	 * @param inFile The input file to read from.
+	 * @param outFile The output file to write to. MUST have a ".mp4" extension.
+	 * @throws IOException If a filesystem error occurs.
+	 * @throws CommandFailedException If the ffmpeg command fails.
+	 * @throws InterruptedException If the ffmpeg command is interrupted.
+	 */
 	private void processVideo(Path dir, Path inFile, Path outFile) throws IOException, InterruptedException {
 		Path tmpStdout = Files.createTempFile(dir, "stdout-", ".log");
 		Path tmpStderr = Files.createTempFile(dir, "stderr-", ".log");
@@ -240,6 +251,7 @@ public class ExerciseSubmissionService {
 		String reductionFactorStr = String.format("%.3f%%", reductionFactor * 100);
 		log.info("Processed video from {} bytes to {} bytes in {} seconds, {} reduction.", startSize, endSize, dur.getSeconds(), reductionFactorStr);
 
+		// Delete the logs if everything was successful.
 		Files.deleteIfExists(tmpStdout);
 		Files.deleteIfExists(tmpStderr);
 	}
