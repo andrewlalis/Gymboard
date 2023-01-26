@@ -10,7 +10,12 @@ export default {
     home: 'Home',
     submit: 'Submit',
     leaderboard: 'Leaderboard',
+    homePage: {
+      overview: 'Overview of this gym:',
+      recentLifts: 'Recent Lifts'
+    },
     submitPage: {
+      name: 'Your Name',
       exercise: 'Exercise',
       weight: 'Weight',
       reps: 'Repetitions',

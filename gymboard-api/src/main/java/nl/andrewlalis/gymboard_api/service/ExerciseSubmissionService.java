@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
 import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionPayload;
 import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionResponse;
@@ -32,6 +33,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -76,6 +78,33 @@ public class ExerciseSubmissionService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		if (!submission.getGym().getId().equals(gym.getId())) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		return new ExerciseSubmissionResponse(submission);
+	}
+
+	@Transactional(readOnly = true)
+	public void streamVideo(CompoundGymId compoundId, long submissionId, HttpServletResponse response) {
+		// TODO: Make a faster way to stream videos, should be one DB call instead of this mess.
+		Gym gym = gymRepository.findByCompoundId(compoundId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		ExerciseSubmission submission = exerciseSubmissionRepository.findById(submissionId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		if (!submission.getGym().getId().equals(gym.getId())) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		Set<ExerciseSubmission.Status> validStatuses = Set.of(
+				ExerciseSubmission.Status.COMPLETED,
+				ExerciseSubmission.Status.VERIFIED
+		);
+		if (!validStatuses.contains(submission.getStatus())) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+		ExerciseSubmissionVideoFile videoFile = submissionVideoFileRepository.findBySubmission(submission)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		response.setContentType(videoFile.getFile().getMimeType());
+		response.setContentLengthLong(videoFile.getFile().getSize());
+		try {
+			response.getOutputStream().write(videoFile.getFile().getContent());
+		} catch (IOException e) {
+			log.error("Failed to write submission video file to response.", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	/**

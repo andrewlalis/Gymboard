@@ -10,7 +10,12 @@ export default {
     home: 'Thuis',
     submit: 'Indienen',
     leaderboard: 'Scorebord',
+    homePage: {
+      overview: 'Overzicht van dit sportschool:',
+      recentLifts: 'Recente liften'
+    },
     submitPage: {
+      name: 'Jouw naam',
       exercise: 'Oefening',
       weight: 'Gewicht',
       reps: 'Repetities',

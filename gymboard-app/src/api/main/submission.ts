@@ -1,6 +1,6 @@
 import { SimpleGym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
-import { api } from 'src/api/main/index';
+import {api, BASE_URL} from 'src/api/main/index';
 import { GymRoutable } from 'src/router/gym-routing';
 import { sleep } from 'src/utils';
 
@@ -23,7 +23,9 @@ export interface ExerciseSubmission {
   exercise: Exercise;
   status: ExerciseSubmissionStatus;
   submitterName: string;
-  weight: number;
+  rawWeight: number;
+  weightUnit: string;
+  metricWeight: number;
   reps: number;
 }
 
@@ -44,6 +46,16 @@ class SubmissionsModule {
       `/gyms/${gym.countryCode}_${gym.cityShortName}_${gym.shortName}/submissions/${submissionId}`
     );
     return response.data;
+  }
+
+  public getSubmissionVideoUrl(submission: ExerciseSubmission): string | null {
+    if (
+      submission.status !== ExerciseSubmissionStatus.COMPLETED &&
+      submission.status !== ExerciseSubmissionStatus.VERIFIED
+    ) {
+      return null;
+    }
+    return BASE_URL + `/gyms/${submission.gym.countryCode}_${submission.gym.cityShortName}_${submission.gym.shortName}/submissions/${submission.id}/video`
   }
 
   public async createSubmission(

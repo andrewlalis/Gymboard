@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboard_api.controller.dto.*;
 import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.service.GymService;
@@ -7,6 +8,8 @@ import nl.andrewlalis.gymboard_api.service.UploadService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * Controller for accessing a particular gym.
@@ -29,6 +32,11 @@ public class GymController {
 		return gymService.getGym(CompoundGymId.parse(compoundId));
 	}
 
+	@GetMapping(path = "/recent-submissions")
+	public List<ExerciseSubmissionResponse> getRecentSubmissions(@PathVariable String compoundId) {
+		return gymService.getRecentSubmissions(CompoundGymId.parse(compoundId));
+	}
+
 	@PostMapping(path = "/submissions")
 	public ExerciseSubmissionResponse createSubmission(
 			@PathVariable String compoundId,
@@ -38,10 +46,7 @@ public class GymController {
 	}
 
 	@GetMapping(path = "/submissions/{submissionId}")
-	public ExerciseSubmissionResponse getSubmission(
-			@PathVariable String compoundId,
-			@PathVariable long submissionId
-	) {
+	public ExerciseSubmissionResponse getSubmission(@PathVariable String compoundId, @PathVariable long submissionId) {
 		return submissionService.getSubmission(CompoundGymId.parse(compoundId), submissionId);
 	}
 
@@ -51,5 +56,14 @@ public class GymController {
 			@RequestParam MultipartFile file
 	) {
 		return uploadService.handleSubmissionUpload(CompoundGymId.parse(compoundId), file);
+	}
+
+	@GetMapping(path = "/submissions/{submissionId}/video")
+	public void getSubmissionVideo(
+			@PathVariable String compoundId,
+			@PathVariable long submissionId,
+			HttpServletResponse response
+	) {
+		submissionService.streamVideo(CompoundGymId.parse(compoundId), submissionId, response);
 	}
 }
