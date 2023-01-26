@@ -1,7 +1,7 @@
 package nl.andrewlalis.gymboard_api.service;
 
 import nl.andrewlalis.gymboard_api.controller.dto.GymResponse;
-import nl.andrewlalis.gymboard_api.controller.dto.RawGymId;
+import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
 import nl.andrewlalis.gymboard_api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.model.Gym;
 import org.slf4j.Logger;
@@ -22,8 +22,8 @@ public class GymService {
 	}
 
 	@Transactional(readOnly = true)
-	public GymResponse getGym(RawGymId id) {
-		Gym gym = gymRepository.findByRawId(id.gymName(), id.cityCode(), id.countryCode())
+	public GymResponse getGym(CompoundGymId id) {
+		Gym gym = gymRepository.findByCompoundId(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		return new GymResponse(gym);
 	}

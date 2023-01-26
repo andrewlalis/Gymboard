@@ -1,10 +1,10 @@
 export default {
   mainLayout: {
     language: 'Language',
-    pages: 'Pages'
+    pages: 'Pages',
   },
   indexPage: {
-    searchHint: 'Search for a Gym'
+    searchHint: 'Search for a Gym',
   },
   gymPage: {
     home: 'Home',
@@ -15,7 +15,8 @@ export default {
       weight: 'Weight',
       reps: 'Repetitions',
       date: 'Date',
-      submit: 'Submit'
-    }
-  }
+      upload: 'Video File to Upload',
+      submit: 'Submit',
+    },
+  },
 };

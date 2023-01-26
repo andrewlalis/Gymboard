@@ -18,16 +18,16 @@
         :color="leaderboardPageSelected ? 'primary' : 'secondary'"
       />
     </q-btn-group>
-    <router-view/>
+    <router-view />
   </StandardCenteredPage>
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, Ref} from 'vue';
-import { getGym, Gym } from 'src/api/gymboard-api';
-import {useRoute, useRouter} from 'vue-router';
+import { computed, onMounted, ref, Ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
-import {getGymRoute} from 'src/router/gym-routing';
+import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
+import { Gym } from 'src/api/main/gyms';
 
 const route = useRoute();
 const router = useRouter();
@@ -37,18 +37,20 @@ const gym: Ref<Gym | undefined> = ref<Gym>();
 // Once the component is mounted, load the gym that we're at.
 onMounted(async () => {
   try {
-    gym.value = await getGym(
-      route.params.countryCode as string,
-      route.params.cityShortName as string,
-      route.params.gymShortName as string
-    );
+    gym.value = await getGymFromRoute();
   } catch (error) {
     console.error(error);
     await router.push('/');
   }
 });
 
-const homePageSelected = computed(() => gym.value && getGymRoute(gym.value) === route.fullPath);
-const submitPageSelected = computed(() => gym.value && route.fullPath === getGymRoute(gym.value) + '/submit');
-const leaderboardPageSelected = computed(() => gym.value && route.fullPath === getGymRoute(gym.value) + '/leaderboard');
+const homePageSelected = computed(
+  () => gym.value && getGymRoute(gym.value) === route.fullPath
+);
+const submitPageSelected = computed(
+  () => gym.value && route.fullPath === getGymRoute(gym.value) + '/submit'
+);
+const leaderboardPageSelected = computed(
+  () => gym.value && route.fullPath === getGymRoute(gym.value) + '/leaderboard'
+);
 </script>

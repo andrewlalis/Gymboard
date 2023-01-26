@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface ExerciseSubmissionTempFileRepository extends JpaRepository<ExerciseSubmissionTempFile, Long> {
 	List<ExerciseSubmissionTempFile> findAllByCreatedAtBefore(LocalDateTime timestamp);
 	Optional<ExerciseSubmissionTempFile> findBySubmission(ExerciseSubmission submission);
+	boolean existsByPath(String path);
 }

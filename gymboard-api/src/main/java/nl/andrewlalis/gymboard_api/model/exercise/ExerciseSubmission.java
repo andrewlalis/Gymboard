@@ -28,6 +28,11 @@ public class ExerciseSubmission {
 		VERIFIED
 	}
 
+	public enum WeightUnit {
+		KG,
+		LBS
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -49,18 +54,27 @@ public class ExerciseSubmission {
 	private String submitterName;
 
 	@Column(nullable = false, precision = 7, scale = 2)
-	private BigDecimal weight;
+	private BigDecimal rawWeight;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private WeightUnit weightUnit;
+
+	@Column(nullable = false, precision = 7, scale = 2)
+	private BigDecimal metricWeight;
 
 	@Column(nullable = false)
 	private int reps;
 
 	public ExerciseSubmission() {}
 
-	public ExerciseSubmission(Gym gym, Exercise exercise, String submitterName, BigDecimal weight, int reps) {
+	public ExerciseSubmission(Gym gym, Exercise exercise, String submitterName, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
 		this.gym = gym;
 		this.exercise = exercise;
 		this.submitterName = submitterName;
-		this.weight = weight;
+		this.rawWeight = rawWeight;
+		this.weightUnit = unit;
+		this.metricWeight = metricWeight;
 		this.reps = reps;
 		this.status = Status.WAITING;
 	}
@@ -93,8 +107,16 @@ public class ExerciseSubmission {
 		return submitterName;
 	}
 
-	public BigDecimal getWeight() {
-		return weight;
+	public BigDecimal getRawWeight() {
+		return rawWeight;
+	}
+
+	public WeightUnit getWeightUnit() {
+		return weightUnit;
+	}
+
+	public BigDecimal getMetricWeight() {
+		return metricWeight;
 	}
 
 	public int getReps() {

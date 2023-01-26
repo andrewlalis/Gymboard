@@ -13,18 +13,22 @@
       </template>
     </q-input>
     <q-list>
-      <GymSearchResultListItem v-for="result in searchResults" :gym="result" :key="result.compoundId" />
+      <GymSearchResultListItem
+        v-for="result in searchResults"
+        :gym="result"
+        :key="result.compoundId"
+      />
     </q-list>
   </StandardCenteredPage>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, Ref} from 'vue';
-import {useRoute, useRouter} from 'vue-router';
+import { onMounted, ref, Ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import GymSearchResultListItem from 'components/GymSearchResultListItem.vue';
 import StandardCenteredPage from 'src/components/StandardCenteredPage.vue';
-import {GymSearchResult} from 'src/api/search/models';
-import {searchGyms} from 'src/api/search';
+import { GymSearchResult } from 'src/api/search/models';
+import { searchGyms } from 'src/api/search';
 
 const route = useRoute();
 const router = useRouter();
@@ -68,7 +72,7 @@ async function doSearch() {
   }
   await router.push({ path: '/', query: query });
   try {
-    searchResults.value = await searchGyms(searchQueryText)
+    searchResults.value = await searchGyms(searchQueryText);
   } catch (error) {
     console.error(error);
   } finally {

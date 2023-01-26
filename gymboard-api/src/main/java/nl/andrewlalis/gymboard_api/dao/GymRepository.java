@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.dao;
 
+import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
 import nl.andrewlalis.gymboard_api.model.Gym;
 import nl.andrewlalis.gymboard_api.model.GymId;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,8 +13,14 @@ import java.util.Optional;
 @Repository
 public interface GymRepository extends JpaRepository<Gym, GymId>, JpaSpecificationExecutor<Gym> {
 	@Query("SELECT g FROM Gym g " +
-			"WHERE g.id.shortName = :gym AND " +
-			"g.id.city.id.shortName = :city AND " +
-			"g.id.city.id.country.code = :country")
-	Optional<Gym> findByRawId(String gym, String city, String country);
+			"WHERE g.id.shortName = :#{#id.gym()} AND " +
+			"g.id.city.id.shortName = :#{#id.city()} AND " +
+			"g.id.city.id.country.code = :#{#id.country()}")
+	Optional<Gym> findByCompoundId(CompoundGymId id);
+
+	@Query("SELECT COUNT(g) > 0 FROM Gym g " +
+			"WHERE g.id.shortName = :#{#id.gym()} AND " +
+			"g.id.city.id.shortName = :#{#id.city()} AND " +
+			"g.id.city.id.country.code = :#{#id.country()}")
+	boolean existsByCompoundId(CompoundGymId id);
 }

@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboard_api.service;
 
-import nl.andrewlalis.gymboard_api.controller.dto.RawGymId;
+import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
 import nl.andrewlalis.gymboard_api.controller.dto.UploadedFileResponse;
 import nl.andrewlalis.gymboard_api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.dao.exercise.ExerciseSubmissionTempFileRepository;
@@ -21,6 +21,7 @@ import java.nio.file.Path;
  */
 @Service
 public class UploadService {
+	public static final Path SUBMISSION_TEMP_FILE_DIR = Path.of("exercise_submission_temp_files");
 	private static final String[] ALLOWED_VIDEO_TYPES = {
 			"video/mp4"
 	};
@@ -46,8 +47,8 @@ public class UploadService {
 	 * the user's submission.
 	 */
 	@Transactional
-	public UploadedFileResponse handleSubmissionUpload(RawGymId gymId, MultipartFile multipartFile) {
-		Gym gym = gymRepository.findByRawId(gymId.gymName(), gymId.cityCode(), gymId.countryCode())
+	public UploadedFileResponse handleSubmissionUpload(CompoundGymId gymId, MultipartFile multipartFile) {
+		Gym gym = gymRepository.findByCompoundId(gymId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		// TODO: Check that user is allowed to upload.
 		boolean fileTypeAcceptable = false;
@@ -61,11 +62,10 @@ public class UploadService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content type.");
 		}
 		try {
-			Path tempFileDir = Path.of("exercise_submission_temp_files");
-			if (!Files.exists(tempFileDir)) {
-				Files.createDirectory(tempFileDir);
+			if (!Files.exists(SUBMISSION_TEMP_FILE_DIR)) {
+				Files.createDirectory(SUBMISSION_TEMP_FILE_DIR);
 			}
-			Path tempFilePath = Files.createTempFile(tempFileDir, null, null);
+			Path tempFilePath = Files.createTempFile(SUBMISSION_TEMP_FILE_DIR, null, null);
 			multipartFile.transferTo(tempFilePath);
 			ExerciseSubmissionTempFile tempFileEntity = tempFileRepository.save(new ExerciseSubmissionTempFile(tempFilePath.toString()));
 			return new UploadedFileResponse(tempFileEntity.getId());

@@ -1,8 +1,8 @@
 package nl.andrewlalis.gymboard_api.service;
 
+import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
 import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionPayload;
 import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionResponse;
-import nl.andrewlalis.gymboard_api.controller.dto.RawGymId;
 import nl.andrewlalis.gymboard_api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.dao.StoredFileRepository;
 import nl.andrewlalis.gymboard_api.dao.exercise.ExerciseRepository;
@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +64,15 @@ public class ExerciseSubmissionService {
 		this.submissionVideoFileRepository = submissionVideoFileRepository;
 	}
 
+	@Transactional(readOnly = true)
+	public ExerciseSubmissionResponse getSubmission(CompoundGymId id, long submissionId) {
+		Gym gym = gymRepository.findByCompoundId(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		ExerciseSubmission submission = exerciseSubmissionRepository.findById(submissionId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		if (!submission.getGym().getId().equals(gym.getId())) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		return new ExerciseSubmissionResponse(submission);
+	}
 
 	/**
 	 * Handles the creation of a new exercise submission. This involves a few steps:
@@ -79,8 +89,8 @@ public class ExerciseSubmissionService {
 	 * @return The saved submission, which will be in the PROCESSING state at first.
 	 */
 	@Transactional
-	public ExerciseSubmissionResponse createSubmission(RawGymId id, ExerciseSubmissionPayload payload) {
-		Gym gym = gymRepository.findByRawId(id.gymName(), id.cityCode(), id.countryCode())
+	public ExerciseSubmissionResponse createSubmission(CompoundGymId id, ExerciseSubmissionPayload payload) {
+		Gym gym = gymRepository.findByCompoundId(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		Exercise exercise = exerciseRepository.findById(payload.exerciseShortName())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid exercise."));
@@ -90,11 +100,20 @@ public class ExerciseSubmissionService {
 		// TODO: Validate the submission data.
 
 		// Create the submission.
+		BigDecimal rawWeight = BigDecimal.valueOf(payload.weight());
+		ExerciseSubmission.WeightUnit unit = ExerciseSubmission.WeightUnit.valueOf(payload.weightUnit().toUpperCase());
+		BigDecimal metricWeight = BigDecimal.valueOf(payload.weight());
+		if (unit == ExerciseSubmission.WeightUnit.LBS) {
+			metricWeight = metricWeight.multiply(new BigDecimal("0.45359237"));
+		}
+
 		ExerciseSubmission submission = exerciseSubmissionRepository.save(new ExerciseSubmission(
 				gym,
 				exercise,
 				payload.name(),
-				BigDecimal.valueOf(payload.weight()),
+				rawWeight,
+				unit,
+				metricWeight,
 				payload.reps()
 		));
 		// Then link it to the temporary video file so the async task can find it.
@@ -164,7 +183,7 @@ public class ExerciseSubmissionService {
 		}
 
 		// Now we can try to process the video file into a compressed format that can be stored in the DB.
-		Path dir = tempFilePath.getParent();
+		Path dir = UploadService.SUBMISSION_TEMP_FILE_DIR;
 		String tempFileName = tempFilePath.getFileName().toString();
 		String tempFileBaseName = tempFileName.substring(0, tempFileName.length() - ".tmp".length());
 		Path outFilePath = dir.resolve(tempFileBaseName + "-out.mp4");
@@ -254,5 +273,36 @@ public class ExerciseSubmissionService {
 		// Delete the logs if everything was successful.
 		Files.deleteIfExists(tmpStdout);
 		Files.deleteIfExists(tmpStderr);
+	}
+
+	@Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
+	public void removeOldUploadedFiles() {
+		// First remove any temp files older than 10 minutes.
+		LocalDateTime cutoff = LocalDateTime.now().minusMinutes(10);
+		var tempFiles = tempFileRepository.findAllByCreatedAtBefore(cutoff);
+		for (var file : tempFiles) {
+			try {
+				Files.deleteIfExists(Path.of(file.getPath()));
+				tempFileRepository.delete(file);
+				log.info("Removed temporary submission file {} at {}.", file.getId(), file.getPath());
+			} catch (IOException e) {
+				log.error(String.format("Could not delete submission temp file %d at %s.", file.getId(), file.getPath()), e);
+			}
+		}
+
+		// Then remove any files in the directory which don't correspond to a valid file in the db.
+		try (var s = Files.list(UploadService.SUBMISSION_TEMP_FILE_DIR)) {
+			for (var path : s.toList()) {
+				if (!tempFileRepository.existsByPath(path.toString())) {
+					try {
+						Files.delete(path);
+					} catch (IOException e) {
+						log.error("Couldn't delete orphan temp file: " + path, e);
+					}
+				}
+			}
+		} catch (IOException e) {
+			log.error("Couldn't get list of temp files.", e);
+		}
 	}
 }

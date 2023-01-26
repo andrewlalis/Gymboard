@@ -11,7 +11,9 @@ public record ExerciseSubmissionResponse(
 		ExerciseResponse exercise,
 		String status,
 		String submitterName,
-		double weight,
+		double rawWeight,
+		String weightUnit,
+		double metricWeight,
 		int reps
 ) {
 	public ExerciseSubmissionResponse(ExerciseSubmission submission) {
@@ -22,7 +24,9 @@ public record ExerciseSubmissionResponse(
 				new ExerciseResponse(submission.getExercise()),
 				submission.getStatus().name(),
 				submission.getSubmitterName(),
-				submission.getWeight().doubleValue(),
+				submission.getRawWeight().doubleValue(),
+				submission.getWeightUnit().name(),
+				submission.getMetricWeight().doubleValue(),
 				submission.getReps()
 		);
 	}

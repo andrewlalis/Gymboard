@@ -18,9 +18,9 @@ const routes: RouteRecordRaw[] = [
         children: [
           { path: '', component: GymHomePage },
           { path: 'submit', component: GymSubmissionPage },
-          { path: 'leaderboard', component: GymLeaderboardsPage }
-        ]
-      }
+          { path: 'leaderboard', component: GymLeaderboardsPage },
+        ],
+      },
     ],
   },
 

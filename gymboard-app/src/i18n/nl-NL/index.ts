@@ -1,10 +1,10 @@
 export default {
   mainLayout: {
     language: 'Taal',
-    pages: 'Pagina\'s'
+    pages: "Pagina's",
   },
   indexPage: {
-    searchHint: 'Zoek een sportschool'
+    searchHint: 'Zoek een sportschool',
   },
   gymPage: {
     home: 'Thuis',
@@ -15,7 +15,8 @@ export default {
       weight: 'Gewicht',
       reps: 'Repetities',
       date: 'Datum',
-      submit: 'Sturen'
-    }
-  }
-}
+      upload: 'Videobestand om te uploaden',
+      submit: 'Sturen',
+    },
+  },
+};

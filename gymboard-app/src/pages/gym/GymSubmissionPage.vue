@@ -8,7 +8,7 @@ A high-level overview of the submission process is as follows:
 2. The user submits their lift's JSON data, including the `videoId`.
 3. The API responds (if the data is valid) with the created submission, with the status WAITING.
 4. Eventually the API will process the submission and status will change to either COMPLETED or FAILED.
-
+5. We wait on the submission page until the submission is done processing, then show a message and navigate to the submission page.
 -->
 <template>
   <q-page v-if="gym">
@@ -61,15 +61,17 @@ A high-level overview of the submission process is as follows:
           />
         </div>
         <div class="row">
-          <q-uploader
-            id="uploader"
-            :url="getUploadUrl(gym)"
+          <q-file
+            v-model="selectedVideoFile"
             :label="$t('gymPage.submitPage.upload')"
-            field-name="file"
-            @uploaded="onFileUploaded"
             max-file-size="1000000000"
-            class="col-12 q-mt-md"
-          />
+            accept="video/*"
+            class="col-12"
+          >
+            <template v-slot:prepend>
+              <q-icon name="attach_file" />
+            </template>
+          </q-file>
         </div>
         <div class="row">
           <q-btn
@@ -77,6 +79,7 @@ A high-level overview of the submission process is as follows:
             color="primary"
             type="submit"
             class="q-mt-md col-12"
+            :disable="!submitButtonEnabled()"
           />
         </div>
       </SlimForm>
@@ -85,22 +88,16 @@ A high-level overview of the submission process is as follows:
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, Ref} from 'vue';
-import {
-  createSubmission,
-  Exercise,
-  ExerciseSubmissionPayload,
-  getExercises,
-  getUploadUrl,
-  Gym
-} from 'src/api/gymboard-api';
-import {getGymFromRoute} from 'src/router/gym-routing';
+import { onMounted, ref, Ref } from 'vue';
+import { getGymFromRoute } from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
-import {QUploader} from "quasar";
+import api from 'src/api/main';
+import { Gym } from 'src/api/main/gyms';
+import { Exercise } from 'src/api/main/exercises';
 
 interface Option {
-  value: string,
-  label: string
+  value: string;
+  label: string;
 }
 
 const gym: Ref<Gym | undefined> = ref<Gym>();
@@ -114,9 +111,10 @@ let submissionModel = ref({
   reps: 1,
   videoId: -1,
   videoFile: null,
-  date: new Date().toLocaleDateString('en-CA')
+  date: new Date().toLocaleDateString('en-CA'),
 });
-const weightUnits = ['Kg', 'Lbs'];
+const selectedVideoFile: Ref<File | undefined> = ref<File>();
+const weightUnits = ['KG', 'LBS'];
 
 // TODO: Make it possible to pass the gym to this via props instead.
 onMounted(async () => {
@@ -126,29 +124,40 @@ onMounted(async () => {
     console.error(error);
   }
   try {
-    exercises.value = await getExercises();
-    exerciseOptions.value = exercises.value.map(exercise => {
-      return {value: exercise.shortName, label: exercise.displayName}
+    exercises.value = await api.exercises.getExercises();
+    exerciseOptions.value = exercises.value.map((exercise) => {
+      return { value: exercise.shortName, label: exercise.displayName };
     });
   } catch (error) {
     console.error(error);
   }
 });
 
-function onFileUploaded(info: {files: Array<never>, xhr: XMLHttpRequest}) {
-  const responseData = JSON.parse(info.xhr.responseText);
-  submissionModel.value.videoId = responseData.id;
+function submitButtonEnabled() {
+  return selectedVideoFile.value !== undefined && validateForm();
 }
 
-function onSubmitted() {
-  console.log('submitted');
-  if (gym.value) {
-    const submission = createSubmission(gym.value, submissionModel.value);
-    console.log(submission);
-  }
+function validateForm() {
+  return true;
+}
+
+async function onSubmitted() {
+  if (!selectedVideoFile.value || !gym.value) throw new Error('Invalid state.');
+  submissionModel.value.videoId = await api.gyms.submissions.uploadVideoFile(
+    gym.value,
+    selectedVideoFile.value
+  );
+  const submission = await api.gyms.submissions.createSubmission(
+    gym.value,
+    submissionModel.value
+  );
+  const completedSubmission =
+    await api.gyms.submissions.waitUntilSubmissionProcessed(
+      gym.value,
+      submission.id
+    );
+  console.log(completedSubmission);
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

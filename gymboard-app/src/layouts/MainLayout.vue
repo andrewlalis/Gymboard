@@ -12,7 +12,9 @@
         />
 
         <q-toolbar-title>
-          <router-link to="/" style="text-decoration: none; color: inherit;">Gymboard</router-link>
+          <router-link to="/" style="text-decoration: none; color: inherit"
+            >Gymboard</router-link
+          >
         </q-toolbar-title>
         <q-select
           v-model="i18n.locale.value"
@@ -34,15 +36,9 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label
-          header
-        >
+        <q-item-label header>
           {{ $t('mainLayout.pages') }}
         </q-item-label>
         <q-item clickable>Gyms</q-item>
@@ -58,17 +54,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import {useI18n} from 'vue-i18n';
+import { useI18n } from 'vue-i18n';
 
-const i18n = useI18n({useScope: 'global'});
+const i18n = useI18n({ useScope: 'global' });
 const localeOptions = [
   { value: 'en-US', label: 'English' },
-  { value: 'nl-NL', label: 'Nederlands' }
+  { value: 'nl-NL', label: 'Nederlands' },
 ];
 
 const leftDrawerOpen = ref(false);
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+function toggleLeftDrawer() {
+  leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 </script>
