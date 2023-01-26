@@ -89,16 +89,19 @@ A high-level overview of the submission process is as follows:
 
 <script setup lang="ts">
 import { onMounted, ref, Ref } from 'vue';
-import { getGymFromRoute } from 'src/router/gym-routing';
+import {getGymFromRoute, getGymRoute} from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
 import api from 'src/api/main';
 import { Gym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
+import {useRouter} from 'vue-router';
 
 interface Option {
   value: string;
   label: string;
 }
+
+const router = useRouter();
 
 const gym: Ref<Gym | undefined> = ref<Gym>();
 const exercises: Ref<Array<Exercise> | undefined> = ref<Array<Exercise>>();
@@ -115,6 +118,8 @@ let submissionModel = ref({
 });
 const selectedVideoFile: Ref<File | undefined> = ref<File>();
 const weightUnits = ['KG', 'LBS'];
+
+const submitting = ref(false);
 
 // TODO: Make it possible to pass the gym to this via props instead.
 onMounted(async () => {
@@ -143,6 +148,7 @@ function validateForm() {
 
 async function onSubmitted() {
   if (!selectedVideoFile.value || !gym.value) throw new Error('Invalid state.');
+  submitting.value = true;
   submissionModel.value.videoId = await api.gyms.submissions.uploadVideoFile(
     gym.value,
     selectedVideoFile.value
@@ -157,6 +163,8 @@ async function onSubmitted() {
       submission.id
     );
   console.log(completedSubmission);
+  submitting.value = false;
+  await router.push(getGymRoute(gym.value));
 }
 </script>
 
