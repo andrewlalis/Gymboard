@@ -1,18 +1,25 @@
 package nl.andrewlalis.gymboard_api.model;
 
+import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
+import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionPayload;
 import nl.andrewlalis.gymboard_api.dao.CityRepository;
 import nl.andrewlalis.gymboard_api.dao.CountryRepository;
 import nl.andrewlalis.gymboard_api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.dao.exercise.ExerciseRepository;
 import nl.andrewlalis.gymboard_api.model.exercise.Exercise;
+import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmission;
+import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
+import nl.andrewlalis.gymboard_api.service.UploadService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -31,17 +38,21 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 	private final CityRepository cityRepository;
 	private final GymRepository gymRepository;
 	private final ExerciseRepository exerciseRepository;
+	private final ExerciseSubmissionService submissionService;
+	private final UploadService uploadService;
 
 	public SampleDataLoader(
-		CountryRepository countryRepository,
-		CityRepository cityRepository,
-		GymRepository gymRepository,
-		ExerciseRepository exerciseRepository
-	) {
+			CountryRepository countryRepository,
+			CityRepository cityRepository,
+			GymRepository gymRepository,
+			ExerciseRepository exerciseRepository,
+			ExerciseSubmissionService submissionService, UploadService uploadService) {
 		this.countryRepository = countryRepository;
 		this.cityRepository = cityRepository;
 		this.gymRepository = gymRepository;
 		this.exerciseRepository = exerciseRepository;
+		this.submissionService = submissionService;
+		this.uploadService = uploadService;
 	}
 
 	@Override
@@ -84,10 +95,40 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 					record.get(7)
 			));
 		});
+		loadCsv("submissions", record -> {
+			var exercise = exerciseRepository.findById(record.get(0)).orElseThrow();
+			BigDecimal weight = new BigDecimal(record.get(1));
+			ExerciseSubmission.WeightUnit unit = ExerciseSubmission.WeightUnit.valueOf(record.get(2).toUpperCase());
+			int reps = Integer.parseInt(record.get(3));
+			String name = record.get(4);
+			CompoundGymId gymId = CompoundGymId.parse(record.get(5));
+			String videoFilename = record.get(6);
+
+			try {
+				var uploadResp = uploadService.handleSubmissionUpload(gymId, new MockMultipartFile(
+						videoFilename,
+						videoFilename,
+						"video/mp4",
+						Files.readAllBytes(Path.of("sample_data", videoFilename))
+				));
+				submissionService.createSubmission(gymId, new ExerciseSubmissionPayload(
+						name,
+						exercise.getShortName(),
+						weight.floatValue(),
+						unit.name(),
+						reps,
+						uploadResp.id()
+				));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	private void loadCsv(String csvName, Consumer<CSVRecord> recordConsumer) throws IOException {
-		var reader = new FileReader("sample_data/" + csvName + ".csv");
+		String path = "sample_data/" + csvName + ".csv";
+		log.info("Loading data from {}...", path);
+		var reader = new FileReader(path);
 		for (var record : CSVFormat.DEFAULT.parse(reader)) {
 			recordConsumer.accept(record);
 		}

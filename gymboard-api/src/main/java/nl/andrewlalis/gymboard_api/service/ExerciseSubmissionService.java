@@ -18,7 +18,6 @@ import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmissionVideoFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +32,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,19 +49,23 @@ public class ExerciseSubmissionService {
 	private final ExerciseSubmissionRepository exerciseSubmissionRepository;
 	private final ExerciseSubmissionTempFileRepository tempFileRepository;
 	private final ExerciseSubmissionVideoFileRepository submissionVideoFileRepository;
+	private final Executor taskExecutor;
 
 	public ExerciseSubmissionService(GymRepository gymRepository,
 									 StoredFileRepository fileRepository,
 									 ExerciseRepository exerciseRepository,
 									 ExerciseSubmissionRepository exerciseSubmissionRepository,
 									 ExerciseSubmissionTempFileRepository tempFileRepository,
-									 ExerciseSubmissionVideoFileRepository submissionVideoFileRepository) {
+									 ExerciseSubmissionVideoFileRepository submissionVideoFileRepository,
+									 Executor taskExecutor
+	) {
 		this.gymRepository = gymRepository;
 		this.fileRepository = fileRepository;
 		this.exerciseRepository = exerciseRepository;
 		this.exerciseSubmissionRepository = exerciseSubmissionRepository;
 		this.tempFileRepository = tempFileRepository;
 		this.submissionVideoFileRepository = submissionVideoFileRepository;
+		this.taskExecutor = taskExecutor;
 	}
 
 	@Transactional(readOnly = true)
@@ -132,7 +136,7 @@ public class ExerciseSubmissionService {
 	public void processWaitingSubmissions() {
 		List<ExerciseSubmission> waitingSubmissions = exerciseSubmissionRepository.findAllByStatus(ExerciseSubmission.Status.WAITING);
 		for (var submission : waitingSubmissions) {
-			processSubmission(submission.getId());
+			taskExecutor.execute(() -> processSubmission(submission.getId()));
 		}
 	}
 
@@ -146,8 +150,7 @@ public class ExerciseSubmissionService {
 	 * </p>
 	 * @param submissionId The submission's id.
 	 */
-	@Async
-	public void processSubmission(long submissionId) {
+	private void processSubmission(long submissionId) {
 		log.info("Starting processing of submission {}.", submissionId);
 		// First try and fetch the submission.
 		Optional<ExerciseSubmission> optionalSubmission = exerciseSubmissionRepository.findById(submissionId);
