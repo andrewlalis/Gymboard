@@ -5,7 +5,7 @@ import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmission;
 import java.time.format.DateTimeFormatter;
 
 public record ExerciseSubmissionResponse(
-		long id,
+		String id,
 		String createdAt,
 		GymSimpleResponse gym,
 		ExerciseResponse exercise,

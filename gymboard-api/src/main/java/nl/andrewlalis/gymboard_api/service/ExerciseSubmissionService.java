@@ -16,6 +16,7 @@ import nl.andrewlalis.gymboard_api.model.exercise.Exercise;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmission;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmissionTempFile;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmissionVideoFile;
+import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -52,6 +52,7 @@ public class ExerciseSubmissionService {
 	private final ExerciseSubmissionTempFileRepository tempFileRepository;
 	private final ExerciseSubmissionVideoFileRepository submissionVideoFileRepository;
 	private final Executor taskExecutor;
+	private final ULID ulid;
 
 	public ExerciseSubmissionService(GymRepository gymRepository,
 									 StoredFileRepository fileRepository,
@@ -59,8 +60,7 @@ public class ExerciseSubmissionService {
 									 ExerciseSubmissionRepository exerciseSubmissionRepository,
 									 ExerciseSubmissionTempFileRepository tempFileRepository,
 									 ExerciseSubmissionVideoFileRepository submissionVideoFileRepository,
-									 Executor taskExecutor
-	) {
+									 Executor taskExecutor, ULID ulid) {
 		this.gymRepository = gymRepository;
 		this.fileRepository = fileRepository;
 		this.exerciseRepository = exerciseRepository;
@@ -68,34 +68,19 @@ public class ExerciseSubmissionService {
 		this.tempFileRepository = tempFileRepository;
 		this.submissionVideoFileRepository = submissionVideoFileRepository;
 		this.taskExecutor = taskExecutor;
+		this.ulid = ulid;
 	}
 
 	@Transactional(readOnly = true)
-	public ExerciseSubmissionResponse getSubmission(CompoundGymId id, long submissionId) {
-		Gym gym = gymRepository.findByCompoundId(id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+	public ExerciseSubmissionResponse getSubmission(String submissionId) {
 		ExerciseSubmission submission = exerciseSubmissionRepository.findById(submissionId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		if (!submission.getGym().getId().equals(gym.getId())) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		return new ExerciseSubmissionResponse(submission);
 	}
 
 	@Transactional(readOnly = true)
-	public void streamVideo(CompoundGymId compoundId, long submissionId, HttpServletResponse response) {
-		// TODO: Make a faster way to stream videos, should be one DB call instead of this mess.
-		Gym gym = gymRepository.findByCompoundId(compoundId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		ExerciseSubmission submission = exerciseSubmissionRepository.findById(submissionId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		if (!submission.getGym().getId().equals(gym.getId())) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		Set<ExerciseSubmission.Status> validStatuses = Set.of(
-				ExerciseSubmission.Status.COMPLETED,
-				ExerciseSubmission.Status.VERIFIED
-		);
-		if (!validStatuses.contains(submission.getStatus())) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		}
-		ExerciseSubmissionVideoFile videoFile = submissionVideoFileRepository.findBySubmission(submission)
+	public void streamVideo(String submissionId, HttpServletResponse response) {
+		ExerciseSubmissionVideoFile videoFile = submissionVideoFileRepository.findByCompletedSubmissionId(submissionId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		response.setContentType(videoFile.getFile().getMimeType());
 		response.setContentLengthLong(videoFile.getFile().getSize());
@@ -140,7 +125,8 @@ public class ExerciseSubmissionService {
 			metricWeight = metricWeight.multiply(new BigDecimal("0.45359237"));
 		}
 
-		ExerciseSubmission submission = exerciseSubmissionRepository.save(new ExerciseSubmission(
+		ExerciseSubmission submission = exerciseSubmissionRepository.saveAndFlush(new ExerciseSubmission(
+				ulid.nextULID(),
 				gym,
 				exercise,
 				payload.name(),
@@ -179,7 +165,7 @@ public class ExerciseSubmissionService {
 	 * </p>
 	 * @param submissionId The submission's id.
 	 */
-	private void processSubmission(long submissionId) {
+	private void processSubmission(String submissionId) {
 		log.info("Starting processing of submission {}.", submissionId);
 		// First try and fetch the submission.
 		Optional<ExerciseSubmission> optionalSubmission = exerciseSubmissionRepository.findById(submissionId);
@@ -250,6 +236,7 @@ public class ExerciseSubmissionService {
 				file
 		));
 		submission.setStatus(ExerciseSubmission.Status.COMPLETED);
+		submission.setComplete(true);
 		exerciseSubmissionRepository.save(submission);
 		// And delete the temporary files.
 		try {
@@ -323,6 +310,7 @@ public class ExerciseSubmissionService {
 		}
 
 		// Then remove any files in the directory which don't correspond to a valid file in the db.
+		if (Files.notExists(UploadService.SUBMISSION_TEMP_FILE_DIR)) return;
 		try (var s = Files.list(UploadService.SUBMISSION_TEMP_FILE_DIR)) {
 			for (var path : s.toList()) {
 				if (!tempFileRepository.existsByPath(path.toString())) {

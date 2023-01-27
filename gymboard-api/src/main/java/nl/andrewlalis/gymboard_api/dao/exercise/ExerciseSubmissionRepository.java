@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ExerciseSubmissionRepository extends JpaRepository<ExerciseSubmission, Long>, JpaSpecificationExecutor<ExerciseSubmission> {
+public interface ExerciseSubmissionRepository extends JpaRepository<ExerciseSubmission, String>, JpaSpecificationExecutor<ExerciseSubmission> {
 	List<ExerciseSubmission> findAllByStatus(ExerciseSubmission.Status status);
 }

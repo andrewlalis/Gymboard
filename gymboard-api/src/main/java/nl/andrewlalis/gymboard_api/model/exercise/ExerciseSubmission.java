@@ -34,8 +34,8 @@ public class ExerciseSubmission {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@Column(nullable = false, updatable = false, length = 26)
+	private String id;
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;
@@ -66,9 +66,18 @@ public class ExerciseSubmission {
 	@Column(nullable = false)
 	private int reps;
 
+	/**
+	 * Marker that's used to simplify queries where we just want submissions
+	 * that are in a status that's not WAITING, PROCESSING, or FAILED, i.e.
+	 * a successful submission that's been processed.
+	 */
+	@Column(nullable = false)
+	private boolean complete;
+
 	public ExerciseSubmission() {}
 
-	public ExerciseSubmission(Gym gym, Exercise exercise, String submitterName, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
+	public ExerciseSubmission(String id, Gym gym, Exercise exercise, String submitterName, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
+		this.id = id;
 		this.gym = gym;
 		this.exercise = exercise;
 		this.submitterName = submitterName;
@@ -77,9 +86,10 @@ public class ExerciseSubmission {
 		this.metricWeight = metricWeight;
 		this.reps = reps;
 		this.status = Status.WAITING;
+		this.complete = false;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -121,5 +131,13 @@ public class ExerciseSubmission {
 
 	public int getReps() {
 		return reps;
+	}
+
+	public boolean isComplete() {
+		return complete;
+	}
+
+	public void setComplete(boolean complete) {
+		this.complete = complete;
 	}
 }

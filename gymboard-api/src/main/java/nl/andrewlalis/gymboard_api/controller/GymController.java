@@ -1,6 +1,5 @@
 package nl.andrewlalis.gymboard_api.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboard_api.controller.dto.*;
 import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.service.GymService;
@@ -45,25 +44,11 @@ public class GymController {
 		return submissionService.createSubmission(CompoundGymId.parse(compoundId), payload);
 	}
 
-	@GetMapping(path = "/submissions/{submissionId}")
-	public ExerciseSubmissionResponse getSubmission(@PathVariable String compoundId, @PathVariable long submissionId) {
-		return submissionService.getSubmission(CompoundGymId.parse(compoundId), submissionId);
-	}
-
 	@PostMapping(path = "/submissions/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public UploadedFileResponse uploadVideo(
 			@PathVariable String compoundId,
 			@RequestParam MultipartFile file
 	) {
 		return uploadService.handleSubmissionUpload(CompoundGymId.parse(compoundId), file);
-	}
-
-	@GetMapping(path = "/submissions/{submissionId}/video")
-	public void getSubmissionVideo(
-			@PathVariable String compoundId,
-			@PathVariable long submissionId,
-			HttpServletResponse response
-	) {
-		submissionService.streamVideo(CompoundGymId.parse(compoundId), submissionId, response);
 	}
 }
