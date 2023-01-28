@@ -50,7 +50,7 @@ public class GymIndexGenerator {
 				String streetAddress = resultSet.getString("street_address");
 				BigDecimal latitude = resultSet.getBigDecimal("latitude");
 				BigDecimal longitude = resultSet.getBigDecimal("longitude");
-				String gymCompoundId = String.format("%s/%s/%s", countryCode, cityShortName, shortName);
+				String gymCompoundId = String.format("%s_%s_%s", countryCode, cityShortName, shortName);
 
 				Document doc = new Document();
 				doc.add(new StoredField("compound_id", gymCompoundId));
