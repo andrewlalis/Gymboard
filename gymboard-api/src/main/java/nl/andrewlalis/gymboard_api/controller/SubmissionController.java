@@ -2,7 +2,7 @@ package nl.andrewlalis.gymboard_api.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionResponse;
-import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
+import nl.andrewlalis.gymboard_api.service.submission.ExerciseSubmissionService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboard_api.service;
+package nl.andrewlalis.gymboard_api.service.submission;
 
 import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
@@ -14,7 +14,6 @@ import nl.andrewlalis.gymboard_api.model.exercise.Exercise;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmission;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmissionTempFile;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmissionVideoFile;
-import nl.andrewlalis.gymboard_api.service.submission.SubmissionProcessingService;
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

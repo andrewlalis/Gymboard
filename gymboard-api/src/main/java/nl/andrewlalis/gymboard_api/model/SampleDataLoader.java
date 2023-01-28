@@ -8,7 +8,7 @@ import nl.andrewlalis.gymboard_api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.dao.exercise.ExerciseRepository;
 import nl.andrewlalis.gymboard_api.model.exercise.Exercise;
 import nl.andrewlalis.gymboard_api.model.exercise.ExerciseSubmission;
-import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
+import nl.andrewlalis.gymboard_api.service.submission.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.service.UploadService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -19,7 +19,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileReader;
 import java.io.IOException;

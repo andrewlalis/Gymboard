@@ -1,9 +1,10 @@
 package nl.andrewlalis.gymboard_api.controller;
 
 import nl.andrewlalis.gymboard_api.controller.dto.*;
-import nl.andrewlalis.gymboard_api.service.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.service.GymService;
+import nl.andrewlalis.gymboard_api.service.LeaderboardService;
 import nl.andrewlalis.gymboard_api.service.UploadService;
+import nl.andrewlalis.gymboard_api.service.submission.ExerciseSubmissionService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +21,9 @@ public class GymController {
 	private final UploadService uploadService;
 	private final ExerciseSubmissionService submissionService;
 
-	public GymController(GymService gymService, UploadService uploadService, ExerciseSubmissionService submissionService) {
+	public GymController(GymService gymService,
+						 UploadService uploadService,
+						 ExerciseSubmissionService submissionService) {
 		this.gymService = gymService;
 		this.uploadService = uploadService;
 		this.submissionService = submissionService;

@@ -30,3 +30,12 @@ export async function getGymFromRoute(): Promise<Gym> {
     route.params.gymShortName as string
   );
 }
+
+/**
+ * Gets the compound id for a gym; that is, the universally unique identifier
+ * that can be used for certain API requests.
+ * @param gym The gym to get the compound id for.
+ */
+export function getGymCompoundId(gym: GymRoutable): string {
+  return `${gym.countryCode}_${gym.cityShortName}_${gym.shortName}`;
+}

@@ -4,7 +4,7 @@
       <div class="col-xs-12 col-md-6 q-pt-md">
         <p>{{ $t('gymPage.homePage.overview') }}</p>
         <ul>
-          <li>Website: <a :href="gym.websiteUrl">{{ gym.websiteUrl }}</a></li>
+          <li v-if="gym.websiteUrl">Website: <a :href="gym.websiteUrl" target="_blank">{{ gym.websiteUrl }}</a></li>
           <li>Address: <em>{{ gym.streetAddress }}</em></li>
           <li>City: <em>{{ gym.cityName }}</em></li>
           <li>Country: <em>{{ gym.countryName }}</em></li>

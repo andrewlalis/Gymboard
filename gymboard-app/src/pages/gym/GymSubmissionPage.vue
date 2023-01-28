@@ -12,6 +12,7 @@ A high-level overview of the submission process is as follows:
 -->
 <template>
   <q-page v-if="gym">
+    <!-- The below form contains the fields that will become part of the submission. -->
     <q-form @submit="onSubmitted">
       <SlimForm>
         <div class="row">
@@ -82,6 +83,9 @@ A high-level overview of the submission process is as follows:
             :disable="!submitButtonEnabled()"
           />
         </div>
+        <div class="row text-center" v-if="infoMessage">
+          <p>{{ infoMessage }}</p>
+        </div>
       </SlimForm>
     </q-form>
   </q-page>
@@ -95,6 +99,7 @@ import api from 'src/api/main';
 import { Gym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
 import {useRouter} from 'vue-router';
+import { sleep } from 'src/utils';
 
 interface Option {
   value: string;
@@ -120,8 +125,8 @@ const selectedVideoFile: Ref<File | undefined> = ref<File>();
 const weightUnits = ['KG', 'LBS'];
 
 const submitting = ref(false);
+const infoMessage: Ref<string | undefined> = ref();
 
-// TODO: Make it possible to pass the gym to this via props instead.
 onMounted(async () => {
   try {
     gym.value = await getGymFromRoute();
@@ -139,7 +144,7 @@ onMounted(async () => {
 });
 
 function submitButtonEnabled() {
-  return selectedVideoFile.value !== undefined && validateForm();
+  return selectedVideoFile.value !== undefined && !submitting.value && validateForm();
 }
 
 function validateForm() {
@@ -149,22 +154,29 @@ function validateForm() {
 async function onSubmitted() {
   if (!selectedVideoFile.value || !gym.value) throw new Error('Invalid state.');
   submitting.value = true;
-  submissionModel.value.videoId = await api.gyms.submissions.uploadVideoFile(
-    gym.value,
-    selectedVideoFile.value
-  );
-  const submission = await api.gyms.submissions.createSubmission(
-    gym.value,
-    submissionModel.value
-  );
-  const completedSubmission =
-    await api.gyms.submissions.waitUntilSubmissionProcessed(
+  try {
+    infoMessage.value = 'Uploading video...';
+    await sleep(1000);
+    submissionModel.value.videoId = await api.gyms.submissions.uploadVideoFile(
       gym.value,
-      submission.id
+      selectedVideoFile.value
     );
-  console.log(completedSubmission);
-  submitting.value = false;
-  await router.push(getGymRoute(gym.value));
+    infoMessage.value = 'Creating submission...';
+    await sleep(1000);
+    const submission = await api.gyms.submissions.createSubmission(
+      gym.value,
+      submissionModel.value
+    );
+    infoMessage.value = 'Submission processing...';
+    const completedSubmission =
+      await api.gyms.submissions.waitUntilSubmissionProcessed(submission.id);
+    console.log(completedSubmission);
+    infoMessage.value = 'Submission complete!';
+    await router.push(getGymRoute(gym.value));
+  } finally {
+    submitting.value = false;
+  }
+  
 }
 </script>
 
