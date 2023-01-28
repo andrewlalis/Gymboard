@@ -13,13 +13,15 @@ import java.util.Arrays;
 
 @Configuration
 public class WebConfig {
+	@Value("${app.web-origin}")
+	private String webOrigin;
+
 	@Bean
 	public CorsFilter corsFilter() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		// Don't do this in production, use a proper list  of allowed origins
-		config.addAllowedOriginPattern("*");
+		config.addAllowedOriginPattern(webOrigin);
 		config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
 		config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
 		source.registerCorsConfiguration("/**", config);

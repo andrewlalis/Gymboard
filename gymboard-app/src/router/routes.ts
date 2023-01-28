@@ -1,6 +1,7 @@
 import { RouteRecordRaw } from 'vue-router';
 import MainLayout from 'layouts/MainLayout.vue';
 import IndexPage from 'pages/IndexPage.vue';
+import AboutPage from 'pages/AboutPage.vue';
 import GymPage from 'pages/gym/GymPage.vue';
 import GymSubmissionPage from 'pages/gym/GymSubmissionPage.vue';
 import GymHomePage from 'pages/gym/GymHomePage.vue';
@@ -21,6 +22,7 @@ const routes: RouteRecordRaw[] = [
           { path: 'leaderboard', component: GymLeaderboardsPage },
         ],
       },
+      { path: 'about', component: AboutPage }
     ],
   },
 

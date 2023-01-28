@@ -41,8 +41,9 @@
         <q-item-label header>
           {{ $t('mainLayout.pages') }}
         </q-item-label>
-        <q-item clickable>Gyms</q-item>
+        <q-item clickable to="/">Gyms</q-item>
         <q-item clickable>Global Leaderboard</q-item>
+        <q-item clickable to="/about">About</q-item>
       </q-list>
     </q-drawer>
 
@@ -60,6 +61,7 @@ const i18n = useI18n({ useScope: 'global' });
 const localeOptions = [
   { value: 'en-US', label: 'English' },
   { value: 'nl-NL', label: 'Nederlands' },
+  { value: 'de', label: 'Deutsch' },
 ];
 
 const leftDrawerOpen = ref(false);
