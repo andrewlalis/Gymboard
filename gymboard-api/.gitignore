@@ -33,3 +33,6 @@ build/
 
 .sample_data
 exercise_submission_temp_files/
+private_key.der
+private_key.pem
+public_key.der
