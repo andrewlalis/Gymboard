@@ -5,7 +5,7 @@
       Use this page to test new functionality, before adding it to the main
       app. This page should be hidden on production.
     </p>
-    <div class="row" style="border: 3px solid red">
+    <div style="border: 3px solid red">
       <h4>Auth Test</h4>
       <q-btn
         label="Do auth"

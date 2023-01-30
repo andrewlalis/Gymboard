@@ -8,11 +8,13 @@ import nl.andrewlalis.gymboard_api.controller.dto.TokenCredentials;
 import nl.andrewlalis.gymboard_api.controller.dto.TokenResponse;
 import nl.andrewlalis.gymboard_api.dao.auth.UserRepository;
 import nl.andrewlalis.gymboard_api.model.auth.Role;
+import nl.andrewlalis.gymboard_api.model.auth.TokenAuthentication;
 import nl.andrewlalis.gymboard_api.model.auth.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -65,6 +67,22 @@ public class TokenService {
 		User user = userRepository.findByEmailWithRoles(credentials.email())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 		if (!passwordEncoder.matches(credentials.password(), user.getPasswordHash())) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+		}
+		if (!user.isActivated()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+		}
+		String token = generateAccessToken(user);
+		return new TokenResponse(token);
+	}
+
+	public TokenResponse regenerateAccessToken(Authentication auth) {
+		if (!(auth instanceof TokenAuthentication tokenAuth)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+		}
+		User user = userRepository.findByIdWithRoles(tokenAuth.user().getId())
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+		if (!user.isActivated()) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 		}
 		String token = generateAccessToken(user);

@@ -3,6 +3,7 @@ package nl.andrewlalis.gymboard_api.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +39,22 @@ public class SecurityConfig {
 			.csrf().disable()
 			.cors().and()
 			.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-			.authorizeHttpRequests().anyRequest().permitAll();
+			.authorizeHttpRequests()
+				.requestMatchers(// Allow the following GET endpoints to be public.
+						HttpMethod.GET,
+						"/exercises",
+						"/leaderboards",
+						"/gyms/**",
+						"/submissions/**"
+				).permitAll()
+				.requestMatchers(// Allow the following POST endpoints to be public.
+						HttpMethod.POST,
+						"/gyms/submissions",
+						"/gyms/submissions/upload",
+						"/auth/token"
+				).permitAll()
+				// Everything else must be authenticated, just to be safe.
+				.anyRequest().authenticated();
 		return http.build();
 	}
 
