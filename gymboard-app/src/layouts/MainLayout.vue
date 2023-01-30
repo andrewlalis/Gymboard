@@ -41,8 +41,9 @@
         <q-item-label header>
           {{ $t('mainLayout.pages') }}
         </q-item-label>
-        <q-item clickable>Gyms</q-item>
+        <q-item clickable to="/">Gyms</q-item>
         <q-item clickable>Global Leaderboard</q-item>
+        <q-item clickable to="/testing">Testing Page</q-item>
       </q-list>
     </q-drawer>
 
