@@ -12,7 +12,7 @@ export default {
     leaderboard: 'Leaderboard',
     homePage: {
       overview: 'Overview of this gym:',
-      recentLifts: 'Recent Lifts'
+      recentLifts: 'Recent Lifts',
     },
     submitPage: {
       name: 'Your Name',

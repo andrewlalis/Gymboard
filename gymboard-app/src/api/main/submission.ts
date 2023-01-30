@@ -1,6 +1,6 @@
 import { SimpleGym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
-import {api, BASE_URL} from 'src/api/main/index';
+import { api, BASE_URL } from 'src/api/main/index';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
 import { sleep } from 'src/utils';
 
@@ -38,10 +38,10 @@ export enum ExerciseSubmissionStatus {
 }
 
 class SubmissionsModule {
-  public async getSubmission(submissionId: string): Promise<ExerciseSubmission> {
-    const response = await api.get(
-      `/submissions/${submissionId}`
-    );
+  public async getSubmission(
+    submissionId: string
+  ): Promise<ExerciseSubmission> {
+    const response = await api.get(`/submissions/${submissionId}`);
     return response.data;
   }
 
@@ -52,7 +52,7 @@ class SubmissionsModule {
     ) {
       return null;
     }
-    return BASE_URL + `/submissions/${submission.id}/video`
+    return BASE_URL + `/submissions/${submission.id}/video`;
   }
 
   public async createSubmission(
@@ -60,10 +60,7 @@ class SubmissionsModule {
     payload: ExerciseSubmissionPayload
   ): Promise<ExerciseSubmission> {
     const gymId = getGymCompoundId(gym);
-    const response = await api.post(
-      `/gyms/${gymId}/submissions`,
-      payload
-    );
+    const response = await api.post(`/gyms/${gymId}/submissions`, payload);
     return response.data;
   }
 
@@ -85,7 +82,9 @@ class SubmissionsModule {
    * Asynchronous method that waits until a submission is done processing.
    * @param submissionId The submission's id.
    */
-  public async waitUntilSubmissionProcessed(submissionId: string): Promise<ExerciseSubmission> {
+  public async waitUntilSubmissionProcessed(
+    submissionId: string
+  ): Promise<ExerciseSubmission> {
     let failureCount = 0;
     let attemptCount = 0;
     while (failureCount < 5 && attemptCount < 60) {

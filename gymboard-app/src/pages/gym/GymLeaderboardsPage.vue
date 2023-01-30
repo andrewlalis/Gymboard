@@ -1,11 +1,7 @@
 <template>
   <q-page>
     <div class="q-ma-md row justify-end q-gutter-sm">
-      <q-spinner
-        color="primary"
-        size="3em"
-        v-if="loadingIndicatorActive"
-      />
+      <q-spinner color="primary" size="3em" v-if="loadingIndicatorActive" />
       <q-select
         v-model="selectedExercise"
         :options="exerciseOptions"
@@ -22,7 +18,11 @@
       />
     </div>
     <q-list>
-      <ExerciseSubmissionListItem v-for="sub in submissions" :submission="sub" :key="sub.id"/>
+      <ExerciseSubmissionListItem
+        v-for="sub in submissions"
+        :submission="sub"
+        :key="sub.id"
+      />
     </q-list>
   </q-page>
 </template>
@@ -43,10 +43,10 @@ const gym: Ref<Gym | undefined> = ref();
 const exercises: Ref<Array<Exercise>> = ref([]);
 
 const exerciseOptions = computed(() => {
-  let options = exercises.value.map(exercise => {
+  let options = exercises.value.map((exercise) => {
     return {
       value: exercise.shortName,
-      label: exercise.displayName
+      label: exercise.displayName,
     };
   });
   options.push({ value: '', label: 'Any' });
@@ -61,7 +61,9 @@ const timeframeOptions = [
   { value: LeaderboardTimeframe.YEAR, label: 'Year' },
   { value: LeaderboardTimeframe.ALL, label: 'All' },
 ];
-const selectedTimeframe: Ref<LeaderboardTimeframe> = ref(LeaderboardTimeframe.DAY);
+const selectedTimeframe: Ref<LeaderboardTimeframe> = ref(
+  LeaderboardTimeframe.DAY
+);
 
 const loadingIndicatorActive = ref(false);
 
@@ -79,7 +81,7 @@ async function doSearch() {
     submissions.value = await api.leaderboards.getLeaderboard({
       timeframe: selectedTimeframe.value,
       gyms: [gym.value],
-      exerciseShortName: selectedExercise.value
+      exerciseShortName: selectedExercise.value,
     });
     loadingIndicatorActive.value = false;
   }

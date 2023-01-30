@@ -1,7 +1,15 @@
 <template>
   <q-expansion-item
     expand-separator
-    :label="submission.rawWeight + ' ' + submission.weightUnit + ' x' + submission.reps + ' ' + submission.exercise.displayName"
+    :label="
+      submission.rawWeight +
+      ' ' +
+      submission.weightUnit +
+      ' x' +
+      submission.reps +
+      ' ' +
+      submission.exercise.displayName
+    "
     :caption="submission.submitterName"
   >
     <q-card>
@@ -20,11 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import {ExerciseSubmission} from 'src/api/main/submission';
+import { ExerciseSubmission } from 'src/api/main/submission';
 import api from 'src/api/main';
 
 interface Props {
-  submission: ExerciseSubmission
+  submission: ExerciseSubmission;
 }
 defineProps<Props>();
 </script>

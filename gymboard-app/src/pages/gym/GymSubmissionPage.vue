@@ -93,12 +93,12 @@ A high-level overview of the submission process is as follows:
 
 <script setup lang="ts">
 import { onMounted, ref, Ref } from 'vue';
-import {getGymFromRoute, getGymRoute} from 'src/router/gym-routing';
+import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
 import api from 'src/api/main';
 import { Gym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
-import {useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 import { sleep } from 'src/utils';
 
 interface Option {
@@ -144,7 +144,9 @@ onMounted(async () => {
 });
 
 function submitButtonEnabled() {
-  return selectedVideoFile.value !== undefined && !submitting.value && validateForm();
+  return (
+    selectedVideoFile.value !== undefined && !submitting.value && validateForm()
+  );
 }
 
 function validateForm() {
@@ -176,7 +178,6 @@ async function onSubmitted() {
   } finally {
     submitting.value = false;
   }
-  
 }
 </script>
 
