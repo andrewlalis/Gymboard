@@ -12,7 +12,7 @@ export default {
     leaderboard: 'Scorebord',
     homePage: {
       overview: 'Overzicht van dit sportschool:',
-      recentLifts: 'Recente liften'
+      recentLifts: 'Recente liften',
     },
     submitPage: {
       name: 'Jouw naam',

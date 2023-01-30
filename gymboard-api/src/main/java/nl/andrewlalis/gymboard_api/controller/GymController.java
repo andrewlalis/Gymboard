@@ -2,7 +2,6 @@ package nl.andrewlalis.gymboard_api.controller;
 
 import nl.andrewlalis.gymboard_api.controller.dto.*;
 import nl.andrewlalis.gymboard_api.service.GymService;
-import nl.andrewlalis.gymboard_api.service.LeaderboardService;
 import nl.andrewlalis.gymboard_api.service.UploadService;
 import nl.andrewlalis.gymboard_api.service.submission.ExerciseSubmissionService;
 import org.springframework.http.MediaType;

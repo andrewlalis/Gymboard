@@ -16,23 +16,8 @@
             >Gymboard</router-link
           >
         </q-toolbar-title>
-        <q-select
-          v-model="i18n.locale.value"
-          :options="localeOptions"
-          :label="$t('mainLayout.language')"
-          dense
-          borderless
-          emit-value
-          map-options
-          options-dense
-          filled
-          hide-bottom-space
-          dark
-          options-dark
-          label-color="white"
-          options-selected-class="text-grey"
-          style="min-width: 150px"
-        />
+        <AccountMenuItem />
+        <LocaleSelect />
       </q-toolbar>
     </q-header>
 
@@ -43,6 +28,7 @@
         </q-item-label>
         <q-item clickable to="/">Gyms</q-item>
         <q-item clickable>Global Leaderboard</q-item>
+        <q-item clickable to="/testing">Testing Page</q-item>
         <q-item clickable to="/about">About</q-item>
       </q-list>
     </q-drawer>
@@ -55,14 +41,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-
-const i18n = useI18n({ useScope: 'global' });
-const localeOptions = [
-  { value: 'en-US', label: 'English' },
-  { value: 'nl-NL', label: 'Nederlands' },
-  { value: 'de', label: 'Deutsch' },
-];
+import LocaleSelect from 'components/LocaleSelect.vue';
+import AccountMenuItem from 'components/AccountMenuItem.vue';
 
 const leftDrawerOpen = ref(false);
 

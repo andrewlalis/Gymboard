@@ -6,6 +6,7 @@ import GymPage from 'pages/gym/GymPage.vue';
 import GymSubmissionPage from 'pages/gym/GymSubmissionPage.vue';
 import GymHomePage from 'pages/gym/GymHomePage.vue';
 import GymLeaderboardsPage from 'pages/gym/GymLeaderboardsPage.vue';
+import TestingPage from 'pages/TestingPage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -13,6 +14,7 @@ const routes: RouteRecordRaw[] = [
     component: MainLayout,
     children: [
       { path: '', component: IndexPage },
+      { path: 'testing', component: TestingPage },
       {
         path: 'gyms/:countryCode/:cityShortName/:gymShortName',
         component: GymPage,

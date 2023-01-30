@@ -90,7 +90,7 @@ public class SubmissionProcessingService {
 
 		// Set the status to processing.
 		submission.setStatus(ExerciseSubmission.Status.PROCESSING);
-		exerciseSubmissionRepository.save(submission);
+		exerciseSubmissionRepository.saveAndFlush(submission);
 
 		// Then try and fetch the temporary video file associated with it.
 		Optional<ExerciseSubmissionTempFile> optionalTempFile = tempFileRepository.findBySubmission(submission);
@@ -105,7 +105,7 @@ public class SubmissionProcessingService {
 		if (!Files.exists(tempFilePath) || !Files.isReadable(tempFilePath)) {
 			log.error("Submission {} failed because the temporary video file {} isn't readable.", submission.getId(), tempFilePath);
 			submission.setStatus(ExerciseSubmission.Status.FAILED);
-			exerciseSubmissionRepository.save(submission);
+			exerciseSubmissionRepository.saveAndFlush(submission);
 			return;
 		}
 
@@ -135,7 +135,7 @@ public class SubmissionProcessingService {
 					e.getMessage()
 			);
 			submission.setStatus(ExerciseSubmission.Status.FAILED);
-			exerciseSubmissionRepository.save(submission);
+			exerciseSubmissionRepository.saveAndFlush(submission);
 			return;
 		}
 
