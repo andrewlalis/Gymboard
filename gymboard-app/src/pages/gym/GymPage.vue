@@ -1,25 +1,27 @@
 <template>
-  <StandardCenteredPage v-if="gym">
-    <h3 class="q-my-md text-center">{{ gym.displayName }}</h3>
-    <q-btn-group spread square push>
-      <q-btn
-        :label="$t('gymPage.home')"
-        :to="getGymRoute(gym)"
-        :color="homePageSelected ? 'primary' : 'secondary'"
-      />
-      <q-btn
-        :label="$t('gymPage.submit')"
-        :to="getGymRoute(gym) + '/submit'"
-        :color="submitPageSelected ? 'primary' : 'secondary'"
-      />
-      <q-btn
-        :label="$t('gymPage.leaderboard')"
-        :to="getGymRoute(gym) + '/leaderboard'"
-        :color="leaderboardPageSelected ? 'primary' : 'secondary'"
-      />
-    </q-btn-group>
-    <router-view />
-  </StandardCenteredPage>
+  <q-page>
+    <StandardCenteredPage v-if="gym">
+      <h3 class="q-my-md text-center">{{ gym.displayName }}</h3>
+      <q-btn-group spread square push>
+        <q-btn
+          :label="$t('gymPage.home')"
+          :to="getGymRoute(gym)"
+          :color="homePageSelected ? 'primary' : 'secondary'"
+        />
+        <q-btn
+          :label="$t('gymPage.submit')"
+          :to="getGymRoute(gym) + '/submit'"
+          :color="submitPageSelected ? 'primary' : 'secondary'"
+        />
+        <q-btn
+          :label="$t('gymPage.leaderboard')"
+          :to="getGymRoute(gym) + '/leaderboard'"
+          :color="leaderboardPageSelected ? 'primary' : 'secondary'"
+        />
+      </q-btn-group>
+      <router-view />
+    </StandardCenteredPage>
+  </q-page>
 </template>
 
 <script setup lang="ts">

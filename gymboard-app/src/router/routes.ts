@@ -6,6 +6,7 @@ import GymSubmissionPage from 'pages/gym/GymSubmissionPage.vue';
 import GymHomePage from 'pages/gym/GymHomePage.vue';
 import GymLeaderboardsPage from 'pages/gym/GymLeaderboardsPage.vue';
 import TestingPage from 'pages/TestingPage.vue';
+import LoginPage from 'pages/LoginPage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -25,6 +26,7 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  { path: '/login', component: LoginPage },
 
   // Always leave this as last one,
   // but you can also remove it

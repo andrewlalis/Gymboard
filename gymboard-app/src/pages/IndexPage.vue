@@ -1,25 +1,27 @@
 <template>
-  <StandardCenteredPage>
-    <q-input
-      v-model="searchQuery"
-      :label="$t('indexPage.searchHint')"
-      clearable
-      :loading="searchBarLoadingState"
-      @update:modelValue="onSearchQueryUpdated"
-      class="q-mt-lg"
-    >
-      <template v-slot:append>
-        <q-icon name="search" />
-      </template>
-    </q-input>
-    <q-list>
-      <GymSearchResultListItem
-        v-for="result in searchResults"
-        :gym="result"
-        :key="result.compoundId"
-      />
-    </q-list>
-  </StandardCenteredPage>
+  <q-page>
+    <StandardCenteredPage>
+      <q-input
+        v-model="searchQuery"
+        :label="$t('indexPage.searchHint')"
+        clearable
+        :loading="searchBarLoadingState"
+        @update:modelValue="onSearchQueryUpdated"
+        class="q-mt-lg"
+      >
+        <template v-slot:append>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+      <q-list>
+        <GymSearchResultListItem
+          v-for="result in searchResults"
+          :gym="result"
+          :key="result.compoundId"
+        />
+      </q-list>
+    </StandardCenteredPage>
+  </q-page>
 </template>
 
 <script setup lang="ts">

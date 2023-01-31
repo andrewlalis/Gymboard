@@ -21,7 +21,7 @@
       v-if="!authStore.loggedIn"
       no-caps
       icon="person"
-      to="/login"
+      @click="goToLoginPage"
     />
   </div>
 </template>
@@ -29,8 +29,20 @@
 <script setup lang="ts">
 import { useAuthStore } from 'stores/auth-store';
 import api from 'src/api/main';
+import {useRoute, useRouter} from 'vue-router';
 
 const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+
+async function goToLoginPage() {
+  await router.push({
+    path: '/login',
+    query: {
+      next: encodeURIComponent(route.path)
+    }
+  });
+}
 </script>
 
 <style scoped></style>
