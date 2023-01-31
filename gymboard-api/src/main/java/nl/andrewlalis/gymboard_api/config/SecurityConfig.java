@@ -49,8 +49,8 @@ public class SecurityConfig {
 				).permitAll()
 				.requestMatchers(// Allow the following POST endpoints to be public.
 						HttpMethod.POST,
-						"/gyms/submissions",
-						"/gyms/submissions/upload",
+						"/gyms/*/submissions",
+						"/gyms/*/submissions/upload",
 						"/auth/token",
 						"/auth/register",
 						"/auth/activate"
