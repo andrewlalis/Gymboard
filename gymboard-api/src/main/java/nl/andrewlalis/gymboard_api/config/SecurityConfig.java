@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -60,6 +61,9 @@ public class SecurityConfig {
 		return http.build();
 	}
 
+	@Value("${app.web-origin}")
+	private String webOrigin;
+
 	/**
 	 * Defines the CORS configuration for this API, which is to say that we
 	 * allow cross-origin requests ONLY from the web app for the vast majority
@@ -73,7 +77,7 @@ public class SecurityConfig {
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
 		// Don't do this in production, use a proper list  of allowed origins
-		config.addAllowedOriginPattern("*");
+		config.addAllowedOriginPattern(webOrigin);
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);
