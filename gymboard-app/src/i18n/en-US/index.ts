@@ -3,6 +3,21 @@ export default {
     language: 'Language',
     pages: 'Pages',
   },
+  registerPage: {
+    title: 'Create a Gymboard Account',
+    name: 'Name',
+    email: 'Email',
+    password: 'Password',
+    register: 'Register',
+    error: 'An error occurred.'
+  },
+  loginPage: {
+    title: 'Login to Gymboard',
+    email: 'Email',
+    password: 'Password',
+    logIn: 'Log in',
+    createAccount: 'Create an account'
+  },
   indexPage: {
     searchHint: 'Search for a Gym',
   },
@@ -24,4 +39,8 @@ export default {
       submit: 'Submit',
     },
   },
+  accountMenuItem: {
+    logIn: 'Login',
+    logOut: 'Log out'
+  }
 };

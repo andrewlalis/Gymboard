@@ -3,6 +3,21 @@ export default {
     language: 'Taal',
     pages: "Pagina's",
   },
+  registerPage: {
+    title: 'Maak een nieuwe Gymboard account aan',
+    name: 'Naam',
+    email: 'E-mail',
+    password: 'Wachtwoord',
+    register: 'Registreren',
+    error: 'Er is een fout opgetreden.'
+  },
+  loginPage: {
+    title: 'Inloggen bij Gymboard',
+    email: 'E-mail',
+    password: 'Wachtwoord',
+    logIn: 'Inloggen',
+    createAccount: 'Account aanmaken'
+  },
   indexPage: {
     searchHint: 'Zoek een sportschool',
   },
@@ -24,4 +39,8 @@ export default {
       submit: 'Sturen',
     },
   },
+  accountMenuItem: {
+    logIn: 'Inloggen',
+    logOut: 'Uitloggen'
+  }
 };

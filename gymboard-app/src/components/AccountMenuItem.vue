@@ -10,14 +10,14 @@
       <q-list>
         <q-item clickable v-close-popup @click="api.auth.logout(authStore)">
           <q-item-section>
-            <q-item-label>Log out</q-item-label>
+            <q-item-label>{{ $t('accountMenuItem.logOut') }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
     </q-btn-dropdown>
     <q-btn
       color="primary"
-      :label="$t('Login')"
+      :label="$t('accountMenuItem.logIn')"
       v-if="!authStore.loggedIn"
       no-caps
       icon="person"

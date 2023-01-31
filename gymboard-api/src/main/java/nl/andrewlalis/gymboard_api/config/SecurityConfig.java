@@ -51,7 +51,9 @@ public class SecurityConfig {
 						HttpMethod.POST,
 						"/gyms/submissions",
 						"/gyms/submissions/upload",
-						"/auth/token"
+						"/auth/token",
+						"/auth/register",
+						"/auth/activate"
 				).permitAll()
 				// Everything else must be authenticated, just to be safe.
 				.anyRequest().authenticated();

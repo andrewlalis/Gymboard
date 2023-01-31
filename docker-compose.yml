@@ -12,3 +12,12 @@ services:
     environment:
       POSTGRES_USER: gymboard-api-dev
       POSTGRES_PASSWORD: testpass
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    expose:
+      - "8025"
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI

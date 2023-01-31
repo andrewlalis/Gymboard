@@ -1,12 +1,13 @@
 <template>
   <StandardCenteredPage>
-    <h3 class="text-center">Login to Gymboard</h3>
+    <h3 class="text-center">{{ $t('loginPage.title') }}</h3>
     <q-form @submit="tryLogin" @reset="resetLogin">
       <SlimForm>
         <div class="row">
           <q-input
             :label="$t('loginPage.email')"
             v-model="loginModel.email"
+            type="email"
             class="col-12"
           />
         </div>
@@ -27,10 +28,15 @@
           </q-input>
         </div>
         <div class="row">
-          <q-btn type="submit" label="Log in" color="primary" class="q-mt-md col-12" no-caps/>
+          <q-btn type="submit" :label="$t('loginPage.logIn')" color="primary" class="q-mt-md col-12" no-caps/>
         </div>
         <div class="row">
-          <q-btn flat no-caps label="Create an account" color="secondary" class="q-mt-md col-12" style="text-decoration: underline"/>
+          <router-link
+            :to="{ path: '/register', query: route.query.next ? { next: route.query.next } : {} }"
+            class="q-mt-md text-primary text-center col-12"
+          >
+            {{ $t('loginPage.createAccount') }}
+          </router-link>
         </div>
       </SlimForm>
     </q-form>
@@ -38,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import StandardCenteredPage from 'src/components/StandardCenteredPage.vue';
+import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import SlimForm from 'components/SlimForm.vue';
 import {ref} from 'vue';
 import api from 'src/api/main';
@@ -56,7 +62,6 @@ const loginModel = ref({
 const passwordVisible = ref(false);
 
 async function tryLogin() {
-  console.log('logging in...');
   try {
     await api.auth.login(authStore, loginModel.value);
     const dest = route.query.next ? decodeURIComponent(route.query.next as string) : '/';
@@ -70,7 +75,6 @@ function resetLogin() {
   loginModel.value.email = '';
   loginModel.value.password = '';
 }
-
 </script>
 
 <style scoped>
