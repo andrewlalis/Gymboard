@@ -12,6 +12,16 @@ services:
     environment:
       POSTGRES_USER: gymboard-api-dev
       POSTGRES_PASSWORD: testpass
+  
+  # Database for the gymboard-cdn.
+  cdn-db:
+    image: postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: gymboard-cdn-dev
+      POSTGRES_PASSWORD: testpass
 
   mailhog:
     image: mailhog/mailhog
