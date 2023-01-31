@@ -14,6 +14,12 @@ export interface TokenCredentials {
   password: string;
 }
 
+export interface UserCreationPayload {
+  name: string;
+  email: string;
+  password: string;
+}
+
 class AuthModule {
   private static readonly TOKEN_REFRESH_INTERVAL_MS = 30000;
 
@@ -33,6 +39,16 @@ class AuthModule {
   public logout(authStore: AuthStoreType) {
     authStore.$reset();
     clearTimeout(this.tokenRefreshTimer);
+  }
+
+  public async register(payload: UserCreationPayload) {
+    const response = await api.post('/auth/register', payload);
+    console.log(response);
+  }
+
+  public async activateUser(code: string): Promise<User> {
+    const response = await api.post('/auth/activate', {code: code});
+    return response.data;
   }
 
   private async fetchNewToken(credentials: TokenCredentials): Promise<string> {

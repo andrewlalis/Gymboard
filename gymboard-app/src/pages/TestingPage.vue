@@ -1,16 +1,18 @@
 <template>
-  <StandardCenteredPage>
-    <h3>Testing Page</h3>
-    <p>
-      Use this page to test new functionality, before adding it to the main app.
-      This page should be hidden on production.
-    </p>
-    <div style="border: 3px solid red">
-      <h4>Auth Test</h4>
-      <q-btn label="Do auth" @click="doAuth()" />
-      <q-btn label="Logout" @click="api.auth.logout(authStore)" />
-    </div>
-  </StandardCenteredPage>
+  <q-page>
+    <StandardCenteredPage>
+      <h3>Testing Page</h3>
+      <p>
+        Use this page to test new functionality, before adding it to the main app.
+        This page should be hidden on production.
+      </p>
+      <div style="border: 3px solid red">
+        <h4>Auth Test</h4>
+        <q-btn label="Do auth" @click="doAuth()" />
+        <q-btn label="Logout" @click="api.auth.logout(authStore)" />
+      </div>
+    </StandardCenteredPage>
+  </q-page>
 </template>
 
 <script setup lang="ts">

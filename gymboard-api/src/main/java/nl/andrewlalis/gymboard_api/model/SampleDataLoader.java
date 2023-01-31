@@ -144,7 +144,7 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 			String[] roleNames = record.get(3).split("\\s*\\|\\s*");
 
 			UserCreationPayload payload = new UserCreationPayload(email, password, name);
-			var resp = userService.createUser(payload);
+			var resp = userService.createUser(payload, false);
 			User user = userRepository.findByIdWithRoles(resp.id()).orElseThrow();
 			for (var roleName : roleNames) {
 				if (roleName.isBlank()) continue;

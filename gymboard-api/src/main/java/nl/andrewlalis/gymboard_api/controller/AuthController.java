@@ -1,10 +1,9 @@
 package nl.andrewlalis.gymboard_api.controller;
 
-import nl.andrewlalis.gymboard_api.controller.dto.TokenCredentials;
-import nl.andrewlalis.gymboard_api.controller.dto.TokenResponse;
-import nl.andrewlalis.gymboard_api.controller.dto.UserResponse;
+import nl.andrewlalis.gymboard_api.controller.dto.*;
 import nl.andrewlalis.gymboard_api.model.auth.User;
 import nl.andrewlalis.gymboard_api.service.auth.TokenService;
+import nl.andrewlalis.gymboard_api.service.auth.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +14,35 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AuthController {
 	private final TokenService tokenService;
+	private final UserService userService;
 
-	public AuthController(TokenService tokenService) {
+	public AuthController(TokenService tokenService, UserService userService) {
 		this.tokenService = tokenService;
+		this.userService = userService;
+	}
+
+	/**
+	 * Endpoint for registering a new user in the system. <strong>This is a
+	 * public endpoint.</strong> If the user is successfully created, an email
+	 * will be sent to them with a link for activating the account.
+	 * @param payload The payload.
+	 * @return The created user.
+	 */
+	@PostMapping(path = "/auth/register")
+	public UserResponse registerNewUser(@RequestBody UserCreationPayload payload) {
+		return userService.createUser(payload, true);
+	}
+
+	/**
+	 * Endpoint for activating a new user via an activation code. <strong>This
+	 * is a public endpoint.</strong> If the code is recent (within 24 hours)
+	 * and the user exists, then they'll be activated and able to log in.
+	 * @param payload The payload containing the activation code.
+	 * @return The activated user.
+	 */
+	@PostMapping(path = "/auth/activate")
+	public UserResponse activateUser(@RequestBody UserActivationPayload payload) {
+		return userService.activateUser(payload);
 	}
 
 	/**

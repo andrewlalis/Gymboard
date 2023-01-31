@@ -6,13 +6,11 @@ width for smaller screens.
 Use this as the root component for any pages you create.
 -->
 <template>
-  <q-page>
-    <div class="row justify-center">
-      <div class="col-xs-12 col-md-6 q-px-sm">
-        <slot>
-          <p>Page content</p>
-        </slot>
-      </div>
+  <div class="row justify-center">
+    <div class="col-xs-12 col-md-6 q-px-sm">
+      <slot>
+        <p>Page content</p>
+      </slot>
     </div>
-  </q-page>
+  </div>
 </template>
