@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
+/**
+ * The service that manages storing and retrieving files from a base filesystem.
+ */
 @Service
 public class FileService {
 	@Value("${app.files.storage-dir}")
@@ -30,6 +33,10 @@ public class FileService {
 		Path tempFile = Files.createTempFile(tempDir, null, suffix);
 		file.transferTo(tempFile);
 		return tempFile;
+	}
+
+	public Path saveToStorage(String filename, InputStream in) throws IOException {
+		throw new RuntimeException("Not implemented!");
 	}
 
 	private Path getStorageDir() throws IOException {
