@@ -46,7 +46,8 @@ public class SecurityConfig {
 						"/exercises",
 						"/leaderboards",
 						"/gyms/**",
-						"/submissions/**"
+						"/submissions/**",
+						"/auth/reset-password"
 				).permitAll()
 				.requestMatchers(// Allow the following POST endpoints to be public.
 						HttpMethod.POST,
@@ -54,7 +55,8 @@ public class SecurityConfig {
 						"/gyms/*/submissions/upload",
 						"/auth/token",
 						"/auth/register",
-						"/auth/activate"
+						"/auth/activate",
+						"/auth/reset-password"
 				).permitAll()
 				// Everything else must be authenticated, just to be safe.
 				.anyRequest().authenticated();
