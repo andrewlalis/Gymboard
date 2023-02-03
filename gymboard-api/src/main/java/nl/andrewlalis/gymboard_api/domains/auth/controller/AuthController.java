@@ -79,12 +79,36 @@ public class AuthController {
 		return new UserResponse(user);
 	}
 
+	/**
+	 * Endpoint for updating one's own password.
+	 * @param user The user that's updating their password.
+	 * @param payload The payload with the new password.
+	 * @return An empty 200 OK response.
+	 */
+	@PostMapping(path = "/auth/me/password")
+	public ResponseEntity<Void> updateMyPassword(@AuthenticationPrincipal User user, @RequestBody PasswordUpdatePayload payload) {
+		userService.updatePassword(user.getId(), payload);
+		return ResponseEntity.ok().build();
+	}
+
+	/**
+	 * <strong>Public endpoint</strong> for requesting a reset code to be sent
+	 * to an account with the given email address.
+	 * @param email The email address.
+	 * @return An empty 200 OK response.
+	 */
 	@GetMapping(path = "/auth/reset-password")
 	public ResponseEntity<Void> generatePasswordResetCode(@RequestParam String email) {
 		userService.generatePasswordResetCode(email);
 		return ResponseEntity.ok().build();
 	}
 
+	/**
+	 * <strong>Public endpoint</strong> for resetting one's password using a
+	 * reset code obtained from an email.
+	 * @param payload The payload containing the code and new password.
+	 * @return An empty 200 OK response.
+	 */
 	@PostMapping(path = "/auth/reset-password")
 	public ResponseEntity<Void> resetPassword(@RequestBody PasswordResetPayload payload) {
 		userService.resetUserPassword(payload);

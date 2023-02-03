@@ -3,10 +3,7 @@ package nl.andrewlalis.gymboard_api.domains.auth.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.PasswordResetCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dto.PasswordResetPayload;
-import nl.andrewlalis.gymboard_api.domains.auth.dto.UserActivationPayload;
-import nl.andrewlalis.gymboard_api.domains.auth.dto.UserCreationPayload;
-import nl.andrewlalis.gymboard_api.domains.auth.dto.UserResponse;
+import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserActivationCodeRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.PasswordResetCode;
@@ -192,7 +189,20 @@ public class UserService {
 
 		// TODO: Validate password.
 
-		code.getUser().setPasswordHash(passwordEncoder.encode(payload.newPassword()));
+		User user = code.getUser();
+		user.setPasswordHash(passwordEncoder.encode(payload.newPassword()));
+		userRepository.save(user);
 		passwordResetCodeRepository.delete(code);
+	}
+
+	@Transactional
+	public void updatePassword(String id, PasswordUpdatePayload payload) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+		// TODO: Validate password.
+
+		user.setPasswordHash(passwordEncoder.encode(payload.newPassword()));
+		userRepository.save(user);
 	}
 }
