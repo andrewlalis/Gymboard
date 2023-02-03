@@ -6,5 +6,5 @@ public record ExerciseSubmissionPayload(
 		float weight,
 		String weightUnit,
 		int reps,
-		long videoId
+		String videoFileId
 ) {}

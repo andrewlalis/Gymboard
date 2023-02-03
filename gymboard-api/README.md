@@ -4,7 +4,7 @@ An HTTP/REST API powered by Java and Spring Boot. This API serves as the main en
 
 ## Development
 
-To ease development, `nl.andrewlalis.gymboard_api.model.SampleDataLoader` will run on startup and populate the database with some sample entities. You can regenerate this data by manually deleting the database, and deleting the `.sample_data` marker file that's generated in the project directory.
+To ease development, `nl.andrewlalis.gymboard_api.util.SampleDataLoader` will run on startup and populate the database with some sample entities. You can regenerate this data by manually deleting the database, and deleting the `.sample_data` marker file that's generated in the project directory.
 
 ## ULIDs
 

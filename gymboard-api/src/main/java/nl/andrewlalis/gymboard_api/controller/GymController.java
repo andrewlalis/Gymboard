@@ -1,12 +1,12 @@
 package nl.andrewlalis.gymboard_api.controller;
 
-import nl.andrewlalis.gymboard_api.controller.dto.*;
+import nl.andrewlalis.gymboard_api.controller.dto.CompoundGymId;
+import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionPayload;
+import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionResponse;
+import nl.andrewlalis.gymboard_api.controller.dto.GymResponse;
 import nl.andrewlalis.gymboard_api.service.GymService;
-import nl.andrewlalis.gymboard_api.service.UploadService;
 import nl.andrewlalis.gymboard_api.service.submission.ExerciseSubmissionService;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,14 +17,10 @@ import java.util.List;
 @RequestMapping(path = "/gyms/{compoundId}")
 public class GymController {
 	private final GymService gymService;
-	private final UploadService uploadService;
 	private final ExerciseSubmissionService submissionService;
 
-	public GymController(GymService gymService,
-						 UploadService uploadService,
-						 ExerciseSubmissionService submissionService) {
+	public GymController(GymService gymService, ExerciseSubmissionService submissionService) {
 		this.gymService = gymService;
-		this.uploadService = uploadService;
 		this.submissionService = submissionService;
 	}
 
@@ -44,13 +40,5 @@ public class GymController {
 			@RequestBody ExerciseSubmissionPayload payload
 	) {
 		return submissionService.createSubmission(CompoundGymId.parse(compoundId), payload);
-	}
-
-	@PostMapping(path = "/submissions/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public UploadedFileResponse uploadVideo(
-			@PathVariable String compoundId,
-			@RequestParam MultipartFile file
-	) {
-		return uploadService.handleSubmissionUpload(CompoundGymId.parse(compoundId), file);
 	}
 }

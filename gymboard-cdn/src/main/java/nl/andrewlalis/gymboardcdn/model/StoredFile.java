@@ -1,6 +1,9 @@
 package nl.andrewlalis.gymboardcdn.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -8,9 +11,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "stored_file")
 public class StoredFile {
+	/**
+	 * ULID-based unique file identifier.
+	 */
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@Column(nullable = false, updatable = false, length = 26)
+	private String id;
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;
@@ -28,13 +34,6 @@ public class StoredFile {
 	private String name;
 
 	/**
-	 * The internal id that's used to find this file wherever it's placed on
-	 * our service's storage. It is universally unique.
-	 */
-	@Column(nullable = false, updatable = false, unique = true)
-	private String identifier;
-
-	/**
 	 * The type of the file.
 	 */
 	@Column(updatable = false)
@@ -48,15 +47,15 @@ public class StoredFile {
 
 	public StoredFile() {}
 
-	public StoredFile(String name, String identifier, String mimeType, long size, LocalDateTime uploadedAt) {
+	public StoredFile(String id, String name, String mimeType, long size, LocalDateTime uploadedAt) {
+		this.id = id;
 		this.name = name;
-		this.identifier = identifier;
 		this.mimeType = mimeType;
 		this.size = size;
 		this.uploadedAt = uploadedAt;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -66,10 +65,6 @@ public class StoredFile {
 
 	public String getName() {
 		return name;
-	}
-
-	public String getIdentifier() {
-		return identifier;
 	}
 
 	public String getMimeType() {

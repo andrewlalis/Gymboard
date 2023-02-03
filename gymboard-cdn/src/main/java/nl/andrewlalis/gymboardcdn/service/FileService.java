@@ -1,7 +1,7 @@
 package nl.andrewlalis.gymboardcdn.service;
 
-import nl.andrewlalis.gymboardcdn.model.StoredFileRepository;
-import nl.andrewlalis.gymboardcdn.model.VideoProcessingTaskRepository;
+import nl.andrewlalis.gymboardcdn.model.StoredFile;
+import nl.andrewlalis.gymboardcdn.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 /**
  * The service that manages storing and retrieving files from a base filesystem.
@@ -28,52 +27,29 @@ public class FileService {
 	@Value("${app.files.temp-dir}")
 	private String tempDir;
 
-	private final StoredFileRepository storedFileRepository;
-	private final VideoProcessingTaskRepository videoProcessingTaskRepository;
+	private final ULID ulid;
 
-	public FileService(StoredFileRepository storedFileRepository, VideoProcessingTaskRepository videoProcessingTaskRepository) {
-		this.storedFileRepository = storedFileRepository;
-		this.videoProcessingTaskRepository = videoProcessingTaskRepository;
+	public FileService(ULID ulid) {
+		this.ulid = ulid;
 	}
 
-	public Path getStorageDirForTime(LocalDateTime time) throws IOException {
-		Path dir = getStorageDir()
+	public Path getStoragePathForFile(StoredFile file) throws IOException {
+		LocalDateTime time = file.getUploadedAt();
+		Path dir = Path.of(storageDir)
 				.resolve(Integer.toString(time.getYear()))
 				.resolve(Integer.toString(time.getMonthValue()))
 				.resolve(Integer.toString(time.getDayOfMonth()));
 		if (Files.notExists(dir)) Files.createDirectories(dir);
-		return dir;
+		return dir.resolve(file.getId());
 	}
 
 	public String createNewFileIdentifier() {
-		String ident = generateRandomIdentifier();
-		int attempts = 0;
-		while (storedFileRepository.existsByIdentifier(ident) || videoProcessingTaskRepository.existsByVideoIdentifier(ident)) {
-			ident = generateRandomIdentifier();
-			attempts++;
-			if (attempts > 10) {
-				log.warn("Took more than 10 attempts to generate a unique file identifier.");
-			}
-			if (attempts > 100) {
-				log.error("Couldn't generate a unique file identifier after 100 attempts. Quitting!");
-				throw new RuntimeException("Couldn't generate a unique file identifier.");
-			}
-		}
-		return ident;
+		return ulid.nextULID();
 	}
 
-	private String generateRandomIdentifier() {
-		StringBuilder sb = new StringBuilder(9);
-		String alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		Random rand = new Random();
-		for (int i = 0; i < 9; i++) sb.append(alphabet.charAt(rand.nextInt(alphabet.length())));
-		return sb.toString();
-	}
-
-	public Path saveToTempFile(MultipartFile file) throws IOException {
+	public Path saveToTempFile(InputStream in, String filename) throws IOException {
 		Path tempDir = getTempDir();
 		String suffix = null;
-		String filename = file.getOriginalFilename();
 		if (filename != null) {
 			int idx = filename.lastIndexOf('.');
 			if (idx >= 0) {
@@ -81,12 +57,10 @@ public class FileService {
 			}
 		}
 		Path tempFile = Files.createTempFile(tempDir, null, suffix);
-		file.transferTo(tempFile);
+		try (var out = Files.newOutputStream(tempFile)) {
+			in.transferTo(out);
+		}
 		return tempFile;
-	}
-
-	public Path saveToStorage(String filename, InputStream in) throws IOException {
-		throw new RuntimeException("Not implemented!");
 	}
 
 	private Path getStorageDir() throws IOException {

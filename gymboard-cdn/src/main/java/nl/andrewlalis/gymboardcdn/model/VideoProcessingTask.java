@@ -46,7 +46,7 @@ public class VideoProcessingTask {
 	 * The identifier that will be used to identify the final video, if it
 	 * is processed successfully.
 	 */
-	@Column(nullable = false)
+	@Column(nullable = false, updatable = false, length = 26)
 	private String videoIdentifier;
 
 	public VideoProcessingTask() {}

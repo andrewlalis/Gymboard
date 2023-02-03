@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboardcdn;
 
+import nl.andrewlalis.gymboardcdn.util.ULID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class Config {
 	@Value("${app.web-origin}")
 	private String webOrigin;
+	@Value("${app.api-origin}")
+	private String apiOrigin;
 
 	/**
 	 * Defines the CORS configuration for this API, which is to say that we
@@ -27,11 +30,16 @@ public class Config {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		// Don't do this in production, use a proper list  of allowed origins
 		config.addAllowedOriginPattern(webOrigin);
+		config.addAllowedOriginPattern(apiOrigin);
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);
 		return source;
+	}
+
+	@Bean
+	public ULID ulid() {
+		return new ULID();
 	}
 }

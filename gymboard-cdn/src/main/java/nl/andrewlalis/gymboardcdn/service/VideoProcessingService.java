@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -77,21 +76,21 @@ public class VideoProcessingService {
 		}
 
 		// And finally, copy the output to the final location.
-		LocalDateTime uploadedAt = task.getCreatedAt();
 		try {
-			Path finalFilePath = fileService.getStorageDirForTime(uploadedAt)
-					.resolve(task.getVideoIdentifier());
+			StoredFile storedFile = new StoredFile(
+					task.getVideoIdentifier(),
+					task.getFilename(),
+					"video/mp4",
+					Files.size(ffmpegOutputFile),
+					task.getCreatedAt()
+			);
+			Path finalFilePath = fileService.getStoragePathForFile(storedFile);
 			Files.move(ffmpegOutputFile, finalFilePath);
 			Files.deleteIfExists(tempFile);
 			Files.deleteIfExists(ffmpegOutputFile);
-			storedFileRepository.saveAndFlush(new StoredFile(
-					task.getFilename(),
-					task.getVideoIdentifier(),
-					"video/mp4",
-					Files.size(ffmpegOutputFile),
-					uploadedAt
-			));
+			storedFileRepository.saveAndFlush(storedFile);
 			updateTask(task, VideoProcessingTask.Status.COMPLETED);
+			log.info("Finished processing video {}.", task.getVideoIdentifier());
 		} catch (IOException e) {
 			log.error("Failed to copy processed video to final storage location.", e);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
@@ -113,7 +112,8 @@ public class VideoProcessingService {
 		Path tmpStdout = Files.createTempFile(dir, "stdout-", ".log");
 		Path tmpStderr = Files.createTempFile(dir, "stderr-", ".log");
 		final String[] command = {
-				"ffmpeg", "-i", inFile.getFileName().toString(),
+				"ffmpeg",
+				"-i", inFile.getFileName().toString(),
 				"-vf", "scale=640x480:flags=lanczos",
 				"-vcodec", "libx264",
 				"-crf", "28",

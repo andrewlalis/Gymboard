@@ -1,5 +1,5 @@
 package nl.andrewlalis.gymboardcdn.api;
 
 public record FileUploadResponse(
-		String identifier
+		String id
 ) {}

@@ -1,6 +1,5 @@
 package nl.andrewlalis.gymboard_api.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboard_api.controller.dto.ExerciseSubmissionResponse;
 import nl.andrewlalis.gymboard_api.service.submission.ExerciseSubmissionService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +19,5 @@ public class SubmissionController {
 	@GetMapping(path = "/{submissionId}")
 	public ExerciseSubmissionResponse getSubmission(@PathVariable String submissionId) {
 		return submissionService.getSubmission(submissionId);
-	}
-
-	@GetMapping(path = "/{submissionId}/video")
-	public void getSubmissionVideo(@PathVariable String submissionId, HttpServletResponse response) {
-		submissionService.streamVideo(submissionId, response);
 	}
 }

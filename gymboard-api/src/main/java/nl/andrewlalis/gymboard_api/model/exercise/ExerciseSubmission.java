@@ -10,24 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "exercise_submission")
 public class ExerciseSubmission {
-	/**
-	 * The status of a submission.
-	 * <ul>
-	 *     <li>Each submission starts as WAITING.</li>
-	 *     <li>The status changes to PROCESSING once it's picked up for processing.</li>
-	 *     <li>If processing fails, the status changes to FAILED.</li>
-	 *     <li>If processing is successful, the status changes to COMPLETED.</li>
-	 *     <li>Once a completed submission is verified either automatically or manually, it's set to VERIFIED.</li>
-	 * </ul>
-	 */
-	public enum Status {
-		WAITING,
-		PROCESSING,
-		FAILED,
-		COMPLETED,
-		VERIFIED
-	}
-
 	public enum WeightUnit {
 		KG,
 		LBS
@@ -46,9 +28,13 @@ public class ExerciseSubmission {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Exercise exercise;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private Status status;
+	/**
+	 * The id of the video file that was submitted for this submission. It lives
+	 * on the <em>gymboard-cdn</em> service as a stored file, which can be
+	 * accessed via <code>GET https://CDN-HOST/files/{videoFileId}</code>.
+	 */
+	@Column(nullable = false, updatable = false, length = 26)
+	private String videoFileId;
 
 	@Column(nullable = false, updatable = false, length = 63)
 	private String submitterName;
@@ -66,27 +52,18 @@ public class ExerciseSubmission {
 	@Column(nullable = false)
 	private int reps;
 
-	/**
-	 * Marker that's used to simplify queries where we just want submissions
-	 * that are in a status that's not WAITING, PROCESSING, or FAILED, i.e.
-	 * a successful submission that's been processed.
-	 */
-	@Column(nullable = false)
-	private boolean complete;
-
 	public ExerciseSubmission() {}
 
-	public ExerciseSubmission(String id, Gym gym, Exercise exercise, String submitterName, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
+	public ExerciseSubmission(String id, Gym gym, Exercise exercise, String videoFileId, String submitterName, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
 		this.id = id;
 		this.gym = gym;
 		this.exercise = exercise;
+		this.videoFileId = videoFileId;
 		this.submitterName = submitterName;
 		this.rawWeight = rawWeight;
 		this.weightUnit = unit;
 		this.metricWeight = metricWeight;
 		this.reps = reps;
-		this.status = Status.WAITING;
-		this.complete = false;
 	}
 
 	public String getId() {
@@ -105,12 +82,8 @@ public class ExerciseSubmission {
 		return exercise;
 	}
 
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
+	public String getVideoFileId() {
+		return videoFileId;
 	}
 
 	public String getSubmitterName() {
@@ -131,13 +104,5 @@ public class ExerciseSubmission {
 
 	public int getReps() {
 		return reps;
-	}
-
-	public boolean isComplete() {
-		return complete;
-	}
-
-	public void setComplete(boolean complete) {
-		this.complete = complete;
 	}
 }
