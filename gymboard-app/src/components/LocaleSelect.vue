@@ -25,7 +25,7 @@ const i18n = useI18n({ useScope: 'global' });
 const localeOptions = [
   { value: 'en-US', label: 'English' },
   { value: 'nl-NL', label: 'Nederlands' },
-  { value: 'de', label: 'Deutsch' }
+  { value: 'de', label: 'Deutsch' },
 ];
 </script>
 

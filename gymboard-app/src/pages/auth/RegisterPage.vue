@@ -53,17 +53,17 @@
 import SlimForm from 'components/SlimForm.vue';
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import api from 'src/api/main';
-import {useRouter} from 'vue-router';
-import {ref} from 'vue';
-import {useQuasar} from 'quasar';
-import {useI18n} from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { useQuasar } from 'quasar';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 
 const registerModel = ref({
   name: '',
   email: '',
-  password: ''
+  password: '',
 });
 const passwordVisible = ref(false);
 
@@ -77,7 +77,7 @@ async function tryRegister() {
   } catch (error) {
     quasar.notify({
       message: t('registerPage.error'),
-      type: 'negative'
+      type: 'negative',
     });
   }
 }
@@ -89,6 +89,4 @@ function resetForm() {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

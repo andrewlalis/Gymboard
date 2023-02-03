@@ -41,29 +41,48 @@ class AuthModule {
     clearTimeout(this.tokenRefreshTimer);
   }
 
-  public async register(payload: UserCreationPayload) {
+  public async register(payload: UserCreationPayload): Promise<User> {
     const response = await api.post('/auth/register', payload);
-    console.log(response);
-  }
-
-  public async activateUser(code: string): Promise<User> {
-    const response = await api.post('/auth/activate', {code: code});
     return response.data;
   }
 
-  private async fetchNewToken(credentials: TokenCredentials): Promise<string> {
+  public async activateUser(code: string): Promise<User> {
+    const response = await api.post('/auth/activate', { code: code });
+    return response.data;
+  }
+
+  public async fetchNewToken(credentials: TokenCredentials): Promise<string> {
     const response = await api.post('/auth/token', credentials);
     return response.data.token;
   }
 
-  private async refreshToken(authStore: AuthStoreType) {
+  public async refreshToken(authStore: AuthStoreType) {
     const response = await api.get('/auth/token', authStore.axiosConfig);
     authStore.token = response.data.token;
   }
 
-  private async fetchMyUser(authStore: AuthStoreType): Promise<User> {
+  public async fetchMyUser(authStore: AuthStoreType): Promise<User> {
     const response = await api.get('/auth/me', authStore.axiosConfig);
     return response.data;
+  }
+
+  public async updatePassword(newPassword: string, authStore: AuthStoreType) {
+    await api.post(
+      '/auth/me/password',
+      { newPassword: newPassword },
+      authStore.axiosConfig
+    );
+  }
+
+  public async generatePasswordResetCode(email: string) {
+    await api.get('/auth/reset-password', { params: { email: email } });
+  }
+
+  public async resetPassword(resetCode: string, newPassword: string) {
+    await api.post('/auth/reset-password', {
+      code: resetCode,
+      newPassword: newPassword,
+    });
   }
 }
 

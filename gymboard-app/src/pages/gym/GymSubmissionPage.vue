@@ -100,6 +100,7 @@ import { Gym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
 import { useRouter } from 'vue-router';
 import { sleep } from 'src/utils';
+import { uploadVideoToCDN, VideoProcessingStatus, waitUntilVideoProcessingComplete } from 'src/api/cdn';
 
 interface Option {
   value: string;
@@ -117,7 +118,7 @@ let submissionModel = ref({
   weight: 100,
   weightUnit: 'Kg',
   reps: 1,
-  videoId: -1,
+  videoFileId: '',
   videoFile: null,
   date: new Date().toLocaleDateString('en-CA'),
 });
@@ -159,10 +160,7 @@ async function onSubmitted() {
   try {
     infoMessage.value = 'Uploading video...';
     await sleep(1000);
-    submissionModel.value.videoId = await api.gyms.submissions.uploadVideoFile(
-      gym.value,
-      selectedVideoFile.value
-    );
+    submissionModel.value.videoFileId = await uploadVideoToCDN(selectedVideoFile.value);
     infoMessage.value = 'Creating submission...';
     await sleep(1000);
     const submission = await api.gyms.submissions.createSubmission(
@@ -170,11 +168,14 @@ async function onSubmitted() {
       submissionModel.value
     );
     infoMessage.value = 'Submission processing...';
-    const completedSubmission =
-      await api.gyms.submissions.waitUntilSubmissionProcessed(submission.id);
-    console.log(completedSubmission);
-    infoMessage.value = 'Submission complete!';
-    await router.push(getGymRoute(gym.value));
+    const finalStatus = await waitUntilVideoProcessingComplete(submission.videoFileId);
+    if (finalStatus === VideoProcessingStatus.COMPLETED) {
+      infoMessage.value = 'Submission complete!';
+      await sleep(1000);
+      await router.push(getGymRoute(gym.value));
+    } else {
+      infoMessage.value = 'Submission processing failed. Please try again later.';
+    }
   } finally {
     submitting.value = false;
   }

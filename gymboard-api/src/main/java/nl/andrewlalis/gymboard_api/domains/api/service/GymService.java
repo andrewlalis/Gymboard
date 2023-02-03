@@ -44,9 +44,9 @@ public class GymService {
 			query.orderBy(criteriaBuilder.desc(root.get("createdAt")));
 			query.distinct(true);
 
+			// TODO: Filter to only verified submissions.
 			return PredicateBuilder.and(criteriaBuilder)
 					.with(criteriaBuilder.equal(root.get("gym"), gym))
-					.with(criteriaBuilder.isTrue(root.get("complete")))
 					.build();
 		}, PageRequest.of(0, 10))
 				.map(ExerciseSubmissionResponse::new)

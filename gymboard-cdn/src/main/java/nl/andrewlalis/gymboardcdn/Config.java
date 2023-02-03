@@ -4,11 +4,12 @@ import nl.andrewlalis.gymboardcdn.util.ULID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableScheduling
@@ -18,24 +19,17 @@ public class Config {
 	@Value("${app.api-origin}")
 	private String apiOrigin;
 
-	/**
-	 * Defines the CORS configuration for this API, which is to say that we
-	 * allow cross-origin requests ONLY from the web app for the vast majority
-	 * of endpoints.
-	 * @return The CORS configuration source.
-	 */
 	@Bean
-	@Order(1)
-	public CorsConfigurationSource corsConfigurationSource() {
+	public CorsFilter corsFilter() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
 		config.addAllowedOriginPattern(webOrigin);
 		config.addAllowedOriginPattern(apiOrigin);
-		config.addAllowedHeader("*");
-		config.addAllowedMethod("*");
+		config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
+		config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
 		source.registerCorsConfiguration("/**", config);
-		return source;
+		return new CorsFilter(source);
 	}
 
 	@Bean

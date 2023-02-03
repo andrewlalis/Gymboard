@@ -9,14 +9,14 @@ export default {
     email: 'Email',
     password: 'Password',
     register: 'Register',
-    error: 'An error occurred.'
+    error: 'An error occurred.',
   },
   loginPage: {
     title: 'Login to Gymboard',
     email: 'Email',
     password: 'Password',
     logIn: 'Log in',
-    createAccount: 'Create an account'
+    createAccount: 'Create an account',
   },
   indexPage: {
     searchHint: 'Search for a Gym',
@@ -41,6 +41,6 @@ export default {
   },
   accountMenuItem: {
     logIn: 'Login',
-    logOut: 'Log out'
-  }
+    logOut: 'Log out',
+  },
 };

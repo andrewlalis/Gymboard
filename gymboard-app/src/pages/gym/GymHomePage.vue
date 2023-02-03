@@ -69,7 +69,6 @@ onMounted(async () => {
 function initMap() {
   if (!gym.value) return;
   const g: Gym = gym.value;
-  console.log(mapContainer);
 
   const tiles = new TileLayer(TILE_URL, {
     attribution: ATTRIBUTION,

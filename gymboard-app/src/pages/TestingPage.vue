@@ -3,8 +3,8 @@
     <StandardCenteredPage>
       <h3>Testing Page</h3>
       <p>
-        Use this page to test new functionality, before adding it to the main app.
-        This page should be hidden on production.
+        Use this page to test new functionality, before adding it to the main
+        app. This page should be hidden on production.
       </p>
       <div style="border: 3px solid red">
         <h4>Auth Test</h4>

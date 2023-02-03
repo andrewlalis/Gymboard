@@ -9,14 +9,14 @@ export default {
     email: 'E-mail',
     password: 'Wachtwoord',
     register: 'Registreren',
-    error: 'Er is een fout opgetreden.'
+    error: 'Er is een fout opgetreden.',
   },
   loginPage: {
     title: 'Inloggen bij Gymboard',
     email: 'E-mail',
     password: 'Wachtwoord',
     logIn: 'Inloggen',
-    createAccount: 'Account aanmaken'
+    createAccount: 'Account aanmaken',
   },
   indexPage: {
     searchHint: 'Zoek een sportschool',
@@ -41,6 +41,6 @@ export default {
   },
   accountMenuItem: {
     logIn: 'Inloggen',
-    logOut: 'Uitloggen'
-  }
+    logOut: 'Uitloggen',
+  },
 };

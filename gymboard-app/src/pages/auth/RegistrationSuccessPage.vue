@@ -10,6 +10,4 @@
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

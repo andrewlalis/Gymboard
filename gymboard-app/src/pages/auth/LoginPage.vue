@@ -28,11 +28,20 @@
           </q-input>
         </div>
         <div class="row">
-          <q-btn type="submit" :label="$t('loginPage.logIn')" color="primary" class="q-mt-md col-12" no-caps/>
+          <q-btn
+            type="submit"
+            :label="$t('loginPage.logIn')"
+            color="primary"
+            class="q-mt-md col-12"
+            no-caps
+          />
         </div>
         <div class="row">
           <router-link
-            :to="{ path: '/register', query: route.query.next ? { next: route.query.next } : {} }"
+            :to="{
+              path: '/register',
+              query: route.query.next ? { next: route.query.next } : {},
+            }"
             class="q-mt-md text-primary text-center col-12"
           >
             {{ $t('loginPage.createAccount') }}
@@ -46,10 +55,10 @@
 <script setup lang="ts">
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import SlimForm from 'components/SlimForm.vue';
-import {ref} from 'vue';
+import { ref } from 'vue';
 import api from 'src/api/main';
-import {useAuthStore} from 'stores/auth-store';
-import {useRoute, useRouter} from 'vue-router';
+import { useAuthStore } from 'stores/auth-store';
+import { useRoute, useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -57,14 +66,16 @@ const route = useRoute();
 
 const loginModel = ref({
   email: '',
-  password: ''
+  password: '',
 });
 const passwordVisible = ref(false);
 
 async function tryLogin() {
   try {
     await api.auth.login(authStore, loginModel.value);
-    const dest = route.query.next ? decodeURIComponent(route.query.next as string) : '/';
+    const dest = route.query.next
+      ? decodeURIComponent(route.query.next as string)
+      : '/';
     await router.push(dest);
   } catch (error) {
     console.error(error);
@@ -77,6 +88,4 @@ function resetLogin() {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

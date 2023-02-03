@@ -15,7 +15,7 @@
     <q-card>
       <q-card-section class="text-center">
         <video
-          :src="api.gyms.submissions.getSubmissionVideoUrl(submission)"
+          :src="getFileUrl(submission.videoFileId)"
           width="600"
           loop
           controls
@@ -30,6 +30,7 @@
 <script setup lang="ts">
 import { ExerciseSubmission } from 'src/api/main/submission';
 import api from 'src/api/main';
+import { getFileUrl } from 'src/api/cdn';
 
 interface Props {
   submission: ExerciseSubmission;

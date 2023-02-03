@@ -6,11 +6,11 @@
 
 <script setup lang="ts">
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
-import {onMounted, ref} from 'vue';
-import {useRoute, useRouter} from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import api from 'src/api/main';
-import {sleep} from 'src/utils';
-import {useI18n} from 'vue-i18n';
+import { sleep } from 'src/utils';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
@@ -35,6 +35,4 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
