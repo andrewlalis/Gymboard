@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,27 @@ public class VideoProcessingService {
 			log.info("Queueing processing of video {}.", task.getVideoIdentifier());
 			updateTask(task, VideoProcessingTask.Status.IN_PROGRESS);
 			taskExecutor.execute(() -> processVideo(task));
+		}
+	}
+
+	@Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+	public void removeOldTasks() {
+		LocalDateTime cutoff = LocalDateTime.now().minusHours(12);
+		List<VideoProcessingTask> oldTasks = taskRepo.findAllByCreatedAtBefore(cutoff);
+		for (var task : oldTasks) {
+			if (task.getStatus() == VideoProcessingTask.Status.COMPLETED) {
+				log.info("Deleting completed task for video {}.", task.getVideoIdentifier());
+				taskRepo.delete(task);
+			} else if (task.getStatus() == VideoProcessingTask.Status.FAILED) {
+				log.info("Deleting failed task for video {}.", task.getVideoIdentifier());
+				taskRepo.delete(task);
+			} else if (task.getStatus() == VideoProcessingTask.Status.IN_PROGRESS) {
+				log.info("Task for video {} was in progress for too long; deleting.", task.getVideoIdentifier());
+				taskRepo.delete(task);
+			} else if (task.getStatus() == VideoProcessingTask.Status.WAITING) {
+				log.info("Task for video {} was waiting for too long; deleting.", task.getVideoIdentifier());
+				taskRepo.delete(task);
+			}
 		}
 	}
 
