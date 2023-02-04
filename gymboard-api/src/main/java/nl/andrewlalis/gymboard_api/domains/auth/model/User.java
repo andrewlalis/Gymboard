@@ -37,6 +37,9 @@ public class User {
 	)
 	private Set<Role> roles;
 
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
+	private UserPersonalDetails personalDetails;
+
 	public User() {}
 
 	public User(String id, boolean activated, String email, String passwordHash, String name) {

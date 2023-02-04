@@ -2,6 +2,7 @@ package nl.andrewlalis.gymboard_api.domains.api.model.exercise;
 
 import jakarta.persistence.*;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
+import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -10,11 +11,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "exercise_submission")
 public class ExerciseSubmission {
-	public enum WeightUnit {
-		KG,
-		LBS
-	}
-
 	@Id
 	@Column(nullable = false, updatable = false, length = 26)
 	private String id;

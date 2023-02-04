@@ -1,12 +1,13 @@
 package nl.andrewlalis.gymboard_api.domains.api.service.submission;
 
-import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionPayload;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseSubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
+import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionPayload;
+import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
+import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.exercise.ExerciseSubmission;
 import nl.andrewlalis.gymboard_api.util.ULID;
@@ -66,10 +67,10 @@ public class ExerciseSubmissionService {
 
 		// Create the submission.
 		BigDecimal rawWeight = BigDecimal.valueOf(payload.weight());
-		ExerciseSubmission.WeightUnit unit = ExerciseSubmission.WeightUnit.valueOf(payload.weightUnit().toUpperCase());
+		WeightUnit weightUnit = WeightUnit.parse(payload.weightUnit());
 		BigDecimal metricWeight = BigDecimal.valueOf(payload.weight());
-		if (unit == ExerciseSubmission.WeightUnit.LBS) {
-			metricWeight = metricWeight.multiply(new BigDecimal("0.45359237"));
+		if (weightUnit == WeightUnit.POUNDS) {
+			metricWeight = WeightUnit.toKilograms(rawWeight);
 		}
 		ExerciseSubmission submission = exerciseSubmissionRepository.saveAndFlush(new ExerciseSubmission(
 				ulid.nextULID(),
@@ -78,7 +79,7 @@ public class ExerciseSubmissionService {
 				payload.videoFileId(),
 				payload.name(),
 				rawWeight,
-				unit,
+				weightUnit,
 				metricWeight,
 				payload.reps()
 		));

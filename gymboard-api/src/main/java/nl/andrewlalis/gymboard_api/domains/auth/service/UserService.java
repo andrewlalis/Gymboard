@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserService {
@@ -124,7 +126,7 @@ public class UserService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
 		User user = activationCode.getUser();
 		if (!user.isActivated()) {
-			LocalDateTime cutoff = LocalDateTime.now().minusDays(1);
+			LocalDateTime cutoff = LocalDateTime.now().minus(UserActivationCode.VALID_FOR);
 			if (activationCode.getCreatedAt().isBefore(cutoff)) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code is expired.");
 			}
@@ -182,7 +184,7 @@ public class UserService {
 	public void resetUserPassword(PasswordResetPayload payload) {
 		PasswordResetCode code = passwordResetCodeRepository.findById(payload.code())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		LocalDateTime cutoff = LocalDateTime.now().minusMinutes(30);
+		LocalDateTime cutoff = LocalDateTime.now().minus(PasswordResetCode.VALID_FOR);
 		if (code.getCreatedAt().isBefore(cutoff)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
@@ -204,5 +206,18 @@ public class UserService {
 
 		user.setPasswordHash(passwordEncoder.encode(payload.newPassword()));
 		userRepository.save(user);
+	}
+
+	/**
+	 * Scheduled task that periodically removes all old authentication entities
+	 * so that they don't clutter up the system.
+	 */
+	@Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
+	@Transactional
+	public void removeOldAuthEntities() {
+		LocalDateTime passwordResetCodeCutoff = LocalDateTime.now().minus(PasswordResetCode.VALID_FOR);
+		passwordResetCodeRepository.deleteAllByCreatedAtBefore(passwordResetCodeCutoff);
+		LocalDateTime activationCodeCutoff = LocalDateTime.now().minus(UserActivationCode.VALID_FOR);
+		activationCodeRepository.deleteAllByCreatedAtBefore(activationCodeCutoff);
 	}
 }
