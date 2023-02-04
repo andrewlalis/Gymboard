@@ -1,25 +1,21 @@
 package nl.andrewlalis.gymboard_api.util;
 
-import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionPayload;
-import nl.andrewlalis.gymboard_api.domains.auth.dto.UserCreationPayload;
 import nl.andrewlalis.gymboard_api.domains.api.dao.CityRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.CountryRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.RoleRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
-import nl.andrewlalis.gymboard_api.domains.api.model.City;
-import nl.andrewlalis.gymboard_api.domains.api.model.Country;
-import nl.andrewlalis.gymboard_api.domains.api.model.GeoPoint;
-import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
-import nl.andrewlalis.gymboard_api.domains.auth.model.Role;
-import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
+import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionPayload;
+import nl.andrewlalis.gymboard_api.domains.api.model.*;
 import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.ExerciseSubmission;
-import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.RoleRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dto.UserCreationPayload;
+import nl.andrewlalis.gymboard_api.domains.auth.model.Role;
+import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
@@ -123,7 +119,7 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 		loadCsv("submissions", record -> {
 			var exercise = exerciseRepository.findById(record.get(0)).orElseThrow();
 			BigDecimal weight = new BigDecimal(record.get(1));
-			ExerciseSubmission.WeightUnit unit = ExerciseSubmission.WeightUnit.valueOf(record.get(2).toUpperCase());
+			WeightUnit unit = WeightUnit.parse(record.get(2));
 			int reps = Integer.parseInt(record.get(3));
 			String name = record.get(4);
 			CompoundGymId gymId = CompoundGymId.parse(record.get(5));
