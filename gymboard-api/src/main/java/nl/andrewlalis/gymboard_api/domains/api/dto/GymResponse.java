@@ -1,6 +1,7 @@
 package nl.andrewlalis.gymboard_api.domains.api.dto;
 
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
+import nl.andrewlalis.gymboard_api.util.StandardDateFormatter;
 
 import java.time.format.DateTimeFormatter;
 
@@ -22,7 +23,7 @@ public record GymResponse (
 				gym.getCity().getCountry().getName(),
 				gym.getCity().getShortName(),
 				gym.getCity().getName(),
-				gym.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+				StandardDateFormatter.format(gym.getCreatedAt()),
 				gym.getShortName(),
 				gym.getDisplayName(),
 				gym.getWebsiteUrl(),

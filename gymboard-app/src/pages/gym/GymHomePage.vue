@@ -29,7 +29,7 @@
 
     <div v-if="recentSubmissions.length > 0">
       <h4 class="text-center">{{ $t('gymPage.homePage.recentLifts') }}</h4>
-      <q-list>
+      <q-list separator>
         <ExerciseSubmissionListItem
           v-for="sub in recentSubmissions"
           :submission="sub"

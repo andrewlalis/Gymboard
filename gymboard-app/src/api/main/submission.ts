@@ -1,8 +1,8 @@
 import { SimpleGym } from 'src/api/main/gyms';
 import { Exercise } from 'src/api/main/exercises';
-import { api, BASE_URL } from 'src/api/main/index';
+import { api } from 'src/api/main/index';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
-import { sleep } from 'src/utils';
+import { DateTime } from 'luxon';
 
 /**
  * The data that's sent when creating a submission.
@@ -30,7 +30,7 @@ export class WeightUnitUtil {
 
 export interface ExerciseSubmission {
   id: string;
-  createdAt: string;
+  createdAt: DateTime;
   gym: SimpleGym;
   exercise: Exercise;
   videoFileId: string;
@@ -41,12 +41,18 @@ export interface ExerciseSubmission {
   reps: number;
 }
 
+export function parseSubmission(data: any): ExerciseSubmission {
+  data.createdAt = DateTime.fromISO(data.createdAt);
+  console.log(data);
+  return data as ExerciseSubmission;
+}
+
 class SubmissionsModule {
   public async getSubmission(
     submissionId: string
   ): Promise<ExerciseSubmission> {
     const response = await api.get(`/submissions/${submissionId}`);
-    return response.data;
+    return parseSubmission(response.data);
   }
 
   public async createSubmission(
@@ -55,7 +61,7 @@ class SubmissionsModule {
   ): Promise<ExerciseSubmission> {
     const gymId = getGymCompoundId(gym);
     const response = await api.post(`/gyms/${gymId}/submissions`, payload);
-    return response.data;
+    return parseSubmission(response.data);
   }
 }
 

@@ -37,7 +37,7 @@ public class User {
 	)
 	private Set<Role> roles;
 
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, optional = false, fetch = FetchType.LAZY)
 	private UserPersonalDetails personalDetails;
 
 	public User() {}
@@ -49,6 +49,7 @@ public class User {
 		this.passwordHash = passwordHash;
 		this.name = name;
 		this.roles = new HashSet<>();
+		this.personalDetails = new UserPersonalDetails(this);
 	}
 
 	public String getId() {
@@ -85,5 +86,9 @@ public class User {
 
 	public Set<Role> getRoles() {
 		return roles;
+	}
+
+	public UserPersonalDetails getPersonalDetails() {
+		return personalDetails;
 	}
 }

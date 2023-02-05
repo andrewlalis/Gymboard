@@ -1,36 +1,24 @@
 <template>
-  <q-expansion-item
-    expand-separator
-    :label="
-      submission.rawWeight +
-      ' ' +
-      submission.weightUnit +
-      ' x' +
-      submission.reps +
-      ' ' +
-      submission.exercise.displayName
-    "
-    :caption="submission.submitterName"
-  >
-    <q-card>
-      <q-card-section class="text-center">
-        <video
-          :src="getFileUrl(submission.videoFileId)"
-          width="600"
-          loop
-          controls
-          autopictureinpicture
-          preload="metadata"
-        />
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+  <q-item clickable :to="'/submissions/' + submission.id">
+    <q-item-section>
+      <q-item-label>
+        {{ submission.rawWeight }}&nbsp;{{ WeightUnitUtil.toAbbreviation(submission.weightUnit) }}
+        {{ submission.exercise.displayName }}
+      </q-item-label>
+      <q-item-label caption>
+        {{ submission.submitterName }}
+      </q-item-label>
+    </q-item-section>
+    <q-item-section side top>
+      {{ submission.createdAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}
+    </q-item-section>
+  </q-item>
 </template>
 
 <script setup lang="ts">
-import { ExerciseSubmission } from 'src/api/main/submission';
-import api from 'src/api/main';
+import { ExerciseSubmission, WeightUnitUtil } from 'src/api/main/submission';
 import { getFileUrl } from 'src/api/cdn';
+import { DateTime } from 'luxon';
 
 interface Props {
   submission: ExerciseSubmission;

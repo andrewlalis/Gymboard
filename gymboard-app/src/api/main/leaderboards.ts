@@ -1,4 +1,4 @@
-import { ExerciseSubmission } from 'src/api/main/submission';
+import { ExerciseSubmission, parseSubmission } from 'src/api/main/submission';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
 import { api } from 'src/api/main/index';
 
@@ -46,7 +46,7 @@ class LeaderboardsModule {
     if (params.size) requestParams.size = params.size;
 
     const response = await api.get('/leaderboards', { params: requestParams });
-    return response.data.content;
+    return response.data.content.map(parseSubmission);
   }
 }
 

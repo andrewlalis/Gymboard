@@ -1,5 +1,5 @@
 import { GeoPoint } from 'src/api/main/models';
-import SubmissionsModule, { ExerciseSubmission } from 'src/api/main/submission';
+import SubmissionsModule, { ExerciseSubmission, parseSubmission } from 'src/api/main/submission';
 import { api } from 'src/api/main/index';
 import { GymRoutable } from 'src/router/gym-routing';
 
@@ -55,7 +55,8 @@ class GymsModule {
     const response = await api.get(
       `/gyms/${gym.countryCode}_${gym.cityShortName}_${gym.shortName}/recent-submissions`
     );
-    return response.data;
+    const submissionObjects: Array<object> = response.data;
+    return submissionObjects.map(parseSubmission);
   }
 }
 

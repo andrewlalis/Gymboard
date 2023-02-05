@@ -17,7 +17,7 @@
         emit-value
       />
     </div>
-    <q-list>
+    <q-list separator>
       <ExerciseSubmissionListItem
         v-for="sub in submissions"
         :submission="sub"
