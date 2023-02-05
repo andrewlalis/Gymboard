@@ -16,6 +16,18 @@ export interface ExerciseSubmissionPayload {
   videoFileId: string;
 }
 
+export enum WeightUnit {
+  KILOGRAMS = 'KILOGRAMS',
+  POUNDS = 'POUNDS'
+}
+
+export class WeightUnitUtil {
+  public static toAbbreviation(unit: WeightUnit): string {
+    if (unit === WeightUnit.POUNDS) return 'Lbs';
+    return 'Kg';
+  }
+}
+
 export interface ExerciseSubmission {
   id: string;
   createdAt: string;
@@ -24,7 +36,7 @@ export interface ExerciseSubmission {
   videoFileId: string;
   submitterName: string;
   rawWeight: number;
-  weightUnit: string;
+  weightUnit: WeightUnit;
   metricWeight: number;
   reps: number;
 }

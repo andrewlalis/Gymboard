@@ -5,6 +5,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.TimeZone;
+
 @SpringBootApplication
 public class GymboardSearchApplication implements CommandLineRunner {
 	private final GymIndexGenerator gymIndexGenerator;
@@ -14,6 +16,7 @@ public class GymboardSearchApplication implements CommandLineRunner {
 	}
 
 	public static void main(String[] args) {
+		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		SpringApplication.run(GymboardSearchApplication.class, args);
 	}
 

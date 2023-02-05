@@ -11,6 +11,7 @@ import LoginPage from 'pages/auth/LoginPage.vue';
 import RegisterPage from 'pages/auth/RegisterPage.vue';
 import RegistrationSuccessPage from 'pages/auth/RegistrationSuccessPage.vue';
 import ActivationPage from 'pages/auth/ActivationPage.vue';
+import SubmissionPage from 'pages/SubmissionPage.vue';
 
 const routes: RouteRecordRaw[] = [
   // Auth-related pages, which live outside the main layout.
@@ -35,6 +36,7 @@ const routes: RouteRecordRaw[] = [
           { path: 'leaderboard', component: GymLeaderboardsPage },
         ],
       },
+      { path: 'submissions/:submissionId', component: SubmissionPage },
       { path: 'about', component: AboutPage },
     ],
   },
