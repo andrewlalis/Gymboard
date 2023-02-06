@@ -3,5 +3,6 @@ SELECT
     u.email as email,
     u.name as name
 FROM auth_user u
-WHERE u.activated = TRUE
+LEFT JOIN auth_user_preferences p ON u.id = p.user_id
+WHERE u.activated = TRUE AND p.account_private = FALSE
 ORDER BY u.created_at;
