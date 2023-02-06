@@ -7,18 +7,18 @@ import java.time.format.DateTimeFormatter;
 public record UserPersonalDetailsResponse(
 		String userId,
 		String birthDate,
-		float currentWeight,
+		Float currentWeight,
 		String currentWeightUnit,
-		float currentMetricWeight,
+		Float currentMetricWeight,
 		String sex
 ) {
 	public UserPersonalDetailsResponse(UserPersonalDetails pd) {
 		this(
 				pd.getUserId(),
-				pd.getBirthDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
-				pd.getCurrentWeight().floatValue(),
-				pd.getCurrentWeightUnit().name(),
-				pd.getCurrentMetricWeight().floatValue(),
+				pd.getBirthDate() == null ? null : pd.getBirthDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
+				pd.getCurrentWeight() == null ? null : pd.getCurrentWeight().floatValue(),
+				pd.getCurrentWeightUnit() == null ? null : pd.getCurrentWeightUnit().name(),
+				pd.getCurrentMetricWeight() == null ? null : pd.getCurrentMetricWeight().floatValue(),
 				pd.getSex().name()
 		);
 	}

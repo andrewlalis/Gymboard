@@ -28,6 +28,11 @@ public class UserController {
 		return new UserResponse(user);
 	}
 
+	@GetMapping(path = "/auth/users/{userId}")
+	public UserResponse getUser(@PathVariable String userId) {
+		return userService.getUser(userId);
+	}
+
 	/**
 	 * Endpoint for updating one's own password.
 	 * @param user The user that's updating their password.

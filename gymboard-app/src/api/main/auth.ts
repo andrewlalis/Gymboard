@@ -1,5 +1,5 @@
-import { api } from 'src/api/main/index';
-import { AuthStoreType } from 'stores/auth-store';
+import {api} from 'src/api/main/index';
+import {AuthStoreType} from 'stores/auth-store';
 import Timeout = NodeJS.Timeout;
 
 export interface User {
@@ -7,6 +7,26 @@ export interface User {
   activated: boolean;
   email: string;
   name: string;
+}
+
+export enum PersonSex {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  UNKNOWN = 'UNKNOWN'
+}
+
+export interface UserPersonalDetails {
+  userId: string;
+  birthDate?: string;
+  currentWeight?: number;
+  currentWeightUnit?: number;
+  sex: PersonSex;
+}
+
+export interface UserPreferences {
+  userId: string;
+  accountPrivate: boolean;
+  locale: string;
 }
 
 export interface TokenCredentials {
@@ -66,6 +86,11 @@ class AuthModule {
     return response.data;
   }
 
+  public async fetchUser(userId: string, authStore: AuthStoreType): Promise<User> {
+    const response = await api.get(`/auth/users/${userId}`, authStore.axiosConfig);
+    return response.data;
+  }
+
   public async updatePassword(newPassword: string, authStore: AuthStoreType) {
     await api.post(
       '/auth/me/password',
@@ -83,6 +108,16 @@ class AuthModule {
       code: resetCode,
       newPassword: newPassword,
     });
+  }
+
+  public async getMyPersonalDetails(authStore: AuthStoreType): Promise<UserPersonalDetails> {
+    const response = await api.get('/auth/me/personal-details', authStore.axiosConfig);
+    return response.data;
+  }
+
+  public async getMyPreferences(authStore: AuthStoreType): Promise<UserPreferences> {
+    const response = await api.get('/auth/me/preferences', authStore.axiosConfig);
+    return response.data;
   }
 }
 

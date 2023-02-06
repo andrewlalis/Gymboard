@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboardsearch;
 
-import nl.andrewlalis.gymboardsearch.index.GymIndexGenerator;
+import nl.andrewlalis.gymboardsearch.index.JdbcIndexGenerator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,10 +9,10 @@ import java.util.TimeZone;
 
 @SpringBootApplication
 public class GymboardSearchApplication implements CommandLineRunner {
-	private final GymIndexGenerator gymIndexGenerator;
 
-	public GymboardSearchApplication(GymIndexGenerator gymIndexGenerator) {
+	public GymboardSearchApplication(JdbcIndexGenerator gymIndexGenerator, JdbcIndexGenerator userIndexGenerator) {
 		this.gymIndexGenerator = gymIndexGenerator;
+		this.userIndexGenerator = userIndexGenerator;
 	}
 
 	public static void main(String[] args) {
@@ -20,8 +20,12 @@ public class GymboardSearchApplication implements CommandLineRunner {
 		SpringApplication.run(GymboardSearchApplication.class, args);
 	}
 
+	private final JdbcIndexGenerator gymIndexGenerator;
+	private final JdbcIndexGenerator userIndexGenerator;
+
 	@Override
-	public void run(String... args) throws Exception {
-		gymIndexGenerator.generateIndex();
+	public void run(String... args) {
+		gymIndexGenerator.generate();
+		userIndexGenerator.generate();
 	}
 }
