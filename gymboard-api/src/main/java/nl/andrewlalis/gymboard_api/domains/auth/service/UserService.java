@@ -5,15 +5,14 @@ import jakarta.mail.internet.MimeMessage;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.*;
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
-import nl.andrewlalis.gymboard_api.domains.auth.model.PasswordResetCode;
-import nl.andrewlalis.gymboard_api.domains.auth.model.User;
-import nl.andrewlalis.gymboard_api.domains.auth.model.UserActivationCode;
-import nl.andrewlalis.gymboard_api.domains.auth.model.UserPersonalDetails;
+import nl.andrewlalis.gymboard_api.domains.auth.model.*;
 import nl.andrewlalis.gymboard_api.util.StringGenerator;
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -38,6 +37,7 @@ public class UserService {
 	private final UserPreferencesRepository userPreferencesRepository;
 	private final UserActivationCodeRepository activationCodeRepository;
 	private final PasswordResetCodeRepository passwordResetCodeRepository;
+	private final UserFollowingRepository userFollowingRepository;
 	private final ULID ulid;
 	private final PasswordEncoder passwordEncoder;
 	private final JavaMailSender mailSender;
@@ -51,7 +51,7 @@ public class UserService {
 			UserPreferencesRepository userPreferencesRepository,
 			UserActivationCodeRepository activationCodeRepository,
 			PasswordResetCodeRepository passwordResetCodeRepository,
-			ULID ulid,
+			UserFollowingRepository userFollowingRepository, ULID ulid,
 			PasswordEncoder passwordEncoder,
 			JavaMailSender mailSender
 	) {
@@ -60,6 +60,7 @@ public class UserService {
 		this.userPreferencesRepository = userPreferencesRepository;
 		this.activationCodeRepository = activationCodeRepository;
 		this.passwordResetCodeRepository = passwordResetCodeRepository;
+		this.userFollowingRepository = userFollowingRepository;
 		this.ulid = ulid;
 		this.passwordEncoder = passwordEncoder;
 		this.mailSender = mailSender;
@@ -275,5 +276,41 @@ public class UserService {
 		p.setLocale(payload.locale());
 		p = userPreferencesRepository.save(p);
 		return new UserPreferencesResponse(p);
+	}
+
+	@Transactional
+	public void followUser(String followerId, String followedId) {
+		User follower = userRepository.findById(followerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		User followed = userRepository.findById(followedId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+		if (!userFollowingRepository.existsByFollowedUserAndFollowingUser(followed, follower)) {
+			userFollowingRepository.save(new UserFollowing(followed, follower));
+		}
+	}
+
+	@Transactional
+	public void unfollowUser(String followerId, String followedId) {
+		User follower = userRepository.findById(followerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		User followed = userRepository.findById(followedId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+		userFollowingRepository.deleteByFollowedUserAndFollowingUser(followed, follower);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<UserResponse> getFollowers(String userId, Pageable pageable) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		return userFollowingRepository.findAllByFollowedUserOrderByCreatedAtDesc(user, pageable)
+				.map(UserFollowing::getFollowingUser)
+				.map(UserResponse::new);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<UserResponse> getFollowing(String userId, Pageable pageable) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		return userFollowingRepository.findAllByFollowingUserOrderByCreatedAtDesc(user, pageable)
+				.map(UserFollowing::getFollowedUser)
+				.map(UserResponse::new);
 	}
 }

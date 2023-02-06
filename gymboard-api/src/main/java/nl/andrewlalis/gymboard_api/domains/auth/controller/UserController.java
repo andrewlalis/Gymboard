@@ -3,12 +3,11 @@ package nl.andrewlalis.gymboard_api.domains.auth.controller;
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UserController {
@@ -65,5 +64,27 @@ public class UserController {
 			@RequestBody UserPreferencesPayload payload
 	) {
 		return userService.updatePreferences(user.getId(), payload);
+	}
+
+	@PostMapping(path = "/auth/users/{userId}/followers")
+	public ResponseEntity<Void> followUser(@AuthenticationPrincipal User myUser, @PathVariable String userId) {
+		userService.followUser(myUser.getId(), userId);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping(path = "/auth/users/{userId}/followers")
+	public ResponseEntity<Void> unfollowUser(@AuthenticationPrincipal User myUser, @PathVariable String userId) {
+		userService.unfollowUser(myUser.getId(), userId);
+		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping(path = "/auth/me/followers")
+	public Page<UserResponse> getFollowers(@AuthenticationPrincipal User user, Pageable pageable) {
+		return userService.getFollowers(user.getId(), pageable);
+	}
+
+	@GetMapping(path = "/auth/me/following")
+	public Page<UserResponse> getFollowing(@AuthenticationPrincipal User user, Pageable pageable) {
+		return userService.getFollowing(user.getId(), pageable);
 	}
 }

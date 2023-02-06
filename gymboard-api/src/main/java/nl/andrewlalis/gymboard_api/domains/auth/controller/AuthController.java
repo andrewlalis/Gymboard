@@ -1,12 +1,10 @@
 package nl.andrewlalis.gymboard_api.domains.auth.controller;
 
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
-import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.service.TokenService;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

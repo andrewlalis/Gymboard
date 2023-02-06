@@ -10,7 +10,10 @@ import java.time.LocalDateTime;
  * have impacts on the notifications that a user can receive.
  */
 @Entity
-@Table(name = "auth_user_following")
+@Table(
+		name = "auth_user_following",
+		uniqueConstraints = @UniqueConstraint(columnNames = {"followed_user_id", "following_user_id"})
+)
 public class UserFollowing {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
