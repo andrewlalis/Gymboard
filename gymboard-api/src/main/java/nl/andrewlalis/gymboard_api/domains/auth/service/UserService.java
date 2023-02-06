@@ -3,10 +3,7 @@ package nl.andrewlalis.gymboard_api.domains.auth.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.PasswordResetCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.UserActivationCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.UserPersonalDetailsRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.*;
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.PasswordResetCode;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
@@ -38,6 +35,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final UserPersonalDetailsRepository userPersonalDetailsRepository;
+	private final UserPreferencesRepository userPreferencesRepository;
 	private final UserActivationCodeRepository activationCodeRepository;
 	private final PasswordResetCodeRepository passwordResetCodeRepository;
 	private final ULID ulid;
@@ -49,7 +47,9 @@ public class UserService {
 
 	public UserService(
 			UserRepository userRepository,
-			UserPersonalDetailsRepository userPersonalDetailsRepository, UserActivationCodeRepository activationCodeRepository,
+			UserPersonalDetailsRepository userPersonalDetailsRepository,
+			UserPreferencesRepository userPreferencesRepository,
+			UserActivationCodeRepository activationCodeRepository,
 			PasswordResetCodeRepository passwordResetCodeRepository,
 			ULID ulid,
 			PasswordEncoder passwordEncoder,
@@ -57,6 +57,7 @@ public class UserService {
 	) {
 		this.userRepository = userRepository;
 		this.userPersonalDetailsRepository = userPersonalDetailsRepository;
+		this.userPreferencesRepository = userPreferencesRepository;
 		this.activationCodeRepository = activationCodeRepository;
 		this.passwordResetCodeRepository = passwordResetCodeRepository;
 		this.ulid = ulid;
@@ -228,7 +229,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public UserResponse updatePersonalDetails(String id, UserPersonalDetailsPayload payload) {
+	public UserPersonalDetailsResponse updatePersonalDetails(String id, UserPersonalDetailsPayload payload) {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		var pd = user.getPersonalDetails();
@@ -249,7 +250,7 @@ public class UserService {
 		pd.setCurrentMetricWeight(currentMetricWeight);
 		pd.setSex(UserPersonalDetails.PersonSex.parse(payload.sex()));
 		user = userRepository.save(user);
-		return new UserResponse(user);
+		return new UserPersonalDetailsResponse(user.getPersonalDetails());
 	}
 
 	@Transactional(readOnly = true)
@@ -257,5 +258,22 @@ public class UserService {
 		var pd = userPersonalDetailsRepository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		return new UserPersonalDetailsResponse(pd);
+	}
+
+	@Transactional(readOnly = true)
+	public UserPreferencesResponse getPreferences(String id) {
+		var p = userPreferencesRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		return new UserPreferencesResponse(p);
+	}
+
+	@Transactional
+	public UserPreferencesResponse updatePreferences(String id, UserPreferencesPayload payload) {
+		var p = userPreferencesRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		p.setAccountPrivate(payload.accountPrivate());
+		p.setLocale(payload.locale());
+		p = userPreferencesRepository.save(p);
+		return new UserPreferencesResponse(p);
 	}
 }
