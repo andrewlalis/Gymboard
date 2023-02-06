@@ -2,13 +2,16 @@ package nl.andrewlalis.gymboard_api.domains.auth.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.PasswordResetCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserActivationCodeRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.UserPersonalDetailsRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.PasswordResetCode;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.model.UserActivationCode;
+import nl.andrewlalis.gymboard_api.domains.auth.model.UserPersonalDetails;
 import nl.andrewlalis.gymboard_api.util.StringGenerator;
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -33,6 +37,7 @@ public class UserService {
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 	private final UserRepository userRepository;
+	private final UserPersonalDetailsRepository userPersonalDetailsRepository;
 	private final UserActivationCodeRepository activationCodeRepository;
 	private final PasswordResetCodeRepository passwordResetCodeRepository;
 	private final ULID ulid;
@@ -44,13 +49,14 @@ public class UserService {
 
 	public UserService(
 			UserRepository userRepository,
-			UserActivationCodeRepository activationCodeRepository,
+			UserPersonalDetailsRepository userPersonalDetailsRepository, UserActivationCodeRepository activationCodeRepository,
 			PasswordResetCodeRepository passwordResetCodeRepository,
 			ULID ulid,
 			PasswordEncoder passwordEncoder,
 			JavaMailSender mailSender
 	) {
 		this.userRepository = userRepository;
+		this.userPersonalDetailsRepository = userPersonalDetailsRepository;
 		this.activationCodeRepository = activationCodeRepository;
 		this.passwordResetCodeRepository = passwordResetCodeRepository;
 		this.ulid = ulid;
@@ -219,5 +225,37 @@ public class UserService {
 		passwordResetCodeRepository.deleteAllByCreatedAtBefore(passwordResetCodeCutoff);
 		LocalDateTime activationCodeCutoff = LocalDateTime.now().minus(UserActivationCode.VALID_FOR);
 		activationCodeRepository.deleteAllByCreatedAtBefore(activationCodeCutoff);
+	}
+
+	@Transactional
+	public UserResponse updatePersonalDetails(String id, UserPersonalDetailsPayload payload) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		var pd = user.getPersonalDetails();
+
+		pd.setBirthDate(payload.birthDate());
+		BigDecimal currentWeight = payload.currentWeight() == null ? null : BigDecimal.valueOf(payload.currentWeight());
+		WeightUnit currentWeightUnit = WeightUnit.parse(payload.currentWeightUnit());
+		BigDecimal currentMetricWeight = null;
+		if (currentWeight != null) {
+			if (currentWeightUnit == WeightUnit.POUNDS) {
+				currentMetricWeight = WeightUnit.toKilograms(currentWeight);
+			} else {
+				currentMetricWeight = new BigDecimal(currentWeight.toString());
+			}
+		}
+		pd.setCurrentWeight(currentWeight);
+		pd.setCurrentWeightUnit(currentWeightUnit);
+		pd.setCurrentMetricWeight(currentMetricWeight);
+		pd.setSex(UserPersonalDetails.PersonSex.parse(payload.sex()));
+		user = userRepository.save(user);
+		return new UserResponse(user);
+	}
+
+	@Transactional(readOnly = true)
+	public UserPersonalDetailsResponse getPersonalDetails(String id) {
+		var pd = userPersonalDetailsRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		return new UserPersonalDetailsResponse(pd);
 	}
 }

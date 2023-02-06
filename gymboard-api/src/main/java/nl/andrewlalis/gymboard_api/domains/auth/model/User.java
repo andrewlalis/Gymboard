@@ -40,6 +40,9 @@ public class User {
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, optional = false, fetch = FetchType.LAZY)
 	private UserPersonalDetails personalDetails;
 
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, optional = false, fetch = FetchType.LAZY)
+	private UserPreferences preferences;
+
 	public User() {}
 
 	public User(String id, boolean activated, String email, String passwordHash, String name) {
@@ -50,6 +53,7 @@ public class User {
 		this.name = name;
 		this.roles = new HashSet<>();
 		this.personalDetails = new UserPersonalDetails(this);
+		this.preferences = new UserPreferences(this);
 	}
 
 	public String getId() {
@@ -90,5 +94,9 @@ public class User {
 
 	public UserPersonalDetails getPersonalDetails() {
 		return personalDetails;
+	}
+
+	public UserPreferences getPreferences() {
+		return preferences;
 	}
 }

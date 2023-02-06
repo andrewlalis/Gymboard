@@ -15,7 +15,19 @@ public class UserPersonalDetails {
 	public enum PersonSex {
 		MALE,
 		FEMALE,
-		UNKNOWN
+		UNKNOWN;
+
+		public static PersonSex parse(String s) {
+			if (s != null && !s.isBlank()) {
+				s = s.strip().toUpperCase();
+				if (s.equals("M") || s.equals("MALE") || s.equals("MAN")) {
+					return MALE;
+				} else if (s.equals("F") || s.equals("FEMALE") || s.equals("WOMAN")) {
+					return FEMALE;
+				}
+			}
+			return UNKNOWN;
+		}
 	}
 
 	@Id
@@ -48,6 +60,10 @@ public class UserPersonalDetails {
 	public UserPersonalDetails(User user) {
 		this.user = user;
 		this.userId = user.getId();
+	}
+
+	public String getUserId() {
+		return userId;
 	}
 
 	public User getUser() {
