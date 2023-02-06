@@ -1,4 +1,30 @@
-jay.cutler@example.com,testpass,Jay Cutler,
-mike.mentzer@example.com,testpass,Mike Mentzer,
-ronnie.coleman@example.com,testpass,Ronnie 'Lightweight' Coleman,
-andrew.lalis@example.com,testpass,Andrew Lalis,admin
+email,password,name,roles,following,birth-date,current-weight,current-weight-unit,sex,locale,account-private
+jay.cutler@example.com,testpass,Jay Cutler,,"mike.mentzer@example.com
+ronnie.coleman@example.com",1973-08-03,260,LBS,MALE,en-US,FALSE
+mike.mentzer@example.com,testpass,Mike Mentzer,,"ronnie.coleman@example.com
+jay.cutler@example.com
+andrew.lalis@example.com",1951-11-15,244,LBS,MALE,en-US,FALSE
+ronnie.coleman@example.com,testpass,Ronnie 'Lightweight' Coleman,,jay.cutler@example.com,1964-05-13,315,LBS,MALE,en-US,FALSE
+andrew.lalis@example.com,testpass,Andrew Lalis,admin,"said.faroghi@example.com
+klaus.lalis@example.com
+zino.holwerda@example.com
+tom.denboon@example.com
+max.verbeek@example.com",1997-12-13,98,KG,MALE,en-US,FALSE
+said.faroghi@example.com,testpass,Said Faroghi,,"andrew.lalis@example.com
+zino.holwerda@example.com",1995-11-11,68,KG,MALE,en-US,TRUE
+erblin.ibrahimi@example.com,testpass,Erblin Ibrahimi,,"max.verbeek@example.com
+niels.bugel@example.com
+ronnie.coleman@example.com",1998-09-28,101,KG,MALE,nl-NL,FALSE
+max.verbeek@example.com,testpass,Max Verbeek,,"erblin.ibrahimi@example.com
+niels.bugel@example.com
+klaus.lalis@example.com",1998-01-24,85,KG,MALE,nl-NL,FALSE
+niels.bugel@example.com,testpass,Niels Bugel,,"erblin.ibrahimi@example.com
+max.verbeek@example.com
+andrew.lalis@example.com",1996-04-21,95,KG,MALE,nl-NL,FALSE
+zino.holwerda@example.com,testpass,Zino Holwerda,,"andrew.lalis@example.com
+said.faroghi@example.com
+tom.denboon@example.com
+klaus.lalis@example.com",1997-04-22,91,KG,MALE,nl-NL,TRUE
+tom.denboon@example.com,testpass,Tom den Boon,,zino.holwerda@example.com,1998-11-09,84,KG,MALE,nl-NL,FALSE
+klaus.lalis@example.com,testpass,Klaus Lalis,,"andrew.lalis@example.com
+zino.holwerda@example.com",2000-12-15,93,KG,MALE,en-US,FALSE

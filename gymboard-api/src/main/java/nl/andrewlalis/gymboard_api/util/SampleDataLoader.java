@@ -11,10 +11,13 @@ import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.RoleRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.UserPersonalDetailsRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.UserPreferencesRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.dto.UserCreationPayload;
 import nl.andrewlalis.gymboard_api.domains.auth.model.Role;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.auth.model.UserPersonalDetails;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -31,8 +34,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDate;
 
 /**
  * Simple component that loads sample data that's useful when testing the application.
@@ -47,6 +49,8 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 	private final ExerciseSubmissionService submissionService;
 	private final RoleRepository roleRepository;
 	private final UserRepository userRepository;
+	private final UserPersonalDetailsRepository personalDetailsRepository;
+	private final UserPreferencesRepository preferencesRepository;
 	private final UserService userService;
 
 	@Value("${app.cdn-origin}")
@@ -58,7 +62,7 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 			GymRepository gymRepository,
 			ExerciseRepository exerciseRepository,
 			ExerciseSubmissionService submissionService,
-			RoleRepository roleRepository, UserRepository userRepository, UserService userService) {
+			RoleRepository roleRepository, UserRepository userRepository, UserPersonalDetailsRepository personalDetailsRepository, UserPreferencesRepository preferencesRepository, UserService userService) {
 		this.countryRepository = countryRepository;
 		this.cityRepository = cityRepository;
 		this.gymRepository = gymRepository;
@@ -66,6 +70,8 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 		this.submissionService = submissionService;
 		this.roleRepository = roleRepository;
 		this.userRepository = userRepository;
+		this.personalDetailsRepository = personalDetailsRepository;
+		this.preferencesRepository = preferencesRepository;
 		this.userService = userService;
 	}
 
@@ -77,6 +83,7 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 		log.info("Generating sample data.");
 		try {
 			generateSampleData();
+			secondPassGenerateSampleData();
 			Files.writeString(markerFile, "Yes");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -86,27 +93,32 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 	@Transactional
 	protected void generateSampleData() throws Exception {
 		loadCsv("exercises", record -> {
-			exerciseRepository.save(new Exercise(record.get(0), record.get(1)));
+			exerciseRepository.save(new Exercise(record.get("short-name"), record.get("name")));
 		});
 		loadCsv("countries", record -> {
-			countryRepository.save(new Country(record.get(0), record.get(1)));
+			countryRepository.save(new Country(record.get("code"), record.get("name")));
 		});
 		loadCsv("cities", record -> {
-			var country = countryRepository.findById(record.get(0)).orElseThrow();
-			cityRepository.save(new City(record.get(1), record.get(2), country));
+			var country = countryRepository.findById(record.get("country-code")).orElseThrow();
+			String shortName = record.get("short-name");
+			String name = record.get("name");
+			cityRepository.save(new City(shortName, name, country));
 		});
 		loadCsv("gyms", record -> {
-			var city = cityRepository.findByShortNameAndCountryCode(record.get(1), record.get(0)).orElseThrow();
+			var city = cityRepository.findByShortNameAndCountryCode(
+					record.get("city-short-name"),
+					record.get("country-code")
+			).orElseThrow();
 			gymRepository.save(new Gym(
 					city,
-					record.get(2),
-					record.get(3),
-					record.get(4),
+					record.get("short-name"),
+					record.get("name"),
+					record.get("website-url"),
 					new GeoPoint(
-							new BigDecimal(record.get(5)),
-							new BigDecimal(record.get(6))
+							new BigDecimal(record.get("latitude")),
+							new BigDecimal(record.get("longitude"))
 					),
-					record.get(7)
+					record.get("street-address")
 			));
 		});
 
@@ -114,18 +126,16 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 		// We upload a video for each submission, and wait until all uploads are processed before continuing.
 
 		final CdnClient cdnClient = new CdnClient(cdnOrigin);
-		final Set<String> videoIds = new HashSet<>();
 
 		loadCsv("submissions", record -> {
-			var exercise = exerciseRepository.findById(record.get(0)).orElseThrow();
-			BigDecimal weight = new BigDecimal(record.get(1));
-			WeightUnit unit = WeightUnit.parse(record.get(2));
-			int reps = Integer.parseInt(record.get(3));
-			String name = record.get(4);
-			CompoundGymId gymId = CompoundGymId.parse(record.get(5));
-			String videoFilename = record.get(6);
+			var exercise = exerciseRepository.findById(record.get("exercise-short-name")).orElseThrow();
+			BigDecimal weight = new BigDecimal(record.get("raw-weight"));
+			WeightUnit unit = WeightUnit.parse(record.get("weight-unit"));
+			int reps = Integer.parseInt(record.get("reps"));
+			String name = record.get("submitter-name");
+			CompoundGymId gymId = CompoundGymId.parse(record.get("gym-id"));
+			String videoFilename = record.get("video-filename");
 
-			// Upload the video to the CDN, and wait until it's done processing.
 			log.info("Uploading video {} to CDN...", videoFilename);
 			var video = cdnClient.uploads.uploadVideo(Path.of("sample_data", videoFilename), "video/mp4");
 			submissionService.createSubmission(gymId, new ExerciseSubmissionPayload(
@@ -136,28 +146,21 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 					reps,
 					video.id()
 			));
-			videoIds.add(video.id());
 		});
 
-		int count = videoIds.size();
-		while (!videoIds.isEmpty()) {
-			log.info("Waiting for {} / {} videos to finish processing...", videoIds.size(), count);
-			Set<String> removalSet = new HashSet<>();
-			for (var videoId : videoIds) {
-				String status = cdnClient.uploads.getVideoProcessingStatus(videoId).status();
-				if (status.equalsIgnoreCase("COMPLETED") || status.equalsIgnoreCase("FAILED")) {
-					removalSet.add(videoId);
-				}
-			}
-			videoIds.removeAll(removalSet);
-			Thread.sleep(1000);
-		}
-
 		loadCsv("users", record -> {
-			String email = record.get(0);
-			String password = record.get(1);
-			String name = record.get(2);
-			String[] roleNames = record.get(3).split("\\s*\\|\\s*");
+			String email = record.get("email");
+			String password = record.get("password");
+			String name = record.get("name");
+			String[] roleNames = record.get("roles").split("\\s*\\n\\s*");
+			LocalDate birthDate = LocalDate.parse(record.get("birth-date"));
+			BigDecimal currentWeight = new BigDecimal(record.get("current-weight"));
+			WeightUnit currentWeightUnit = WeightUnit.parse(record.get("current-weight-unit"));
+			BigDecimal metricWeight = new BigDecimal(currentWeight.toString());
+			if (currentWeightUnit == WeightUnit.POUNDS) {
+				metricWeight = WeightUnit.toKilograms(metricWeight);
+			}
+			UserPersonalDetails.PersonSex sex = UserPersonalDetails.PersonSex.parse(record.get("sex"));
 
 			UserCreationPayload payload = new UserCreationPayload(email, password, name);
 			var resp = userService.createUser(payload, false);
@@ -169,6 +172,30 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 				user.getRoles().add(role);
 			}
 			userRepository.save(user);
+			var pd = personalDetailsRepository.findById(user.getId()).orElseThrow();
+			pd.setBirthDate(birthDate);
+			pd.setCurrentWeight(currentWeight);
+			pd.setCurrentWeightUnit(currentWeightUnit);
+			pd.setCurrentMetricWeight(metricWeight);
+			pd.setSex(sex);
+			personalDetailsRepository.save(pd);
+			var p = preferencesRepository.findById(user.getId()).orElseThrow();
+			p.setLocale(record.get("locale"));
+			p.setAccountPrivate(Boolean.parseBoolean(record.get("account-private")));
+			preferencesRepository.save(p);
+		});
+	}
+
+	@Transactional
+	protected void secondPassGenerateSampleData() throws Exception {
+		loadCsv("users", record -> {
+			String email = record.get("email");
+			String[] followingEmails = record.get("following").split("\\s*\\n\\s*");
+			User user = userRepository.findByEmail(email).orElseThrow();
+			for (String followingEmail : followingEmails) {
+				User userToFollow = userRepository.findByEmail(followingEmail).orElseThrow();
+				userService.followUser(user.getId(), userToFollow.getId());
+			}
 		});
 	}
 
@@ -181,7 +208,11 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 		String path = "sample_data/" + csvName + ".csv";
 		log.info("Loading data from {}...", path);
 		var reader = new FileReader(path);
-		for (var record : CSVFormat.DEFAULT.parse(reader)) {
+		CSVFormat format = CSVFormat.DEFAULT.builder()
+				.setHeader()
+				.setSkipHeaderRecord(true)
+				.build();
+		for (var record : format.parse(reader)) {
 			try {
 				recordConsumer.accept(record);
 			} catch (Exception e) {
