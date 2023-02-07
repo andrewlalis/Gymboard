@@ -3,6 +3,7 @@ import { Exercise } from 'src/api/main/exercises';
 import { api } from 'src/api/main/index';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
 import { DateTime } from 'luxon';
+import {User} from "src/api/main/auth";
 
 /**
  * The data that's sent when creating a submission.
@@ -33,8 +34,9 @@ export interface ExerciseSubmission {
   createdAt: DateTime;
   gym: SimpleGym;
   exercise: Exercise;
+  user: User;
+  performedAt: DateTime;
   videoFileId: string;
-  submitterName: string;
   rawWeight: number;
   weightUnit: WeightUnit;
   metricWeight: number;
@@ -43,7 +45,7 @@ export interface ExerciseSubmission {
 
 export function parseSubmission(data: any): ExerciseSubmission {
   data.createdAt = DateTime.fromISO(data.createdAt);
-  console.log(data);
+  data.performedAt = DateTime.fromISO(data.performedAt);
   return data as ExerciseSubmission;
 }
 

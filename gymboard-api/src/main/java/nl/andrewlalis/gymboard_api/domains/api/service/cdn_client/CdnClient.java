@@ -32,7 +32,13 @@ public class CdnClient {
 				.GET()
 				.build();
 		HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-		return objectMapper.readValue(response.body(), responseType);
+		if (response.statusCode() == 200) {
+			return objectMapper.readValue(response.body(), responseType);
+		} else if (response.statusCode() == 404) {
+			return null;
+		} else {
+			throw new IOException("Request failed with code " + response.statusCode());
+		}
 	}
 
 	public <T> T postFile(String urlPath, Path filePath, String contentType, Class<T> responseType) throws IOException, InterruptedException {

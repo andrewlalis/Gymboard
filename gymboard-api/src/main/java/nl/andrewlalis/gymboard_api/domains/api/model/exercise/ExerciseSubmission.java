@@ -3,9 +3,11 @@ package nl.andrewlalis.gymboard_api.domains.api.model.exercise;
 import jakarta.persistence.*;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
+import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,6 +26,12 @@ public class ExerciseSubmission {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Exercise exercise;
 
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private User user;
+
+	@Column(nullable = false)
+	private LocalDateTime performedAt;
+
 	/**
 	 * The id of the video file that was submitted for this submission. It lives
 	 * on the <em>gymboard-cdn</em> service as a stored file, which can be
@@ -31,9 +39,6 @@ public class ExerciseSubmission {
 	 */
 	@Column(nullable = false, updatable = false, length = 26)
 	private String videoFileId;
-
-	@Column(nullable = false, updatable = false, length = 63)
-	private String submitterName;
 
 	@Column(nullable = false, precision = 7, scale = 2)
 	private BigDecimal rawWeight;
@@ -50,12 +55,13 @@ public class ExerciseSubmission {
 
 	public ExerciseSubmission() {}
 
-	public ExerciseSubmission(String id, Gym gym, Exercise exercise, String videoFileId, String submitterName, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
+	public ExerciseSubmission(String id, Gym gym, Exercise exercise, User user, LocalDateTime performedAt, String videoFileId, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
 		this.id = id;
 		this.gym = gym;
 		this.exercise = exercise;
 		this.videoFileId = videoFileId;
-		this.submitterName = submitterName;
+		this.user = user;
+		this.performedAt = performedAt;
 		this.rawWeight = rawWeight;
 		this.weightUnit = unit;
 		this.metricWeight = metricWeight;
@@ -82,8 +88,12 @@ public class ExerciseSubmission {
 		return videoFileId;
 	}
 
-	public String getSubmitterName() {
-		return submitterName;
+	public User getUser() {
+		return user;
+	}
+
+	public LocalDateTime getPerformedAt() {
+		return performedAt;
 	}
 
 	public BigDecimal getRawWeight() {

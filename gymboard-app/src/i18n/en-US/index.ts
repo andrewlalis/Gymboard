@@ -41,6 +41,7 @@ export default {
   },
   accountMenuItem: {
     logIn: 'Login',
+    myAccount: 'My Account',
     logOut: 'Log out',
   },
 };

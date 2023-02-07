@@ -6,6 +6,8 @@ import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dto.GymResponse;
 import nl.andrewlalis.gymboard_api.domains.api.service.GymService;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
+import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,8 +39,9 @@ public class GymController {
 	@PostMapping(path = "/submissions")
 	public ExerciseSubmissionResponse createSubmission(
 			@PathVariable String compoundId,
+			@AuthenticationPrincipal User user,
 			@RequestBody ExerciseSubmissionPayload payload
 	) {
-		return submissionService.createSubmission(CompoundGymId.parse(compoundId), payload);
+		return submissionService.createSubmission(CompoundGymId.parse(compoundId), user.getId(), payload);
 	}
 }

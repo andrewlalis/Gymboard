@@ -8,6 +8,11 @@
       icon="person"
     >
       <q-list>
+        <q-item clickable v-close-popup :to="'/users/' + authStore.user?.id">
+          <q-item-section>
+            <q-item-label>{{ $t('accountMenuItem.myAccount') }}</q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item clickable v-close-popup @click="api.auth.logout(authStore)">
           <q-item-section>
             <q-item-label>{{ $t('accountMenuItem.logOut') }}</q-item-label>

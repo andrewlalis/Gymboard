@@ -1,17 +1,17 @@
 package nl.andrewlalis.gymboard_api.domains.api.dto;
 
 import nl.andrewlalis.gymboard_api.domains.api.model.exercise.ExerciseSubmission;
+import nl.andrewlalis.gymboard_api.domains.auth.dto.UserResponse;
 import nl.andrewlalis.gymboard_api.util.StandardDateFormatter;
-
-import java.time.format.DateTimeFormatter;
 
 public record ExerciseSubmissionResponse(
 		String id,
 		String createdAt,
 		GymSimpleResponse gym,
 		ExerciseResponse exercise,
+		UserResponse user,
+		String performedAt,
 		String videoFileId,
-		String submitterName,
 		double rawWeight,
 		String weightUnit,
 		double metricWeight,
@@ -23,8 +23,9 @@ public record ExerciseSubmissionResponse(
 				StandardDateFormatter.format(submission.getCreatedAt()),
 				new GymSimpleResponse(submission.getGym()),
 				new ExerciseResponse(submission.getExercise()),
+				new UserResponse(submission.getUser()),
+				StandardDateFormatter.format(submission.getPerformedAt()),
 				submission.getVideoFileId(),
-				submission.getSubmitterName(),
 				submission.getRawWeight().doubleValue(),
 				submission.getWeightUnit().name(),
 				submission.getMetricWeight().doubleValue(),

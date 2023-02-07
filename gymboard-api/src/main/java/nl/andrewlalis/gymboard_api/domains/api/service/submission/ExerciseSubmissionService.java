@@ -10,6 +10,8 @@ import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.exercise.ExerciseSubmission;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Service which handles the rather mundane tasks associated with exercise
@@ -29,15 +33,17 @@ public class ExerciseSubmissionService {
 	private static final Logger log = LoggerFactory.getLogger(ExerciseSubmissionService.class);
 
 	private final GymRepository gymRepository;
+	private final UserRepository userRepository;
 	private final ExerciseRepository exerciseRepository;
 	private final ExerciseSubmissionRepository exerciseSubmissionRepository;
 	private final ULID ulid;
 
 	public ExerciseSubmissionService(GymRepository gymRepository,
-									 ExerciseRepository exerciseRepository,
+									 UserRepository userRepository, ExerciseRepository exerciseRepository,
 									 ExerciseSubmissionRepository exerciseSubmissionRepository,
 									 ULID ulid) {
 		this.gymRepository = gymRepository;
+		this.userRepository = userRepository;
 		this.exerciseRepository = exerciseRepository;
 		this.exerciseSubmissionRepository = exerciseSubmissionRepository;
 		this.ulid = ulid;
@@ -53,11 +59,14 @@ public class ExerciseSubmissionService {
 	/**
 	 * Handles the creation of a new exercise submission.
 	 * @param id The gym id.
+	 * @param userId The user's id.
 	 * @param payload The submission data.
 	 * @return The saved submission.
 	 */
 	@Transactional
-	public ExerciseSubmissionResponse createSubmission(CompoundGymId id, ExerciseSubmissionPayload payload) {
+	public ExerciseSubmissionResponse createSubmission(CompoundGymId id, String userId, ExerciseSubmissionPayload payload) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
 		Gym gym = gymRepository.findByCompoundId(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		Exercise exercise = exerciseRepository.findById(payload.exerciseShortName())
@@ -76,8 +85,9 @@ public class ExerciseSubmissionService {
 				ulid.nextULID(),
 				gym,
 				exercise,
+				user,
+				LocalDateTime.now(),
 				payload.videoFileId(),
-				payload.name(),
 				rawWeight,
 				weightUnit,
 				metricWeight,
