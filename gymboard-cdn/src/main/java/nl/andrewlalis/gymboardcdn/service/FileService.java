@@ -1,18 +1,25 @@
 package nl.andrewlalis.gymboardcdn.service;
 
 import nl.andrewlalis.gymboardcdn.model.StoredFile;
+import nl.andrewlalis.gymboardcdn.model.StoredFileRepository;
 import nl.andrewlalis.gymboardcdn.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The service that manages storing and retrieving files from a base filesystem.
@@ -27,9 +34,11 @@ public class FileService {
 	@Value("${app.files.temp-dir}")
 	private String tempDir;
 
+	private final StoredFileRepository storedFileRepository;
 	private final ULID ulid;
 
-	public FileService(ULID ulid) {
+	public FileService(StoredFileRepository storedFileRepository, ULID ulid) {
+		this.storedFileRepository = storedFileRepository;
 		this.ulid = ulid;
 	}
 
@@ -77,5 +86,31 @@ public class FileService {
 			Files.createDirectories(dir);
 		}
 		return dir;
+	}
+
+	/**
+	 * Scheduled task that removes any StoredFile entities for which no more
+	 * physical file exists.
+	 */
+	@Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+	@Transactional
+	public void removeOrphanedFiles() {
+		Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
+		Page<StoredFile> page = storedFileRepository.findAll(pageable);
+		while (!page.isEmpty()) {
+			for (var storedFile : page) {
+				try {
+					Path filePath = getStoragePathForFile(storedFile);
+					if (Files.notExists(filePath)) {
+						log.warn("Removing stored file {} because it no longer exists on the disk.", storedFile.getId());
+						storedFileRepository.delete(storedFile);
+					}
+				} catch (IOException e) {
+					log.error("Couldn't get storage path for stored file.", e);
+				}
+			}
+			pageable = pageable.next();
+			page = storedFileRepository.findAll(pageable);
+		}
 	}
 }

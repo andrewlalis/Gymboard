@@ -10,3 +10,8 @@ export interface GymSearchResult {
   latitude: number;
   longitude: number;
 }
+
+export interface UserSearchResult {
+  id: string;
+  name: string;
+}
