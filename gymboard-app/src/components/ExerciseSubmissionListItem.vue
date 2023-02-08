@@ -6,7 +6,7 @@
         {{ submission.exercise.displayName }}
       </q-item-label>
       <q-item-label caption>
-        {{ submission.submitterName }}
+        {{ submission.user.name }}
       </q-item-label>
     </q-item-section>
     <q-item-section side top>

@@ -5,6 +5,10 @@
       <p>{{ user?.email }}</p>
       <p v-if="isOwnUser">This is your account!</p>
     </StandardCenteredPage>
+    <StandardCenteredPage v-if="userNotFound">
+      <h3>{{ $t('userPage.notFound.title') }}</h3>
+      <p>{{ $t('userPage.notFound.description') }}</p>
+    </StandardCenteredPage>
   </q-page>
 </template>
 
@@ -29,10 +33,22 @@ const user: Ref<User | undefined> = ref();
  */
 const isOwnUser = ref(false);
 
+/**
+ * Flag used to indicate whether we should show a "not found" message instead
+ * of the usual user page.
+ */
+const userNotFound = ref(false);
+
 onMounted(async () => {
   const userId = route.params.userId as string;
-  user.value = await api.auth.fetchUser(userId, authStore);
-  isOwnUser.value = user.value.id === authStore.user?.id;
+  try {
+    user.value = await api.auth.getUser(userId, authStore);
+  } catch (error: any) {
+    if (error.response && error.response.code === 404) {
+      userNotFound.value = true;
+    }
+  }
+  isOwnUser.value = authStore.loggedIn && user.value.id === authStore.user?.id;
 });
 </script>
 

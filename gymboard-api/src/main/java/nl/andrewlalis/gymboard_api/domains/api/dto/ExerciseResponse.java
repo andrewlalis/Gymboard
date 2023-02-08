@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.api.dto;
 
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 
 public record ExerciseResponse(
 		String shortName,

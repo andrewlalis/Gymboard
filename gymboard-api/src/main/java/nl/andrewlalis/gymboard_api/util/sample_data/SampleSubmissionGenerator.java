@@ -1,12 +1,12 @@
 package nl.andrewlalis.gymboard_api.util.sample_data;
 
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseSubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.ExerciseSubmission;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
+import nl.andrewlalis.gymboard_api.domains.api.model.submission.Submission;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
@@ -29,13 +29,13 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 	private final UserRepository userRepository;
 	private final ExerciseRepository exerciseRepository;
 	private final ExerciseSubmissionService submissionService;
-	private final ExerciseSubmissionRepository submissionRepository;
+	private final SubmissionRepository submissionRepository;
 	private final ULID ulid;
 
 	@Value("${app.cdn-origin}")
 	private String cdnOrigin;
 
-	public SampleSubmissionGenerator(GymRepository gymRepository, UserRepository userRepository, ExerciseRepository exerciseRepository, ExerciseSubmissionService submissionService, ExerciseSubmissionRepository submissionRepository, ULID ulid) {
+	public SampleSubmissionGenerator(GymRepository gymRepository, UserRepository userRepository, ExerciseRepository exerciseRepository, ExerciseSubmissionService submissionService, SubmissionRepository submissionRepository, ULID ulid) {
 		this.gymRepository = gymRepository;
 		this.userRepository = userRepository;
 		this.exerciseRepository = exerciseRepository;
@@ -94,7 +94,7 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 			rawWeight = metricWeight.multiply(new BigDecimal("2.2046226218"));
 		}
 
-		submissionRepository.save(new ExerciseSubmission(
+		submissionRepository.save(new Submission(
 				ulid.nextULID(),
 				randomChoice(gyms, random),
 				randomChoice(exercises, random),

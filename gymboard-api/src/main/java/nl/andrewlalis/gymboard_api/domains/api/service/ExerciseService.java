@@ -1,7 +1,7 @@
 package nl.andrewlalis.gymboard_api.domains.api.service;
 
 import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseResponse;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

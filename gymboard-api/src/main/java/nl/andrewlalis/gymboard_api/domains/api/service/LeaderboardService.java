@@ -1,13 +1,13 @@
 package nl.andrewlalis.gymboard_api.domains.api.service;
 
 import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseSubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.LeaderboardTimeframe;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.util.PredicateBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,18 +27,18 @@ import java.util.Optional;
  */
 @Service
 public class LeaderboardService {
-	private final ExerciseSubmissionRepository submissionRepository;
+	private final SubmissionRepository submissionRepository;
 	private final ExerciseRepository exerciseRepository;
 	private final GymRepository gymRepository;
 
-	public LeaderboardService(ExerciseSubmissionRepository submissionRepository, ExerciseRepository exerciseRepository, GymRepository gymRepository) {
+	public LeaderboardService(SubmissionRepository submissionRepository, ExerciseRepository exerciseRepository, GymRepository gymRepository) {
 		this.submissionRepository = submissionRepository;
 		this.exerciseRepository = exerciseRepository;
 		this.gymRepository = gymRepository;
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ExerciseSubmissionResponse> getTopSubmissions(
+	public Page<SubmissionResponse> getTopSubmissions(
 			Optional<String> exerciseShortName,
 			Optional<String> gymCompoundIdsString,
 			Optional<String> optionalTimeframe,
@@ -68,7 +68,7 @@ public class LeaderboardService {
 			}
 
 			return pb.build();
-		}, pageable).map(ExerciseSubmissionResponse::new);
+		}, pageable).map(SubmissionResponse::new);
 	}
 
 	private List<Gym> parseGymCompoundIdsString(String s) {

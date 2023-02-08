@@ -6,7 +6,7 @@
                 {{ submission.exercise.displayName }}
             </h3>
             <p>{{ submission.reps }} reps</p>
-            <p>by {{ submission.submitterName }}</p>
+            <p>by <router-link :to="'/users/' + submission.user.id">{{ submission.user.name }}</router-link></p>
             <p>At <router-link :to="getGymRoute(submission.gym)">{{ submission.gym.displayName }}</router-link></p>
             <p>
                 {{ submission.createdAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}

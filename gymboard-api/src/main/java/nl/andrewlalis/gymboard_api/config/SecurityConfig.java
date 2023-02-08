@@ -47,7 +47,10 @@ public class SecurityConfig {
 						"/leaderboards",
 						"/gyms/**",
 						"/submissions/**",
-						"/auth/reset-password"
+						"/auth/reset-password",
+						"/auth/users/*",
+						"/auth/users/*/followers",
+						"/auth/users/*/following"
 				).permitAll()
 				.requestMatchers(// Allow the following POST endpoints to be public.
 						HttpMethod.POST,

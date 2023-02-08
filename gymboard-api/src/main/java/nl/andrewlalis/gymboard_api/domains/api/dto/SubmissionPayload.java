@@ -1,7 +1,10 @@
 package nl.andrewlalis.gymboard_api.domains.api.dto;
 
-public record ExerciseSubmissionPayload(
+import java.time.LocalDateTime;
+
+public record SubmissionPayload(
 		String exerciseShortName,
+		LocalDateTime performedAt,
 		float weight,
 		String weightUnit,
 		int reps,

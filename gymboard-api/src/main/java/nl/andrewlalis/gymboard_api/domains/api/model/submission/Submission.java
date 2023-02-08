@@ -1,18 +1,18 @@
-package nl.andrewlalis.gymboard_api.domains.api.model.exercise;
+package nl.andrewlalis.gymboard_api.domains.api.model.submission;
 
 import jakarta.persistence.*;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "exercise_submission")
-public class ExerciseSubmission {
+@Table(name = "submission")
+public class Submission {
 	@Id
 	@Column(nullable = false, updatable = false, length = 26)
 	private String id;
@@ -53,9 +53,9 @@ public class ExerciseSubmission {
 	@Column(nullable = false)
 	private int reps;
 
-	public ExerciseSubmission() {}
+	public Submission() {}
 
-	public ExerciseSubmission(String id, Gym gym, Exercise exercise, User user, LocalDateTime performedAt, String videoFileId, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
+	public Submission(String id, Gym gym, Exercise exercise, User user, LocalDateTime performedAt, String videoFileId, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
 		this.id = id;
 		this.gym = gym;
 		this.exercise = exercise;

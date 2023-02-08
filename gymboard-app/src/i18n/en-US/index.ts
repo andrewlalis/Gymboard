@@ -39,6 +39,12 @@ export default {
       submit: 'Submit',
     },
   },
+  userPage: {
+    notFound: {
+      title: 'User Not Found',
+      description: 'We couldn\'t find the user you\'re looking for.'
+    }
+  },
   accountMenuItem: {
     logIn: 'Login',
     myAccount: 'My Account',

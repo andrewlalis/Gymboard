@@ -1,10 +1,10 @@
 package nl.andrewlalis.gymboard_api.domains.api.service;
 
 import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dto.GymResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseSubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.util.PredicateBuilder;
 import org.slf4j.Logger;
@@ -22,9 +22,9 @@ public class GymService {
 	private static final Logger log = LoggerFactory.getLogger(GymService.class);
 
 	private final GymRepository gymRepository;
-	private final ExerciseSubmissionRepository submissionRepository;
+	private final SubmissionRepository submissionRepository;
 
-	public GymService(GymRepository gymRepository, ExerciseSubmissionRepository submissionRepository) {
+	public GymService(GymRepository gymRepository, SubmissionRepository submissionRepository) {
 		this.gymRepository = gymRepository;
 		this.submissionRepository = submissionRepository;
 	}
@@ -37,7 +37,7 @@ public class GymService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ExerciseSubmissionResponse> getRecentSubmissions(CompoundGymId id) {
+	public List<SubmissionResponse> getRecentSubmissions(CompoundGymId id) {
 		Gym gym = gymRepository.findByCompoundId(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		return submissionRepository.findAll((root, query, criteriaBuilder) -> {
@@ -49,7 +49,7 @@ public class GymService {
 					.with(criteriaBuilder.equal(root.get("gym"), gym))
 					.build();
 		}, PageRequest.of(0, 10))
-				.map(ExerciseSubmissionResponse::new)
+				.map(SubmissionResponse::new)
 				.toList();
 	}
 }

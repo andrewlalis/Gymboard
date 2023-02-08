@@ -7,6 +7,8 @@ export interface User {
   activated: boolean;
   email: string;
   name: string;
+  personalDetails?: UserPersonalDetails;
+  preferences?: UserPreferences;
 }
 
 export enum PersonSex {
@@ -20,6 +22,7 @@ export interface UserPersonalDetails {
   birthDate?: string;
   currentWeight?: number;
   currentWeightUnit?: number;
+  currentMetricWeight?: number;
   sex: PersonSex;
 }
 
@@ -45,9 +48,18 @@ class AuthModule {
 
   private tokenRefreshTimer?: Timeout;
 
+  /**
+   * Attempts to use the given credentials to obtain an access token for
+   * sending authenticated requests.
+   * @param authStore The auth store to use to update app state.
+   * @param credentials The credentials for logging in.
+   */
   public async login(authStore: AuthStoreType, credentials: TokenCredentials) {
-    authStore.token = await this.fetchNewToken(credentials);
-    authStore.user = await this.fetchMyUser(authStore);
+    authStore.token = await this.getNewToken(credentials);
+    authStore.user = await this.getMyUser(authStore);
+    // Load the user's attached data right away too.
+    authStore.user.personalDetails = await this.getMyPersonalDetails(authStore);
+    authStore.user.preferences = await this.getMyPreferences(authStore);
 
     clearTimeout(this.tokenRefreshTimer);
     this.tokenRefreshTimer = setTimeout(
@@ -71,7 +83,7 @@ class AuthModule {
     return response.data;
   }
 
-  public async fetchNewToken(credentials: TokenCredentials): Promise<string> {
+  public async getNewToken(credentials: TokenCredentials): Promise<string> {
     const response = await api.post('/auth/token', credentials);
     return response.data.token;
   }
@@ -81,12 +93,12 @@ class AuthModule {
     authStore.token = response.data.token;
   }
 
-  public async fetchMyUser(authStore: AuthStoreType): Promise<User> {
+  public async getMyUser(authStore: AuthStoreType): Promise<User> {
     const response = await api.get('/auth/me', authStore.axiosConfig);
     return response.data;
   }
 
-  public async fetchUser(userId: string, authStore: AuthStoreType): Promise<User> {
+  public async getUser(userId: string, authStore: AuthStoreType): Promise<User> {
     const response = await api.get(`/auth/users/${userId}`, authStore.axiosConfig);
     return response.data;
   }

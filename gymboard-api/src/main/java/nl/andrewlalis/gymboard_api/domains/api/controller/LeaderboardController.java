@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.api.controller;
 
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.service.LeaderboardService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,7 @@ public class LeaderboardController {
 	}
 
 	@GetMapping
-	public Page<ExerciseSubmissionResponse> getLeaderboard(
+	public Page<SubmissionResponse> getLeaderboard(
 			@RequestParam(name = "exercise") Optional<String> exerciseShortName,
 			@RequestParam(name = "gyms") Optional<String> gymCompoundIdsString,
 			@RequestParam(name = "t") Optional<String> timeframe,

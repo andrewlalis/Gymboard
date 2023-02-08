@@ -1,7 +1,7 @@
 package nl.andrewlalis.gymboard_api.util.sample_data;
 
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
+import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.util.CsvUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

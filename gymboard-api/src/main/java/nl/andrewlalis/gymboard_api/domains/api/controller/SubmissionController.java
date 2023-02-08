@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.api.controller;
 
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +17,7 @@ public class SubmissionController {
 	}
 
 	@GetMapping(path = "/{submissionId}")
-	public ExerciseSubmissionResponse getSubmission(@PathVariable String submissionId) {
+	public SubmissionResponse getSubmission(@PathVariable String submissionId) {
 		return submissionService.getSubmission(submissionId);
 	}
 }

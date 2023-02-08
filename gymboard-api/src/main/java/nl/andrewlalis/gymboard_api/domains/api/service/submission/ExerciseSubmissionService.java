@@ -1,15 +1,15 @@
 package nl.andrewlalis.gymboard_api.domains.api.service.submission;
 
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.exercise.ExerciseSubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionPayload;
-import nl.andrewlalis.gymboard_api.domains.api.dto.ExerciseSubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionPayload;
+import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.Exercise;
-import nl.andrewlalis.gymboard_api.domains.api.model.exercise.ExerciseSubmission;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
+import nl.andrewlalis.gymboard_api.domains.api.model.submission.Submission;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.util.ULID;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -35,25 +34,25 @@ public class ExerciseSubmissionService {
 	private final GymRepository gymRepository;
 	private final UserRepository userRepository;
 	private final ExerciseRepository exerciseRepository;
-	private final ExerciseSubmissionRepository exerciseSubmissionRepository;
+	private final SubmissionRepository submissionRepository;
 	private final ULID ulid;
 
 	public ExerciseSubmissionService(GymRepository gymRepository,
 									 UserRepository userRepository, ExerciseRepository exerciseRepository,
-									 ExerciseSubmissionRepository exerciseSubmissionRepository,
+									 SubmissionRepository submissionRepository,
 									 ULID ulid) {
 		this.gymRepository = gymRepository;
 		this.userRepository = userRepository;
 		this.exerciseRepository = exerciseRepository;
-		this.exerciseSubmissionRepository = exerciseSubmissionRepository;
+		this.submissionRepository = submissionRepository;
 		this.ulid = ulid;
 	}
 
 	@Transactional(readOnly = true)
-	public ExerciseSubmissionResponse getSubmission(String submissionId) {
-		ExerciseSubmission submission = exerciseSubmissionRepository.findById(submissionId)
+	public SubmissionResponse getSubmission(String submissionId) {
+		Submission submission = submissionRepository.findById(submissionId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		return new ExerciseSubmissionResponse(submission);
+		return new SubmissionResponse(submission);
 	}
 
 	/**
@@ -64,7 +63,7 @@ public class ExerciseSubmissionService {
 	 * @return The saved submission.
 	 */
 	@Transactional
-	public ExerciseSubmissionResponse createSubmission(CompoundGymId id, String userId, ExerciseSubmissionPayload payload) {
+	public SubmissionResponse createSubmission(CompoundGymId id, String userId, SubmissionPayload payload) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
 		Gym gym = gymRepository.findByCompoundId(id)
@@ -81,7 +80,7 @@ public class ExerciseSubmissionService {
 		if (weightUnit == WeightUnit.POUNDS) {
 			metricWeight = WeightUnit.toKilograms(rawWeight);
 		}
-		ExerciseSubmission submission = exerciseSubmissionRepository.saveAndFlush(new ExerciseSubmission(
+		Submission submission = submissionRepository.saveAndFlush(new Submission(
 				ulid.nextULID(),
 				gym,
 				exercise,
@@ -93,6 +92,6 @@ public class ExerciseSubmissionService {
 				metricWeight,
 				payload.reps()
 		));
-		return new ExerciseSubmissionResponse(submission);
+		return new SubmissionResponse(submission);
 	}
 }

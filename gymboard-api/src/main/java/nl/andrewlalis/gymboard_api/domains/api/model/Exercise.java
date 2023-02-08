@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboard_api.domains.api.model.exercise;
+package nl.andrewlalis.gymboard_api.domains.api.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
