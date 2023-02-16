@@ -48,6 +48,9 @@ export default {
     accountPrivate: 'This account is private.',
     recentLifts: 'Recent Lifts',
   },
+  userSearchPage: {
+    searchHint: 'Search for a user'
+  },
   userSettingsPage: {
     title: 'Account Settings',
     password: 'Password',

@@ -22,6 +22,7 @@
         v-for="sub in submissions"
         :submission="sub"
         :key="sub.id"
+        :show-gym="false"
       />
     </q-list>
   </q-page>

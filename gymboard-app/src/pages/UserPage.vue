@@ -19,6 +19,7 @@
             v-for="sub in recentSubmissions"
             :submission="sub"
             :key="sub.id"
+            :show-name="false"
           />
         </q-list>
       </div>

@@ -34,6 +34,7 @@
           v-for="sub in recentSubmissions"
           :submission="sub"
           :key="sub.id"
+          :show-gym="false"
         />
       </q-list>
     </div>

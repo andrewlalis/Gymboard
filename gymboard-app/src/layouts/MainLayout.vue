@@ -27,7 +27,7 @@
         </q-item-label>
         <q-item clickable to="/">Gyms</q-item>
         <q-item clickable>Global Leaderboard</q-item>
-        <q-item clickable to="/testing">Testing Page</q-item>
+        <q-item clickable to="/users">Users</q-item>
         <q-item clickable to="/about">About</q-item>
       </q-list>
     </q-drawer>

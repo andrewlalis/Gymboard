@@ -5,7 +5,7 @@ SELECT
     (
         SELECT COUNT(id)
         FROM submission
-        WHERE submission.id = u.id
+        WHERE submission.user_id = u.id
     ) as submission_count,
     p.account_private as account_private,
     p.locale as locale

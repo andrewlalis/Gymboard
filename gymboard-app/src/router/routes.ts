@@ -1,12 +1,10 @@
 import { RouteRecordRaw } from 'vue-router';
 import MainLayout from 'layouts/MainLayout.vue';
-import IndexPage from 'pages/IndexPage.vue';
-import AboutPage from 'pages/AboutPage.vue';
+import GymSearchPage from 'pages/GymSearchPage.vue';
 import GymPage from 'pages/gym/GymPage.vue';
 import GymSubmissionPage from 'pages/gym/GymSubmissionPage.vue';
 import GymHomePage from 'pages/gym/GymHomePage.vue';
 import GymLeaderboardsPage from 'pages/gym/GymLeaderboardsPage.vue';
-import TestingPage from 'pages/TestingPage.vue';
 import LoginPage from 'pages/auth/LoginPage.vue';
 import RegisterPage from 'pages/auth/RegisterPage.vue';
 import RegistrationSuccessPage from 'pages/auth/RegistrationSuccessPage.vue';
@@ -14,6 +12,7 @@ import ActivationPage from 'pages/auth/ActivationPage.vue';
 import SubmissionPage from 'pages/SubmissionPage.vue';
 import UserPage from 'pages/UserPage.vue';
 import UserSettingsPage from 'pages/auth/UserSettingsPage.vue';
+import UserSearchPage from 'pages/UserSearchPage.vue';
 
 const routes: RouteRecordRaw[] = [
   // Auth-related pages, which live outside the main layout.
@@ -27,8 +26,8 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: MainLayout,
     children: [
-      { path: '', component: IndexPage },
-      { path: 'testing', component: TestingPage },
+      { path: '', component: GymSearchPage },
+      { path: 'users', component: UserSearchPage },
       {
         path: 'users/:userId',
         children: [
@@ -48,7 +47,6 @@ const routes: RouteRecordRaw[] = [
         ],
       },
       { path: 'submissions/:submissionId', component: SubmissionPage },
-      { path: 'about', component: AboutPage },
     ],
   },
 

@@ -48,6 +48,9 @@ export default {
     accountPrivate: 'Dit account is privaat.',
     recentLifts: 'Recente liften',
   },
+  userSearchPage: {
+    searchHint: 'Zoek een gebruiker'
+  },
   userSettingsPage: {
     title: 'Account instellingen',
     password: 'Wachtwoord',

@@ -15,4 +15,7 @@ export interface GymSearchResult {
 export interface UserSearchResult {
   id: string;
   name: string;
+  submissionCount: number;
+  accountPrivate: boolean;
+  locale: string;
 }

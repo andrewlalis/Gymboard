@@ -5,8 +5,11 @@
         {{ submission.rawWeight }}&nbsp;{{ WeightUnitUtil.toAbbreviation(submission.weightUnit) }}
         {{ submission.exercise.displayName }}
       </q-item-label>
-      <q-item-label caption>
+      <q-item-label caption v-if="showName">
         {{ submission.user.name }}
+      </q-item-label>
+      <q-item-label caption v-if="showGym">
+        {{ submission.gym.displayName }}
       </q-item-label>
     </q-item-section>
     <q-item-section side top>
@@ -21,8 +24,13 @@ import { DateTime } from 'luxon';
 
 interface Props {
   submission: ExerciseSubmission;
+  showName?: boolean;
+  showGym?: boolean;
 }
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  showName: true,
+  showGym: true,
+});
 </script>
 
 <style scoped></style>
