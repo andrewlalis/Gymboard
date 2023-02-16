@@ -31,7 +31,7 @@ export default {
       recentLifts: 'Recente liften',
     },
     submitPage: {
-      name: 'Jouw naam',
+      loginToSubmit: 'Log in of meld je aan om je lift te indienen',
       exercise: 'Oefening',
       weight: 'Gewicht',
       reps: 'Repetities',

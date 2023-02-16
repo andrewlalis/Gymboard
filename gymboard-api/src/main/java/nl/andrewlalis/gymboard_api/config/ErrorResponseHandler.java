@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.config;
 
+import nl.andrewlalis.gymboard_api.domains.api.dto.ApiValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +34,9 @@ public class ErrorResponseHandler {
 			}
 		}
 		responseContent.put("message", message);
+		if (e instanceof ApiValidationException validationException) {
+			responseContent.put("validation_messages", validationException.getValidationResponse().getMessages());
+		}
 		return ResponseEntity.status(e.getStatusCode()).body(responseContent);
 	}
 }

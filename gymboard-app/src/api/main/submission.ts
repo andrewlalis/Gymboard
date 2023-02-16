@@ -4,12 +4,12 @@ import { api } from 'src/api/main/index';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
 import { DateTime } from 'luxon';
 import {User} from 'src/api/main/auth';
+import {AuthStoreType} from 'stores/auth-store';
 
 /**
  * The data that's sent when creating a submission.
  */
 export interface ExerciseSubmissionPayload {
-  name: string;
   exerciseShortName: string;
   weight: number;
   weightUnit: string;
@@ -59,10 +59,11 @@ class SubmissionsModule {
 
   public async createSubmission(
     gym: GymRoutable,
-    payload: ExerciseSubmissionPayload
+    payload: ExerciseSubmissionPayload,
+    authStore: AuthStoreType
   ): Promise<ExerciseSubmission> {
     const gymId = getGymCompoundId(gym);
-    const response = await api.post(`/gyms/${gymId}/submissions`, payload);
+    const response = await api.post(`/gyms/${gymId}/submissions`, payload, authStore.axiosConfig);
     return parseSubmission(response.data);
   }
 }

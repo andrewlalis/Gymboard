@@ -3,13 +3,13 @@ package nl.andrewlalis.gymboard_api.domains.api.service.submission;
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionPayload;
-import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.api.dto.*;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.submission.Submission;
+import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
+import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.UploadsClient;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.util.ULID;
@@ -36,16 +36,18 @@ public class ExerciseSubmissionService {
 	private final ExerciseRepository exerciseRepository;
 	private final SubmissionRepository submissionRepository;
 	private final ULID ulid;
+	private final CdnClient cdnClient;
 
 	public ExerciseSubmissionService(GymRepository gymRepository,
 									 UserRepository userRepository, ExerciseRepository exerciseRepository,
 									 SubmissionRepository submissionRepository,
-									 ULID ulid) {
+									 ULID ulid, CdnClient cdnClient) {
 		this.gymRepository = gymRepository;
 		this.userRepository = userRepository;
 		this.exerciseRepository = exerciseRepository;
 		this.submissionRepository = submissionRepository;
 		this.ulid = ulid;
+		this.cdnClient = cdnClient;
 	}
 
 	@Transactional(readOnly = true)
@@ -64,16 +66,22 @@ public class ExerciseSubmissionService {
 	 */
 	@Transactional
 	public SubmissionResponse createSubmission(CompoundGymId id, String userId, SubmissionPayload payload) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
 		Gym gym = gymRepository.findByCompoundId(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+		if (!user.isActivated()) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		Exercise exercise = exerciseRepository.findById(payload.exerciseShortName())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid exercise."));
 
-		// TODO: Validate the submission data.
+		var validationResponse = validateSubmissionData(gym, user, exercise, payload);
+		if (!validationResponse.isValid()) {
+			throw new ApiValidationException(validationResponse);
+		}
 
 		// Create the submission.
+		LocalDateTime performedAt = payload.performedAt();
+		if (performedAt == null) performedAt = LocalDateTime.now();
 		BigDecimal rawWeight = BigDecimal.valueOf(payload.weight());
 		WeightUnit weightUnit = WeightUnit.parse(payload.weightUnit());
 		BigDecimal metricWeight = BigDecimal.valueOf(payload.weight());
@@ -81,17 +89,47 @@ public class ExerciseSubmissionService {
 			metricWeight = WeightUnit.toKilograms(rawWeight);
 		}
 		Submission submission = submissionRepository.saveAndFlush(new Submission(
-				ulid.nextULID(),
-				gym,
-				exercise,
-				user,
-				LocalDateTime.now(),
+				ulid.nextULID(), gym, exercise, user,
+				performedAt,
 				payload.videoFileId(),
-				rawWeight,
-				weightUnit,
-				metricWeight,
-				payload.reps()
+				rawWeight, weightUnit, metricWeight, payload.reps()
 		));
 		return new SubmissionResponse(submission);
+	}
+
+	private ValidationResponse validateSubmissionData(Gym gym, User user, Exercise exercise, SubmissionPayload data) {
+		ValidationResponse response = new ValidationResponse();
+		LocalDateTime cutoff = LocalDateTime.now().minusDays(3);
+		if (data.performedAt() != null && data.performedAt().isAfter(LocalDateTime.now())) {
+			response.addMessage("Cannot submit an exercise from the future.");
+		}
+		if (data.performedAt() != null && data.performedAt().isBefore(cutoff)) {
+			response.addMessage("Cannot submit an exercise too far in the past.");
+		}
+		if (data.reps() < 1 || data.reps() > 500) {
+			response.addMessage("Invalid rep count.");
+		}
+		BigDecimal rawWeight = BigDecimal.valueOf(data.weight());
+		WeightUnit weightUnit = WeightUnit.parse(data.weightUnit());
+		BigDecimal metricWeight = WeightUnit.toKilograms(rawWeight, weightUnit);
+
+		if (metricWeight.compareTo(BigDecimal.ZERO) <= 0 || metricWeight.compareTo(BigDecimal.valueOf(1000.0)) > 0) {
+			response.addMessage("Invalid weight.");
+		}
+
+		try {
+			UploadsClient.FileMetadataResponse metadata = cdnClient.uploads.getFileMetadata(data.videoFileId());
+			if (metadata == null) {
+				response.addMessage("Missing video file.");
+			} else if (!metadata.availableForDownload()) {
+				response.addMessage("File not yet available for download.");
+			} else if (!"video/mp4".equals(metadata.mimeType())) {
+				response.addMessage("Invalid video file format.");
+			}
+		} catch (Exception e) {
+			log.error("Error fetching file metadata.", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching uploaded video file metadata.");
+		}
+		return response;
 	}
 }

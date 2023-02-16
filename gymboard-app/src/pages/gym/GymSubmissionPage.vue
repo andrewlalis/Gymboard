@@ -11,17 +11,10 @@ A high-level overview of the submission process is as follows:
 5. We wait on the submission page until the submission is done processing, then show a message and navigate to the submission page.
 -->
 <template>
-  <q-page v-if="gym">
+  <q-page v-if="gym && authStore.loggedIn">
     <!-- The below form contains the fields that will become part of the submission. -->
     <q-form @submit="onSubmitted">
       <SlimForm>
-        <div class="row">
-          <q-input
-            :label="$t('gymPage.submitPage.name')"
-            v-model="submissionModel.name"
-            class="col-12"
-          />
-        </div>
         <div class="row">
           <q-select
             :options="exerciseOptions"
@@ -76,57 +69,66 @@ A high-level overview of the submission process is as follows:
         </div>
         <div class="row">
           <q-btn
-            :label="$t('gymPage.submitPage.submit')"
+            :label="submitButtonLabel"
             color="primary"
             type="submit"
             class="q-mt-md col-12"
             :disable="!submitButtonEnabled()"
           />
         </div>
-        <div class="row text-center" v-if="infoMessage">
-          <p>{{ infoMessage }}</p>
-        </div>
       </SlimForm>
     </q-form>
+  </q-page>
+
+  <!-- If the user is not logged in, show a link to log in. -->
+  <q-page v-if="!authStore.loggedIn">
+    <div class="q-mt-lg text-center">
+      <router-link :to="`/login?next=${route.fullPath}`" class="text-primary">Login or register to submit your lift</router-link>
+    </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, Ref } from 'vue';
-import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
+import {onMounted, ref, Ref} from 'vue';
+import {getGymFromRoute} from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
 import api from 'src/api/main';
-import { Gym } from 'src/api/main/gyms';
-import { Exercise } from 'src/api/main/exercises';
-import { useRouter } from 'vue-router';
-import { sleep } from 'src/utils';
-import { uploadVideoToCDN, VideoProcessingStatus, waitUntilVideoProcessingComplete } from 'src/api/cdn';
+import {Gym} from 'src/api/main/gyms';
+import {Exercise} from 'src/api/main/exercises';
+import {useRoute, useRouter} from 'vue-router';
+import {showApiErrorToast, sleep} from 'src/utils';
+import {uploadVideoToCDN, VideoProcessingStatus, waitUntilVideoProcessingComplete} from 'src/api/cdn';
+import {useAuthStore} from 'stores/auth-store';
+import {useI18n} from 'vue-i18n';
+import {useQuasar} from "quasar";
+
+const authStore = useAuthStore();
+const router = useRouter();
+const route = useRoute();
+const i18n = useI18n();
+const quasar = useQuasar();
 
 interface Option {
   value: string;
   label: string;
 }
 
-const router = useRouter();
-
 const gym: Ref<Gym | undefined> = ref<Gym>();
 const exercises: Ref<Array<Exercise> | undefined> = ref<Array<Exercise>>();
 const exerciseOptions: Ref<Array<Option>> = ref([]);
 let submissionModel = ref({
-  name: '',
   exerciseShortName: '',
   weight: 100,
   weightUnit: 'Kg',
   reps: 1,
   videoFileId: '',
-  videoFile: null,
   date: new Date().toLocaleDateString('en-CA'),
 });
 const selectedVideoFile: Ref<File | undefined> = ref<File>();
 const weightUnits = ['KG', 'LBS'];
 
 const submitting = ref(false);
-const infoMessage: Ref<string | undefined> = ref();
+const submitButtonLabel = ref(i18n.t('gymPage.submitPage.submit'));
 
 onMounted(async () => {
   try {
@@ -154,30 +156,59 @@ function validateForm() {
   return true;
 }
 
+/**
+ * Runs through the entire submission process.
+ */
 async function onSubmitted() {
-  if (!selectedVideoFile.value || !gym.value) throw new Error('Invalid state.');
+  if (!selectedVideoFile.value || !gym.value) return;
+
   submitting.value = true;
   try {
-    infoMessage.value = 'Uploading video...';
+    // 1. Upload the video to the CDN.
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submitUploading');
     await sleep(1000);
     submissionModel.value.videoFileId = await uploadVideoToCDN(selectedVideoFile.value);
-    infoMessage.value = 'Creating submission...';
-    await sleep(1000);
-    const submission = await api.gyms.submissions.createSubmission(
-      gym.value,
-      submissionModel.value
-    );
-    infoMessage.value = 'Submission processing...';
-    const finalStatus = await waitUntilVideoProcessingComplete(submission.videoFileId);
-    if (finalStatus === VideoProcessingStatus.COMPLETED) {
-      infoMessage.value = 'Submission complete!';
-      await sleep(1000);
-      await router.push(getGymRoute(gym.value));
+
+    // 2. Wait for the video to be processed.
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submitVideoProcessing');
+    const processingStatus = await waitUntilVideoProcessingComplete(submissionModel.value.videoFileId);
+
+    // 3. If successful upload, create the submission.
+    if (processingStatus === VideoProcessingStatus.COMPLETED) {
+      try {
+        submitButtonLabel.value = i18n.t('gymPage.submitPage.submitCreatingSubmission');
+        await sleep(1000);
+        const submission = await api.gyms.submissions.createSubmission(
+          gym.value,
+          submissionModel.value,
+          authStore
+        );
+        submitButtonLabel.value = i18n.t('gymPage.submitPage.submitComplete');
+        await sleep(2000);
+        await router.push(`/submissions/${submission.id}`);
+      } catch (error: any) {
+        if (error.response && error.response.status === 400) {
+          quasar.notify({
+            message: error.response.data.message,
+            type: 'warning',
+            position: 'top'
+          });
+          submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
+          await sleep(3000);
+        } else {
+          showApiErrorToast(i18n, quasar);
+        }
+      }
+    // Otherwise, report the failed submission and give up.
     } else {
-      infoMessage.value = 'Submission processing failed. Please try again later.';
+      submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
+      await sleep(3000);
     }
+  } catch (error: any) {
+    showApiErrorToast(i18n, quasar);
   } finally {
     submitting.value = false;
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submit');
   }
 }
 </script>

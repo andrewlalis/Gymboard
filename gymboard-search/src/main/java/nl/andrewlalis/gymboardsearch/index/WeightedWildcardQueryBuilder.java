@@ -23,7 +23,9 @@ public class WeightedWildcardQueryBuilder {
 	}
 
 	public Optional<Query> build(String rawSearchQuery) {
-		if (rawSearchQuery == null || rawSearchQuery.isBlank()) return Optional.empty();
+		if (rawSearchQuery == null) return Optional.empty();
+		rawSearchQuery = rawSearchQuery.replaceAll("\\*", "");
+		if (rawSearchQuery.isBlank()) return Optional.empty();
 		String[] terms = rawSearchQuery.toLowerCase().split("\\s+");
 		for (String term : terms) {
 			String searchTerm = term + "*";
