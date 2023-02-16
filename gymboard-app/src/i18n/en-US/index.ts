@@ -47,7 +47,15 @@ export default {
     }
   },
   userSettingsPage: {
-    title: 'Account Settings'
+    title: 'Account Settings',
+    personalDetails: {
+      birthDate: 'Date of Birth'
+    },
+    preferences: {
+      accountPrivate: 'Private Account'
+    },
+    save: 'Save',
+    undo: 'Undo'
   },
   accountMenuItem: {
     logIn: 'Login',

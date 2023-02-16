@@ -127,8 +127,18 @@ class AuthModule {
     return response.data;
   }
 
+  public async updateMyPersonalDetails(authStore: AuthStoreType, newPersonalDetails: UserPersonalDetails): Promise<UserPersonalDetails> {
+    const response = await api.post('/auth/me/personal-details', newPersonalDetails, authStore.axiosConfig);
+    return response.data;
+  }
+
   public async getMyPreferences(authStore: AuthStoreType): Promise<UserPreferences> {
     const response = await api.get('/auth/me/preferences', authStore.axiosConfig);
+    return response.data;
+  }
+
+  public async updateMyPreferences(authStore: AuthStoreType, newPreferences: UserPreferences): Promise<UserPreferences> {
+    const response = await api.post('/auth/me/preferences', newPreferences, authStore.axiosConfig);
     return response.data;
   }
 }
