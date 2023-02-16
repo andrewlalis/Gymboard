@@ -22,12 +22,21 @@
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header>
-          {{ $t('mainLayout.pages') }}
-        </q-item-label>
-        <q-item clickable to="/">Gyms</q-item>
-        <q-item clickable>Global Leaderboard</q-item>
-        <q-item clickable to="/users">Users</q-item>
+        <q-item clickable to="/">
+          <q-item-section>
+            <q-item-label>Gyms</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item clickable>
+          <q-item-section>
+            <q-item-label>Global Leaderboard</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item clickable to="/users">
+          <q-item-section>
+            <q-item-label>Users</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 

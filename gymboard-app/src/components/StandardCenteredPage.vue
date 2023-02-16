@@ -7,7 +7,7 @@ Use this as the root component for any pages you create.
 -->
 <template>
   <div class="row justify-center">
-    <div class="col-xs-12 col-md-6 q-px-sm">
+    <div class="col-xs-12 col-sm-9 col-md-6 q-px-sm">
       <slot>
         <p>Page content</p>
       </slot>
