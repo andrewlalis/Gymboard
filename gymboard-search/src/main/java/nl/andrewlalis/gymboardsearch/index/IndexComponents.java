@@ -3,6 +3,7 @@ package nl.andrewlalis.gymboardsearch.index;
 import nl.andrewlalis.gymboardsearch.dto.GymResponse;
 import nl.andrewlalis.gymboardsearch.dto.UserResponse;
 import org.apache.lucene.document.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +19,18 @@ import java.sql.DriverManager;
  */
 @Component
 public class IndexComponents {
+	@Value("${app.db.jdbc-url}")
+	private String jdbcUrl;
+
+	@Value("${app.db.user}")
+	private String dbUser;
+
+	@Value("${app.db.password}")
+	private String dbPassword;
+
 	@Bean
 	public JdbcConnectionSupplier jdbcConnectionSupplier() {
-		return () -> DriverManager.getConnection("jdbc:postgresql://localhost:5432/gymboard-api-dev", "gymboard-api-dev", "testpass");
+		return () -> DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
 	}
 
 	@Bean
@@ -33,6 +43,9 @@ public class IndexComponents {
 					var doc = new Document();
 					doc.add(new StoredField("id", rs.getString("id")));
 					doc.add(new TextField("name", rs.getString("name"), Field.Store.YES));
+					doc.add(new StoredField("submission_count", rs.getLong("submission_count")));
+					doc.add(new StringField("locale", rs.getString("locale"), Field.Store.YES));
+					doc.add(new StringField("account_private", String.valueOf(rs.getBoolean("account_private")), Field.Store.YES));
 					return doc;
 				}
 		);

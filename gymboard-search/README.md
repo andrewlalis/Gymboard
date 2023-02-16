@@ -6,4 +6,4 @@ This application is configured with read-only access to the central Gymboard dat
 
 ## Developing
 
-Currently, this application is designed to boot up and immediately read the latest data from the Gymboard API's database to rebuild its indexes.
+Currently, this application is designed to boot up and immediately read the latest data from the Gymboard API's database to rebuild its indexes, then continue to do so at scheduled intervals.

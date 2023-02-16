@@ -36,7 +36,7 @@ public class JdbcIndexGenerator {
 		if (Files.exists(indexDir)) {
 			try {
 				FileSystemUtils.deleteRecursively(indexDir);
-				Files.createDirectory(indexDir);
+				Files.createDirectories(indexDir);
 			} catch (IOException e) {
 				log.error("Failed to reset index directory.", e);
 				return;
@@ -47,9 +47,12 @@ public class JdbcIndexGenerator {
 				ResultSet rs = resultSetSupplier.supply(conn);
 
 				Analyzer analyzer = new StandardAnalyzer();
-				Directory luceneDir = FSDirectory.open(indexDir);
-				IndexWriter indexWriter = new IndexWriter(luceneDir, new IndexWriterConfig(analyzer))
+				Directory luceneDir = FSDirectory.open(indexDir)
 		) {
+			IndexWriterConfig config = new IndexWriterConfig(analyzer);
+			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+			IndexWriter indexWriter = new IndexWriter(luceneDir, config);
+
 			long count = 0;
 			while (rs.next()) {
 				try {
@@ -60,6 +63,7 @@ public class JdbcIndexGenerator {
 				}
 			}
 			log.info("Indexed {} entities.", count);
+			indexWriter.close();
 		} catch (Exception e) {
 			log.error("Failed to prepare indexing components.", e);
 		}
