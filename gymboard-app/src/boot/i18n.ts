@@ -37,7 +37,7 @@ export default boot(({ app }) => {
   }
 
   // Temporary override if you want to test a particular locale.
-  i18n.global.locale.value = 'nl-NL';
+  // i18n.global.locale.value = 'nl-NL';
 
   // Set i18n instance on app
   app.use(i18n);

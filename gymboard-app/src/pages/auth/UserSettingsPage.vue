@@ -1,17 +1,58 @@
+<!--
+The page where users can edit their personal information and preferences.
+-->
 <template>
   <q-page>
     <StandardCenteredPage>
       <h3>{{ $t('userSettingsPage.title') }}</h3>
       <hr>
+
+      <div class="row justify-between">
+        <span class="property-label">{{ $t('userSettingsPage.password') }}</span>
+        <q-input
+          type="password"
+          v-model="newPassword"
+          :hint="$t('userSettingsPage.passwordHint')"
+        />
+      </div>
+      <div v-if="canUpdatePassword">
+        <q-btn :label="$t('userSettingsPage.updatePassword')" color="positive" @click="updatePassword"/>
+      </div>
+
       <div v-if="personalDetails">
-        <h4>Personal Information</h4>
+        <h4>{{ $t('userSettingsPage.personalDetails.title') }}</h4>
         <EditablePropertyRow
           v-model="personalDetails.birthDate"
           :label="$t('userSettingsPage.personalDetails.birthDate')"
           input-type="date"
         />
+        <EditablePropertyRow
+          v-model="personalDetails.sex"
+          :label="$t('userSettingsPage.personalDetails.sex')"
+          input-type="select"
+          :select-options="[
+            { label: $t('userSettingsPage.personalDetails.sexMale'), value: 'MALE' },
+            { label: $t('userSettingsPage.personalDetails.sexFemale'), value: 'FEMALE' },
+            { label: $t('userSettingsPage.personalDetails.sexUnknown'), value: 'UNKNOWN' },
+          ]"
+        />
+        <EditablePropertyRow
+          v-model="personalDetails.currentWeight"
+          :label="$t('userSettingsPage.personalDetails.currentWeight')"
+          input-type="number"
+          :number-input-step="0.1"
+        />
+        <EditablePropertyRow
+          v-model="personalDetails.currentWeightUnit"
+          :label="$t('userSettingsPage.personalDetails.currentWeightUnit')"
+          input-type="select"
+          :select-options="[
+            { label: $t('weightUnit.kilograms'), value: WeightUnit.KILOGRAMS },
+            { label: $t('weightUnit.pounds'), value: WeightUnit.POUNDS },
+          ]"
+        />
 
-        <div v-if="personalDetailsChanged">
+        <div v-if="personalDetailsChanged" class="save-button-row">
           <q-btn :label="$t('userSettingsPage.save')" color="positive" @click="savePersonalDetails"/>
           <q-btn :label="$t('userSettingsPage.undo')" color="secondary" @click="undoPersonalDetailsChanges"/>
         </div>
@@ -19,14 +60,21 @@
       </div>
 
       <div v-if="preferences">
-        <h4>Preferences</h4>
+        <h4>{{ $t('userSettingsPage.preferences.title') }}</h4>
 
         <EditablePropertyRow
           v-model="preferences.accountPrivate"
           :label="$t('userSettingsPage.preferences.accountPrivate')"
         />
+        <EditablePropertyRow
+          v-model="preferences.locale"
+          :label="$t('userSettingsPage.preferences.language')"
+          input-type="select"
+          :select-options="supportedLocales"
+          @update:modelValue="updateLocale"
+        />
 
-        <div v-if="preferencesChanged">
+        <div v-if="preferencesChanged" class="save-button-row">
           <q-btn :label="$t('userSettingsPage.save')" color="positive" @click="savePreferences"/>
           <q-btn :label="$t('userSettingsPage.undo')" color="secondary" @click="undoPreferencesChanges"/>
         </div>
@@ -44,16 +92,24 @@ import {computed, onMounted, ref, Ref, toRaw} from 'vue';
 import {UserPersonalDetails, UserPreferences} from 'src/api/main/auth';
 import api from 'src/api/main';
 import EditablePropertyRow from 'components/EditablePropertyRow.vue';
+import {WeightUnit} from 'src/api/main/submission';
+import {resolveLocale, supportedLocales} from 'src/i18n';
+import {useI18n} from 'vue-i18n';
+import {useQuasar} from 'quasar';
 
 const route = useRoute();
 const router = useRouter();
+const quasar = useQuasar();
 const authStore = useAuthStore();
+const i18n = useI18n({useScope: 'global'});
 
 const personalDetails: Ref<UserPersonalDetails | undefined> = ref();
 const preferences: Ref<UserPreferences | undefined> = ref();
 
 let initialPersonalDetails: UserPersonalDetails | null = null;
 let initialPreferences: UserPreferences | null = null;
+
+const newPassword = ref('');
 
 onMounted(async () => {
   // Redirect away from the page if the user isn't viewing their own settings.
@@ -67,6 +123,8 @@ onMounted(async () => {
 
   preferences.value = await api.auth.getMyPreferences(authStore);
   initialPreferences = structuredClone(toRaw(preferences.value));
+
+  newPassword.value = '';
 });
 
 const personalDetailsChanged = computed(() => {
@@ -79,10 +137,23 @@ const preferencesChanged = computed(() => {
     JSON.stringify(initialPreferences) !== JSON.stringify(preferences.value);
 });
 
+const canUpdatePassword = computed(() => {
+  const p = newPassword.value;
+  return p.length >= 8;
+});
+
 async function savePersonalDetails() {
   if (personalDetails.value) {
-    personalDetails.value = await api.auth.updateMyPersonalDetails(authStore, personalDetails.value);
-    initialPersonalDetails = structuredClone(toRaw(personalDetails.value));
+    try {
+      personalDetails.value = await api.auth.updateMyPersonalDetails(authStore, personalDetails.value);
+      initialPersonalDetails = structuredClone(toRaw(personalDetails.value));
+    } catch (error: any) {
+      if (error.response && error.response.status === 400) {
+        console.warn('bad request');
+      } else {
+        console.error(error);
+      }
+    }
   }
 }
 
@@ -94,14 +165,61 @@ async function savePreferences() {
   if (preferences.value) {
     preferences.value = await api.auth.updateMyPreferences(authStore, preferences.value);
     initialPreferences = structuredClone(toRaw(preferences.value));
+    updateLocale();
   }
+}
+
+function updateLocale() {
+  const chosenLocale = resolveLocale(preferences.value?.locale);
+  i18n.locale.value = chosenLocale.value;
 }
 
 function undoPreferencesChanges() {
   preferences.value = structuredClone(initialPreferences);
+  updateLocale();
+}
+
+async function updatePassword() {
+  try {
+    await api.auth.updatePassword(newPassword.value, authStore);
+    newPassword.value = '';
+    quasar.notify({
+      message: i18n.t('userSettingsPage.passwordUpdated'),
+      type: 'positive',
+      position: 'top'
+    });
+  } catch (error: any) {
+    if (error.response && error.response.status === 400) {
+      newPassword.value = '';
+      quasar.notify({
+        message: i18n.t('userSettingsPage.passwordInvalid'),
+        type: 'warning',
+        position: 'top'
+      });
+    } else {
+      quasar.notify({
+        message: i18n.t('generalErrors.apiError'),
+        type: 'danger',
+        position: 'top'
+      });
+    }
+  }
 }
 </script>
 
 <style scoped>
+.property-label {
+  font-weight: bold;
+  margin-top: auto;
+  margin-bottom: auto;
+}
 
+.save-button-row {
+  display: flex;
+  flex-direction: row;
+  column-gap: 10px;
+  justify-content: flex-end;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 </style>

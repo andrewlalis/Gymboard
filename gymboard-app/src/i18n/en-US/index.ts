@@ -48,11 +48,25 @@ export default {
   },
   userSettingsPage: {
     title: 'Account Settings',
+    password: 'Password',
+    passwordHint: 'Set a new password for your account.',
+    updatePassword: 'Update Password',
+    passwordUpdated: 'Password updated.',
+    passwordInvalid: 'Invalid password.',
     personalDetails: {
-      birthDate: 'Date of Birth'
+      title: 'Personal Details',
+      birthDate: 'Date of Birth',
+      sex: 'Sex',
+      sexMale: 'Male',
+      sexFemale: 'Female',
+      sexUnknown: 'Prefer not to say',
+      currentWeight: 'Current Weight',
+      currentWeightUnit: 'Current Weight Unit'
     },
     preferences: {
-      accountPrivate: 'Private Account'
+      title: 'Preferences',
+      accountPrivate: 'Private',
+      language: 'Language'
     },
     save: 'Save',
     undo: 'Undo'
@@ -65,5 +79,9 @@ export default {
   },
   generalErrors: {
     apiError: 'An API error occurred. Please try again later.'
+  },
+  weightUnit: {
+    kilograms: 'Kilograms',
+    pounds: 'Pounds'
   }
 };

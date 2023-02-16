@@ -40,7 +40,7 @@
           <router-link
             :to="{
               path: '/register',
-              query: route.query.next ? { next: route.query.next } : {},
+              query: route.query.next ? { next: route.query.next } : {}
             }"
             class="q-mt-md text-primary text-center col-12"
           >
@@ -78,7 +78,7 @@ const passwordVisible = ref(false);
 /**
  * The main login function. It attempts to log in the user, and gracefully
  * handles failures.
- * 
+ *
  * Upon successful login, we set the app's locale to the user's preferred
  * locale, and then redirect to the pre-configured next URL (if there is one).
  */
@@ -87,8 +87,8 @@ async function tryLogin() {
     await api.auth.login(authStore, loginModel.value);
 
     // Set the locale to the user's preferred locale.
-    i18n.locale.value = resolveLocale(authStore.user?.preferences?.locale);
-    
+    i18n.locale.value = resolveLocale(authStore.user?.preferences?.locale).value;
+
     // Redirect back to whatever was set as the next URL.
     const dest = route.query.next
       ? decodeURIComponent(route.query.next as string)

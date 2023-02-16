@@ -3,12 +3,9 @@ import GymsModule from 'src/api/main/gyms';
 import ExercisesModule from 'src/api/main/exercises';
 import LeaderboardsModule from 'src/api/main/leaderboards';
 import AuthModule from 'src/api/main/auth';
-
-export const BASE_URL = 'http://localhost:8080';
-
-// TODO: Figure out how to get the base URL from environment.
+console.log(process.env);
 export const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: process.env.API_URL,
 });
 
 class GymboardApi {

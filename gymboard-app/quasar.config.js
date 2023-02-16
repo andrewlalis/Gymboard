@@ -12,6 +12,8 @@ const { configure } = require('quasar/wrappers');
 const path = require('path');
 const { withCtx } = require('vue');
 
+require('dotenv').config();
+
 module.exports = configure(function (ctx) {
   return {
     eslint: {
@@ -65,7 +67,9 @@ module.exports = configure(function (ctx) {
       // publicPath: '/',
       // analyze: true,
       env: {
-        API: ctx.dev ? 'http://localhost:8080' : 'https://api.gymboard.com',
+        API_URL: process.env.API_URL,
+        CDN_URL: process.env.CDN_URL,
+        SEARCH_URL: process.env.SEARCH_URL,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

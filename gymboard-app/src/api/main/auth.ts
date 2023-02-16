@@ -1,6 +1,7 @@
 import {api} from 'src/api/main/index';
 import {AuthStoreType} from 'stores/auth-store';
 import Timeout = NodeJS.Timeout;
+import {WeightUnit} from 'src/api/main/submission';
 
 export interface User {
   id: string;
@@ -21,7 +22,7 @@ export interface UserPersonalDetails {
   userId: string;
   birthDate?: string;
   currentWeight?: number;
-  currentWeightUnit?: number;
+  currentWeightUnit?: WeightUnit;
   currentMetricWeight?: number;
   sex: PersonSex;
 }
