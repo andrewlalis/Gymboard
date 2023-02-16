@@ -9,6 +9,7 @@ export interface GymSearchResult {
   streetAddress: string;
   latitude: number;
   longitude: number;
+  submissionCount: number;
 }
 
 export interface UserSearchResult {
