@@ -41,14 +41,16 @@ public class GymService {
 		Gym gym = gymRepository.findByCompoundId(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		return submissionRepository.findAll((root, query, criteriaBuilder) -> {
-			query.orderBy(criteriaBuilder.desc(root.get("createdAt")));
+			query.orderBy(
+					criteriaBuilder.desc(root.get("performedAt")),
+					criteriaBuilder.desc(root.get("createdAt"))
+			);
 			query.distinct(true);
-
-			// TODO: Filter to only verified submissions.
 			return PredicateBuilder.and(criteriaBuilder)
 					.with(criteriaBuilder.equal(root.get("gym"), gym))
+					.with(criteriaBuilder.isTrue(root.get("verified")))
 					.build();
-		}, PageRequest.of(0, 10))
+		}, PageRequest.of(0, 5))
 				.map(SubmissionResponse::new)
 				.toList();
 	}

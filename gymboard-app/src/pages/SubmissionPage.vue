@@ -1,27 +1,27 @@
 <template>
-    <q-page>
-        <StandardCenteredPage v-if="submission">
-            <h3>
-                {{ submission.rawWeight }}&nbsp;{{ WeightUnitUtil.toAbbreviation(submission.weightUnit) }}
-                {{ submission.exercise.displayName }}
-            </h3>
-            <p>{{ submission.reps }} reps</p>
-            <p>by <router-link :to="'/users/' + submission.user.id">{{ submission.user.name }}</router-link></p>
-            <p>At <router-link :to="getGymRoute(submission.gym)">{{ submission.gym.displayName }}</router-link></p>
-            <p>
-                {{ submission.createdAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}
-            </p>
-            <video
-                :src="getFileUrl(submission.videoFileId)"
-                width="600"
-                loop
-                controls
-                autopictureinpicture
-                preload="metadata"
-                autoplay
-            />
-        </StandardCenteredPage>
-    </q-page>
+  <q-page>
+    <StandardCenteredPage v-if="submission">
+      <video
+        class="submission-video"
+        :src="getFileUrl(submission.videoFileId)"
+        loop
+        controls
+        autopictureinpicture
+        preload="metadata"
+        autoplay
+      />
+      <h3>
+          {{ submission.rawWeight }}&nbsp;{{ WeightUnitUtil.toAbbreviation(submission.weightUnit) }}
+          {{ submission.exercise.displayName }}
+      </h3>
+      <p>{{ submission.reps }} reps</p>
+      <p>by <router-link :to="'/users/' + submission.user.id">{{ submission.user.name }}</router-link></p>
+      <p>At <router-link :to="getGymRoute(submission.gym)">{{ submission.gym.displayName }}</router-link></p>
+      <p>
+          {{ submission.performedAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}
+      </p>
+    </StandardCenteredPage>
+  </q-page>
 </template>
 
 <script setup lang="ts">
@@ -49,3 +49,10 @@ onMounted(async () => {
     }
 });
 </script>
+<style scoped>
+.submission-video {
+  width: 100%;
+  max-height: 100%;
+  margin-top: 20px;
+}
+</style>

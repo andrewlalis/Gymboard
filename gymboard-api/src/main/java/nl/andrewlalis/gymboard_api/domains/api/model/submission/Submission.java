@@ -53,9 +53,23 @@ public class Submission {
 	@Column(nullable = false)
 	private int reps;
 
+	@Column(nullable = false)
+	private boolean verified;
+
 	public Submission() {}
 
-	public Submission(String id, Gym gym, Exercise exercise, User user, LocalDateTime performedAt, String videoFileId, BigDecimal rawWeight, WeightUnit unit, BigDecimal metricWeight, int reps) {
+	public Submission(
+		String id,
+		Gym gym,
+		Exercise exercise,
+		User user,
+		LocalDateTime performedAt,
+		String videoFileId,
+		BigDecimal rawWeight,
+		WeightUnit unit,
+		BigDecimal metricWeight,
+		int reps
+	) {
 		this.id = id;
 		this.gym = gym;
 		this.exercise = exercise;
@@ -66,6 +80,7 @@ public class Submission {
 		this.weightUnit = unit;
 		this.metricWeight = metricWeight;
 		this.reps = reps;
+		this.verified = false;
 	}
 
 	public String getId() {
@@ -110,5 +125,13 @@ public class Submission {
 
 	public int getReps() {
 		return reps;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
+	public void setVerified(boolean verified) {
+		this.verified = verified;
 	}
 }

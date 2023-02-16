@@ -55,9 +55,10 @@ public class LeaderboardService {
 			query.distinct(true);
 			query.orderBy(criteriaBuilder.desc(root.get("metricWeight")));
 
-			PredicateBuilder pb = PredicateBuilder.and(criteriaBuilder);
+			PredicateBuilder pb = PredicateBuilder.and(criteriaBuilder)
+				.with(criteriaBuilder.isTrue(root.get("verified")));
 
-			cutoffTime.ifPresent(time -> pb.with(criteriaBuilder.greaterThan(root.get("createdAt"), time)));
+			cutoffTime.ifPresent(time -> pb.with(criteriaBuilder.greaterThan(root.get("performedAt"), time)));
 			optionalExercise.ifPresent(exercise -> pb.with(criteriaBuilder.equal(root.get("exercise"), exercise)));
 			if (!gyms.isEmpty()) {
 				PredicateBuilder or = PredicateBuilder.or(criteriaBuilder);

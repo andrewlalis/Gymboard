@@ -10,14 +10,13 @@
       </q-item-label>
     </q-item-section>
     <q-item-section side top>
-      {{ submission.createdAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}
+      {{ submission.performedAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}
     </q-item-section>
   </q-item>
 </template>
 
 <script setup lang="ts">
 import { ExerciseSubmission, WeightUnitUtil } from 'src/api/main/submission';
-import { getFileUrl } from 'src/api/cdn';
 import { DateTime } from 'luxon';
 
 interface Props {

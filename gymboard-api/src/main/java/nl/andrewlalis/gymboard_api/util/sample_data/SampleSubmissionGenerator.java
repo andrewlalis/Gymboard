@@ -63,8 +63,9 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 		final LocalDateTime latestSubmission = LocalDateTime.now();
 
 		Random random = new Random(1);
+		List<Submission> submissions = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
-			generateRandomSubmission(
+			submissions.add(generateRandomSubmission(
 					gyms,
 					users,
 					exercises,
@@ -72,11 +73,12 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 					earliestSubmission,
 					latestSubmission,
 					random
-			);
+			));
 		}
+		submissionRepository.saveAll(submissions);
 	}
 
-	private void generateRandomSubmission(
+	private Submission generateRandomSubmission(
 			List<Gym> gyms,
 			List<User> users,
 			List<Exercise> exercises,
@@ -94,18 +96,20 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 			rawWeight = metricWeight.multiply(new BigDecimal("2.2046226218"));
 		}
 
-		submissionRepository.save(new Submission(
-				ulid.nextULID(),
-				randomChoice(gyms, random),
-				randomChoice(exercises, random),
-				randomChoice(users, random),
-				time,
-				randomChoice(videoIds, random),
-				rawWeight,
-				weightUnit,
-				metricWeight,
-				random.nextInt(13)
-		));
+		var submission = new Submission(
+			ulid.nextULID(),
+			randomChoice(gyms, random),
+			randomChoice(exercises, random),
+			randomChoice(users, random),
+			time,
+			randomChoice(videoIds, random),
+			rawWeight,
+			weightUnit,
+			metricWeight,
+			random.nextInt(13) + 1
+		);
+		submission.setVerified(true);
+		return submission;
 	}
 
 	@Override

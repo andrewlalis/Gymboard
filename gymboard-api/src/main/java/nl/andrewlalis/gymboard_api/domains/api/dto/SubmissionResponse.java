@@ -15,7 +15,8 @@ public record SubmissionResponse(
 		double rawWeight,
 		String weightUnit,
 		double metricWeight,
-		int reps
+		int reps,
+		boolean verified
 ) {
 	public SubmissionResponse(Submission submission) {
 		this(
@@ -29,7 +30,8 @@ public record SubmissionResponse(
 				submission.getRawWeight().doubleValue(),
 				submission.getWeightUnit().name(),
 				submission.getMetricWeight().doubleValue(),
-				submission.getReps()
+				submission.getReps(),
+				submission.isVerified()
 		);
 	}
 }

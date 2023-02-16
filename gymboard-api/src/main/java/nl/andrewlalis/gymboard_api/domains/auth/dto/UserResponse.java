@@ -6,14 +6,16 @@ public record UserResponse(
 		String id,
 		boolean activated,
 		String email,
-		String name
+		String name,
+		boolean accountPrivate
 ) {
 	public UserResponse(User user) {
 		this(
 				user.getId(),
 				user.isActivated(),
 				user.getEmail(),
-				user.getName()
+				user.getName(),
+				user.getPreferences().isAccountPrivate()
 		);
 	}
 }

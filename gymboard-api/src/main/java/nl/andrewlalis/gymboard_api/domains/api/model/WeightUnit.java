@@ -19,4 +19,9 @@ public enum WeightUnit {
 		BigDecimal metric = new BigDecimal("0.45359237");
 		return metric.multiply(pounds);
 	}
+
+	public static BigDecimal toKilograms(BigDecimal weight, WeightUnit unit) {
+		if (unit == POUNDS) return toKilograms(weight);
+		return weight;
+	}
 }
