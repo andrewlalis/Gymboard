@@ -58,6 +58,8 @@ export default {
   },
   userSettingsPage: {
     title: 'Account Settings',
+    email: 'Email',
+    name: 'Name',
     password: 'Password',
     passwordHint: 'Set a new password for your account.',
     updatePassword: 'Update Password',

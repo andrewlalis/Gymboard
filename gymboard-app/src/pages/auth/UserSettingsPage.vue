@@ -3,24 +3,37 @@ The page where users can edit their personal information and preferences.
 -->
 <template>
   <q-page>
-    <StandardCenteredPage>
+    <StandardCenteredPage v-if="authStore.loggedIn">
       <h3>{{ $t('userSettingsPage.title') }}</h3>
       <hr>
 
       <div class="row justify-between">
+        <span class="property-label">{{ $t('userSettingsPage.email') }}</span>
+        <q-input type="email" v-model="authStore.user.email" dense readonly/>
+      </div>
+      <div class="row justify-between">
+        <span class="property-label">{{ $t('userSettingsPage.name') }}</span>
+        <q-input type="text" v-model="authStore.user.name" dense readonly/>
+      </div>
+      <div class="row justify-between">
         <span class="property-label">{{ $t('userSettingsPage.password') }}</span>
         <q-input
+          dense
           type="password"
           v-model="newPassword"
           :hint="$t('userSettingsPage.passwordHint')"
         />
       </div>
-      <div v-if="canUpdatePassword">
-        <q-btn :label="$t('userSettingsPage.updatePassword')" color="positive" @click="updatePassword"/>
+      <div>
+        <q-btn v-if="canUpdatePassword" :label="$t('userSettingsPage.updatePassword')" color="positive" @click="updatePassword"/>
       </div>
 
       <div v-if="personalDetails">
         <h4>{{ $t('userSettingsPage.personalDetails.title') }}</h4>
+        <div v-if="personalDetailsChanged" class="save-button-row">
+          <q-btn :label="$t('userSettingsPage.save')" color="positive" @click="savePersonalDetails"/>
+          <q-btn :label="$t('userSettingsPage.undo')" color="secondary" @click="undoPersonalDetailsChanges"/>
+        </div>
         <EditablePropertyRow
           v-model="personalDetails.birthDate"
           :label="$t('userSettingsPage.personalDetails.birthDate')"
@@ -52,16 +65,14 @@ The page where users can edit their personal information and preferences.
           ]"
         />
 
-        <div v-if="personalDetailsChanged" class="save-button-row">
-          <q-btn :label="$t('userSettingsPage.save')" color="positive" @click="savePersonalDetails"/>
-          <q-btn :label="$t('userSettingsPage.undo')" color="secondary" @click="undoPersonalDetailsChanges"/>
-        </div>
-
       </div>
 
       <div v-if="preferences">
         <h4>{{ $t('userSettingsPage.preferences.title') }}</h4>
-
+        <div v-if="preferencesChanged" class="save-button-row">
+          <q-btn :label="$t('userSettingsPage.save')" color="positive" @click="savePreferences"/>
+          <q-btn :label="$t('userSettingsPage.undo')" color="secondary" @click="undoPreferencesChanges"/>
+        </div>
         <EditablePropertyRow
           v-model="preferences.accountPrivate"
           :label="$t('userSettingsPage.preferences.accountPrivate')"
@@ -73,11 +84,6 @@ The page where users can edit their personal information and preferences.
           :select-options="supportedLocales"
           @update:modelValue="updateLocale"
         />
-
-        <div v-if="preferencesChanged" class="save-button-row">
-          <q-btn :label="$t('userSettingsPage.save')" color="positive" @click="savePreferences"/>
-          <q-btn :label="$t('userSettingsPage.undo')" color="secondary" @click="undoPreferencesChanges"/>
-        </div>
       </div>
 
     </StandardCenteredPage>

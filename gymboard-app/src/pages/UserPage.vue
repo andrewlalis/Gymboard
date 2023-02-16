@@ -3,9 +3,6 @@
     <StandardCenteredPage v-if="user">
       <h3>{{ user?.name }}</h3>
 
-      <p>{{ user?.email }}</p>
-      <p v-if="isOwnUser">This is your account!</p>
-
       <hr>
 
       <div v-if="userPrivate">
