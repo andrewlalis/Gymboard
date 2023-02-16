@@ -12,7 +12,8 @@ public record GymResponse(
 		String countryName,
 		String streetAddress,
 		double latitude,
-		double longitude
+		double longitude,
+		long submissionCount
 ) {
 	public GymResponse(Document doc) {
 		this(
@@ -25,7 +26,8 @@ public record GymResponse(
 				doc.get("country_name"),
 				doc.get("street_address"),
 				doc.getField("latitude").numericValue().doubleValue(),
-				doc.getField("longitude").numericValue().doubleValue()
+				doc.getField("longitude").numericValue().doubleValue(),
+				doc.getField("submission_count").numericValue().longValue()
 		);
 	}
 }

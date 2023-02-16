@@ -50,7 +50,8 @@ public class SecurityConfig {
 						"/auth/reset-password",
 						"/auth/users/*",
 						"/auth/users/*/followers",
-						"/auth/users/*/following"
+						"/auth/users/*/following",
+						"/users/*/recent-submissions"
 				).permitAll()
 				.requestMatchers(// Allow the following POST endpoints to be public.
 						HttpMethod.POST,

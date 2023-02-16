@@ -4,6 +4,7 @@ import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionReposito
 import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccessService;
 import nl.andrewlalis.gymboard_api.util.PredicateBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -17,19 +18,20 @@ import java.util.List;
 public class UserSubmissionService {
 	private final UserRepository userRepository;
 	private final SubmissionRepository submissionRepository;
+	private final UserAccessService userAccessService;
 
-	public UserSubmissionService(UserRepository userRepository, SubmissionRepository submissionRepository) {
+	public UserSubmissionService(UserRepository userRepository, SubmissionRepository submissionRepository, UserAccessService userAccessService) {
 		this.userRepository = userRepository;
 		this.submissionRepository = submissionRepository;
+		this.userAccessService = userAccessService;
 	}
 
 	@Transactional(readOnly = true)
 	public List<SubmissionResponse> getRecentSubmissions(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		if (user.getPreferences().isAccountPrivate()) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-		}
+		userAccessService.enforceUserAccess(user);
+
 		return submissionRepository.findAll((root, query, criteriaBuilder) -> {
 			query.orderBy(
 					criteriaBuilder.desc(root.get("performedAt")),

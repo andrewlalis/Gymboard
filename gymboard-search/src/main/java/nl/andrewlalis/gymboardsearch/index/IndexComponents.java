@@ -66,6 +66,7 @@ public class IndexComponents {
 					String streetAddress = rs.getString("street_address");
 					BigDecimal latitude = rs.getBigDecimal("latitude");
 					BigDecimal longitude = rs.getBigDecimal("longitude");
+					long submissionCount = rs.getLong("submission_count");
 					String gymCompoundId = String.format("%s_%s_%s", countryCode, cityShortName, shortName);
 
 					Document doc = new Document();
@@ -81,6 +82,8 @@ public class IndexComponents {
 					doc.add(new StoredField("latitude", latitude.doubleValue()));
 					doc.add(new DoublePoint("longitude_point", longitude.doubleValue()));
 					doc.add(new StoredField("longitude", longitude.doubleValue()));
+					doc.add(new LongPoint("submission_count_point", submissionCount));
+					doc.add(new StoredField("submission_count", submissionCount));
 					return doc;
 				}
 		);

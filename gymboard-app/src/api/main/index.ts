@@ -3,7 +3,8 @@ import GymsModule from 'src/api/main/gyms';
 import ExercisesModule from 'src/api/main/exercises';
 import LeaderboardsModule from 'src/api/main/leaderboards';
 import AuthModule from 'src/api/main/auth';
-console.log(process.env);
+import UsersModule from 'src/api/main/users';
+
 export const api = axios.create({
   baseURL: process.env.API_URL,
 });
@@ -11,6 +12,7 @@ export const api = axios.create({
 class GymboardApi {
   public readonly auth = new AuthModule();
   public readonly gyms = new GymsModule();
+  public readonly users = new UsersModule();
   public readonly exercises = new ExercisesModule();
   public readonly leaderboards = new LeaderboardsModule();
 }

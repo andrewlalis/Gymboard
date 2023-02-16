@@ -44,7 +44,9 @@ export default {
     notFound: {
       title: 'User Not Found',
       description: 'We couldn\'t find the user you\'re looking for.'
-    }
+    },
+    accountPrivate: 'This account is private.',
+    recentLifts: 'Recent Lifts',
   },
   userSettingsPage: {
     title: 'Account Settings',

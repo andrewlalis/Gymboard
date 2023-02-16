@@ -3,7 +3,7 @@ import { Exercise } from 'src/api/main/exercises';
 import { api } from 'src/api/main/index';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
 import { DateTime } from 'luxon';
-import {User} from "src/api/main/auth";
+import {User} from 'src/api/main/auth';
 
 /**
  * The data that's sent when creating a submission.

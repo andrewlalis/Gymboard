@@ -44,7 +44,9 @@ export default {
     notFound: {
       title: 'Gebruiker niet gevonden',
       description: 'Wij konden de gebruiker voor wie jij zoekt niet vinden, helaas.'
-    }
+    },
+    accountPrivate: 'Dit account is privaat.',
+    recentLifts: 'Recente liften',
   },
   userSettingsPage: {
     title: 'Account instellingen',
