@@ -2,8 +2,13 @@
   <q-page>
     <StandardCenteredPage v-if="user">
       <h3>{{ user?.name }}</h3>
+
       <p>{{ user?.email }}</p>
       <p v-if="isOwnUser">This is your account!</p>
+
+      <hr>
+
+
     </StandardCenteredPage>
     <StandardCenteredPage v-if="userNotFound">
       <h3>{{ $t('userPage.notFound.title') }}</h3>
@@ -14,11 +19,12 @@
 
 <script setup lang="ts">
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
-import {onMounted, ref, Ref} from 'vue';
+import {computed, onMounted, ref, Ref} from 'vue';
 import {User} from 'src/api/main/auth';
 import api from 'src/api/main';
 import {useRoute} from 'vue-router';
 import {useAuthStore} from 'stores/auth-store';
+import { getUserRoute } from 'src/router/user-routing';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -48,7 +54,7 @@ onMounted(async () => {
       userNotFound.value = true;
     }
   }
-  isOwnUser.value = authStore.loggedIn && user.value.id === authStore.user?.id;
+  isOwnUser.value = authStore.loggedIn && user.value?.id === authStore.user?.id;
 });
 </script>
 

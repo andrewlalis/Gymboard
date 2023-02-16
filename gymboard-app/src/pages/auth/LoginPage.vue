@@ -59,10 +59,15 @@ import { ref } from 'vue';
 import api from 'src/api/main';
 import { useAuthStore } from 'stores/auth-store';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { resolveLocale } from 'src/i18n';
+import { useQuasar } from 'quasar';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const i18n = useI18n({ useScope: 'global' });
+const quasar = useQuasar();
 
 const loginModel = ref({
   email: '',
@@ -70,15 +75,40 @@ const loginModel = ref({
 });
 const passwordVisible = ref(false);
 
+/**
+ * The main login function. It attempts to log in the user, and gracefully
+ * handles failures.
+ * 
+ * Upon successful login, we set the app's locale to the user's preferred
+ * locale, and then redirect to the pre-configured next URL (if there is one).
+ */
 async function tryLogin() {
   try {
     await api.auth.login(authStore, loginModel.value);
+
+    // Set the locale to the user's preferred locale.
+    i18n.locale.value = resolveLocale(authStore.user?.preferences?.locale);
+    
+    // Redirect back to whatever was set as the next URL.
     const dest = route.query.next
       ? decodeURIComponent(route.query.next as string)
       : '/';
     await router.push(dest);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    if (error.response && error.response.status === 401) {
+      quasar.notify({
+        message: i18n.t('loginPage.authFailed'),
+        type: 'warning',
+        position: 'top',
+      });
+    } else {
+      quasar.notify({
+        message: i18n.t('generalErrors.apiError'),
+        type: 'negative',
+        position: 'top',
+      });
+      console.error(error);
+    }
   }
 }
 

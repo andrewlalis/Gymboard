@@ -13,6 +13,7 @@ import RegistrationSuccessPage from 'pages/auth/RegistrationSuccessPage.vue';
 import ActivationPage from 'pages/auth/ActivationPage.vue';
 import SubmissionPage from 'pages/SubmissionPage.vue';
 import UserPage from 'pages/UserPage.vue';
+import UserSettingsPage from 'pages/auth/UserSettingsPage.vue';
 
 const routes: RouteRecordRaw[] = [
   // Auth-related pages, which live outside the main layout.
@@ -28,7 +29,15 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: IndexPage },
       { path: 'testing', component: TestingPage },
-      { path: 'users/:userId', component: UserPage },
+      {
+        path: 'users/:userId',
+        children: [
+          { path: '', component: UserPage },
+          { path: 'settings', component: UserSettingsPage }
+        ]
+      },
+      // { path: 'users/:userId', component: UserPage },
+      // { path: 'users/:userId/settings', component: UserSettingsPage },
       {
         path: 'gyms/:countryCode/:cityShortName/:gymShortName',
         component: GymPage,

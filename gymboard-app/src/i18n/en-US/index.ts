@@ -17,6 +17,7 @@ export default {
     password: 'Password',
     logIn: 'Log in',
     createAccount: 'Create an account',
+    authFailed: 'Invalid credentials.'
   },
   indexPage: {
     searchHint: 'Search for a Gym',
@@ -45,9 +46,16 @@ export default {
       description: 'We couldn\'t find the user you\'re looking for.'
     }
   },
+  userSettingsPage: {
+    title: 'Account Settings'
+  },
   accountMenuItem: {
     logIn: 'Login',
-    myAccount: 'My Account',
+    profile: 'Profile',
+    settings: 'Settings',
     logOut: 'Log out',
   },
+  generalErrors: {
+    apiError: 'An API error occurred. Please try again later.'
+  }
 };

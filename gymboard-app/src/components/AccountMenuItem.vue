@@ -3,14 +3,19 @@
     <q-btn-dropdown
       color="primary"
       :label="authStore.user?.name"
-      v-if="authStore.loggedIn"
+      v-if="authStore.loggedIn && authStore.user"
       no-caps
       icon="person"
     >
       <q-list>
-        <q-item clickable v-close-popup :to="'/users/' + authStore.user?.id">
+        <q-item clickable v-close-popup :to="getUserRoute(authStore.user)">
           <q-item-section>
-            <q-item-label>{{ $t('accountMenuItem.myAccount') }}</q-item-label>
+            <q-item-label>{{ $t('accountMenuItem.profile') }}</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item clickable v-close-popup :to="getUserRoute(authStore.user) + '/settings'">
+          <q-item-section>
+            <q-item-label>{{ $t('accountMenuItem.settings') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-item clickable v-close-popup @click="api.auth.logout(authStore)">
@@ -35,6 +40,7 @@
 import { useAuthStore } from 'stores/auth-store';
 import api from 'src/api/main';
 import { useRoute, useRouter } from 'vue-router';
+import { getUserRoute } from 'src/router/user-routing';
 
 const authStore = useAuthStore();
 const route = useRoute();

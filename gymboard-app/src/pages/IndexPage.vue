@@ -30,7 +30,8 @@ import { useRoute, useRouter } from 'vue-router';
 import GymSearchResultListItem from 'components/GymSearchResultListItem.vue';
 import StandardCenteredPage from 'src/components/StandardCenteredPage.vue';
 import { GymSearchResult } from 'src/api/search/models';
-import { searchGyms } from 'src/api/search';
+import searchApi from 'src/api/search';
+import { sleep } from 'src/utils';
 
 const route = useRoute();
 const router = useRouter();
@@ -47,6 +48,7 @@ onMounted(async () => {
   if (route.query.search_query) {
     searchQuery.value = route.query.search_query as string;
     searchBarLoadingState.value = true;
+    await sleep(500);
     await doSearch();
   }
 });
@@ -74,7 +76,7 @@ async function doSearch() {
   }
   await router.push({ path: '/', query: query });
   try {
-    searchResults.value = await searchGyms(searchQueryText);
+    searchResults.value = await searchApi.searchGyms(searchQueryText);
   } catch (error) {
     console.error(error);
   } finally {

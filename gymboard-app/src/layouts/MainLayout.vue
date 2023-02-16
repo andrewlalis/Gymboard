@@ -17,7 +17,6 @@
           >
         </q-toolbar-title>
         <AccountMenuItem />
-        <LocaleSelect />
       </q-toolbar>
     </q-header>
 
@@ -41,7 +40,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import LocaleSelect from 'components/LocaleSelect.vue';
 import AccountMenuItem from 'components/AccountMenuItem.vue';
 
 const leftDrawerOpen = ref(false);
