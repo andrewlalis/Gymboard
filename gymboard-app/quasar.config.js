@@ -12,7 +12,15 @@ const { configure } = require('quasar/wrappers');
 const path = require('path');
 const { withCtx } = require('vue');
 
-require('dotenv').config();
+// Load environment variables from different files depending on if we're in development.
+let envPath = '.env.production';
+if (process.env.NODE_ENV === 'development') {
+  envPath = '.env.development';
+}
+const result = require('dotenv').config({debug: true, path: envPath});
+if (result.error) {
+  throw result.error;
+}
 
 module.exports = configure(function (ctx) {
   return {
