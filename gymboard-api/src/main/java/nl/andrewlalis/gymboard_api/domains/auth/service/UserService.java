@@ -38,6 +38,7 @@ public class UserService {
 	private final UserActivationCodeRepository activationCodeRepository;
 	private final PasswordResetCodeRepository passwordResetCodeRepository;
 	private final UserFollowingRepository userFollowingRepository;
+	private final UserAccessService userAccessService;
 	private final ULID ulid;
 	private final PasswordEncoder passwordEncoder;
 	private final JavaMailSender mailSender;
@@ -51,7 +52,7 @@ public class UserService {
 			UserPreferencesRepository userPreferencesRepository,
 			UserActivationCodeRepository activationCodeRepository,
 			PasswordResetCodeRepository passwordResetCodeRepository,
-			UserFollowingRepository userFollowingRepository, ULID ulid,
+			UserFollowingRepository userFollowingRepository, UserAccessService userAccessService, ULID ulid,
 			PasswordEncoder passwordEncoder,
 			JavaMailSender mailSender
 	) {
@@ -61,6 +62,7 @@ public class UserService {
 		this.activationCodeRepository = activationCodeRepository;
 		this.passwordResetCodeRepository = passwordResetCodeRepository;
 		this.userFollowingRepository = userFollowingRepository;
+		this.userAccessService = userAccessService;
 		this.ulid = ulid;
 		this.passwordEncoder = passwordEncoder;
 		this.mailSender = mailSender;
@@ -280,6 +282,7 @@ public class UserService {
 
 	@Transactional
 	public void followUser(String followerId, String followedId) {
+		if (followerId.equals(followedId)) return;
 		User follower = userRepository.findById(followerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		User followed = userRepository.findById(followedId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -290,6 +293,7 @@ public class UserService {
 
 	@Transactional
 	public void unfollowUser(String followerId, String followedId) {
+		if (followerId.equals(followedId)) return;
 		User follower = userRepository.findById(followerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		User followed = userRepository.findById(followedId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -300,6 +304,7 @@ public class UserService {
 	public Page<UserResponse> getFollowers(String userId, Pageable pageable) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		userAccessService.enforceUserAccess(user);
 		return userFollowingRepository.findAllByFollowedUserOrderByCreatedAtDesc(user, pageable)
 				.map(UserFollowing::getFollowingUser)
 				.map(UserResponse::new);
@@ -309,8 +314,24 @@ public class UserService {
 	public Page<UserResponse> getFollowing(String userId, Pageable pageable) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		userAccessService.enforceUserAccess(user);
 		return userFollowingRepository.findAllByFollowingUserOrderByCreatedAtDesc(user, pageable)
 				.map(UserFollowing::getFollowedUser)
 				.map(UserResponse::new);
+	}
+
+	@Transactional(readOnly = true)
+	public UserRelationshipResponse getRelationship(String user1Id, String user2Id) {
+		User user1 = userRepository.findById(user1Id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		User user2 = userRepository.findById(user2Id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		userAccessService.enforceUserAccess(user1);
+		boolean user1FollowingUser2 = userFollowingRepository.existsByFollowedUserAndFollowingUser(user2, user1);
+		boolean user1FollowedByUser2 = userFollowingRepository.existsByFollowedUserAndFollowingUser(user1, user2);
+		return new UserRelationshipResponse(
+				user1FollowingUser2,
+				user1FollowedByUser2
+		);
 	}
 }

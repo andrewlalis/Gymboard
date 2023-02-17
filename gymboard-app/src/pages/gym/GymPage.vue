@@ -2,23 +2,14 @@
   <q-page>
     <StandardCenteredPage v-if="gym">
       <h3 class="q-my-md text-center">{{ gym.displayName }}</h3>
-      <q-btn-group spread square push>
-        <q-btn
-          :label="$t('gymPage.home')"
-          :to="getGymRoute(gym)"
-          :color="homePageSelected ? 'primary' : 'secondary'"
-        />
-        <q-btn
-          :label="$t('gymPage.submit')"
-          :to="getGymRoute(gym) + '/submit'"
-          :color="submitPageSelected ? 'primary' : 'secondary'"
-        />
-        <q-btn
-          :label="$t('gymPage.leaderboard')"
-          :to="getGymRoute(gym) + '/leaderboard'"
-          :color="leaderboardPageSelected ? 'primary' : 'secondary'"
-        />
-      </q-btn-group>
+      <PageMenu
+        :base-route="getGymRoute(gym)"
+        :items="[
+          {label: t('gymPage.home')},
+          {label: t('gymPage.submit'), to: 'submit'},
+          {label: t('gymPage.leaderboard'), to: 'leaderboard'}
+        ]"
+      />
       <router-view />
     </StandardCenteredPage>
   </q-page>
@@ -30,9 +21,12 @@ import { useRoute, useRouter } from 'vue-router';
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
 import { Gym } from 'src/api/main/gyms';
+import PageMenu from "components/PageMenu.vue";
+import {useI18n} from "vue-i18n";
 
 const route = useRoute();
 const router = useRouter();
+const t = useI18n().t;
 
 const gym: Ref<Gym | undefined> = ref<Gym>();
 

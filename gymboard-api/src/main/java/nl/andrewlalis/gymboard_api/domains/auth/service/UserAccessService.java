@@ -36,6 +36,9 @@ public class UserAccessService {
 		if (targetUser != null && !targetUser.getPreferences().isAccountPrivate()) {
 			return true;
 		}
+		if (user != null && targetUser != null && user.getId().equals(targetUser.getId())) {
+			return true;
+		}
 		return user != null && followingRepository.existsByFollowedUserAndFollowingUser(targetUser, user);
 	}
 
@@ -79,9 +82,10 @@ public class UserAccessService {
 	@Transactional(readOnly = true)
 	public boolean currentUserHasAccess(String userId) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User user = null;
 		if (auth instanceof TokenAuthentication tokenAuth) {
-			return userHasAccess(tokenAuth.user(), userId);
+			user = tokenAuth.user();
 		}
-		return false;
+		return userHasAccess(user, userId);
 	}
 }

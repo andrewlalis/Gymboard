@@ -3,7 +3,7 @@
     <q-item-section>
       <q-item-label>{{ user.name }}</q-item-label>
     </q-item-section>
-    <q-item-section side top>
+    <q-item-section side top v-if="user.submissionCount">
       <q-badge color="primary" :label="submissionCountLabel"/>
     </q-item-section>
   </q-item>

@@ -27,6 +27,11 @@ export interface UserPersonalDetails {
   sex: PersonSex;
 }
 
+export interface UserRelationship {
+  following: boolean;
+  followedBy: boolean;
+}
+
 export interface UserPreferences {
   userId: string;
   accountPrivate: boolean;
@@ -104,6 +109,11 @@ class AuthModule {
     return response.data;
   }
 
+  public async isUserAccessible(userId: string, authStore: AuthStoreType): Promise<boolean> {
+    const response = await api.get(`/auth/users/${userId}/access`, authStore.axiosConfig);
+    return response.data.accessible;
+  }
+
   public async updatePassword(newPassword: string, authStore: AuthStoreType) {
     await api.post(
       '/auth/me/password',
@@ -141,6 +151,29 @@ class AuthModule {
   public async updateMyPreferences(authStore: AuthStoreType, newPreferences: UserPreferences): Promise<UserPreferences> {
     const response = await api.post('/auth/me/preferences', newPreferences, authStore.axiosConfig);
     return response.data;
+  }
+
+  public async getFollowers(userId: string, authStore: AuthStoreType, page: number, count: number): Promise<User[]> {
+    const response = await api.get(`/auth/users/${userId}/followers?page=${page}&count=${count}`, authStore.axiosConfig);
+    return response.data.content;
+  }
+
+  public async getFollowing(userId: string, authStore: AuthStoreType, page: number, count: number): Promise<User[]> {
+    const response = await api.get(`/auth/users/${userId}/following?page=${page}&count=${count}`, authStore.axiosConfig);
+    return response.data.content;
+  }
+
+  public async getRelationshipTo(userId: string, targetUserId: string, authStore: AuthStoreType): Promise<UserRelationship> {
+    const response = await api.get(`/auth/users/${userId}/relationship-to/${targetUserId}`, authStore.axiosConfig);
+    return response.data;
+  }
+
+  public async followUser(userId: string, authStore: AuthStoreType) {
+    await api.post(`/auth/users/${userId}/followers`, undefined, authStore.axiosConfig);
+  }
+
+  public async unfollowUser(userId: string, authStore: AuthStoreType) {
+    await api.delete(`/auth/users/${userId}/followers`, authStore.axiosConfig);
   }
 }
 

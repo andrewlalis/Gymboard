@@ -2,6 +2,7 @@ package nl.andrewlalis.gymboard_api.domains.auth.controller;
 
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccessService;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class UserController {
 	private final UserService userService;
+	private final UserAccessService userAccessService;
 
-	public UserController(UserService userService) {
+	public UserController(UserService userService, UserAccessService userAccessService) {
 		this.userService = userService;
+		this.userAccessService = userAccessService;
 	}
 
 	/**
@@ -31,6 +34,11 @@ public class UserController {
 	@GetMapping(path = "/auth/users/{userId}")
 	public UserResponse getUser(@PathVariable String userId) {
 		return userService.getUser(userId);
+	}
+
+	@GetMapping(path = "/auth/users/{userId}/access")
+	public UserAccessResponse getUserAccess(@PathVariable String userId) {
+		return new UserAccessResponse(userAccessService.currentUserHasAccess(userId));
 	}
 
 	/**
@@ -71,6 +79,11 @@ public class UserController {
 		return userService.updatePreferences(user.getId(), payload);
 	}
 
+	@GetMapping(path = "/auth/users/{user1Id}/relationship-to/{user2Id}")
+	public UserRelationshipResponse getRelationship(@PathVariable String user1Id, @PathVariable String user2Id) {
+		return userService.getRelationship(user1Id, user2Id);
+	}
+
 	@PostMapping(path = "/auth/users/{userId}/followers")
 	public ResponseEntity<Void> followUser(@AuthenticationPrincipal User myUser, @PathVariable String userId) {
 		userService.followUser(myUser.getId(), userId);
@@ -91,5 +104,15 @@ public class UserController {
 	@GetMapping(path = "/auth/me/following")
 	public Page<UserResponse> getFollowing(@AuthenticationPrincipal User user, Pageable pageable) {
 		return userService.getFollowing(user.getId(), pageable);
+	}
+
+	@GetMapping(path = "/auth/users/{userId}/followers")
+	public Page<UserResponse> getUserFollowers(@PathVariable String userId, Pageable pageable) {
+		return userService.getFollowers(userId, pageable);
+	}
+
+	@GetMapping(path = "/auth/users/{userId}/following")
+	public Page<UserResponse> getUserFollowing(@PathVariable String userId, Pageable pageable) {
+		return userService.getFollowing(userId, pageable);
 	}
 }

@@ -49,6 +49,7 @@ public class SecurityConfig {
 						"/submissions/**",
 						"/auth/reset-password",
 						"/auth/users/*",
+						"/auth/users/*/access",
 						"/auth/users/*/followers",
 						"/auth/users/*/following",
 						"/users/*/recent-submissions"

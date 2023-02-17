@@ -66,6 +66,10 @@ class SubmissionsModule {
     const response = await api.post(`/gyms/${gymId}/submissions`, payload, authStore.axiosConfig);
     return parseSubmission(response.data);
   }
+
+  public async deleteSubmission(id: string, authStore: AuthStoreType) {
+    await api.delete(`/submissions/${id}`, authStore.axiosConfig);
+  }
 }
 
 export default SubmissionsModule;

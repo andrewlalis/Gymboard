@@ -132,4 +132,15 @@ public class ExerciseSubmissionService {
 		}
 		return response;
 	}
+
+	@Transactional
+	public void deleteSubmission(String submissionId, User user) {
+		Submission submission = submissionRepository.findById(submissionId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		if (!submission.getUser().getId().equals(user.getId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot delete other user's submission.");
+		}
+		// TODO: Find a secure way to delete the associated video.
+		submissionRepository.delete(submission);
+	}
 }

@@ -20,6 +20,13 @@
       <p>
           {{ submission.performedAt.setLocale($i18n.locale).toLocaleString(DateTime.DATETIME_MED) }}
       </p>
+
+      <!-- Deletion button is only visible if the user who submitted it is viewing it. -->
+      <q-btn
+        v-if="authStore.user && authStore.user.id === submission.user.id"
+        label="Delete"
+        @click="deleteSubmission"
+      />
     </StandardCenteredPage>
   </q-page>
 </template>
@@ -33,11 +40,18 @@ import { useRoute, useRouter } from 'vue-router';
 import { DateTime } from 'luxon';
 import { getFileUrl } from 'src/api/cdn';
 import { getGymRoute } from 'src/router/gym-routing';
+import {useAuthStore} from "stores/auth-store";
+import {showApiErrorToast} from "src/utils";
+import {useI18n} from "vue-i18n";
+import {useQuasar} from "quasar";
 
 const submission: Ref<ExerciseSubmission | undefined> = ref();
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
+const i18n = useI18n();
+const quasar = useQuasar();
 
 onMounted(async () => {
     const submissionId = route.params.submissionId as string;
@@ -48,6 +62,18 @@ onMounted(async () => {
         await router.push('/');
     }
 });
+
+async function deleteSubmission() {
+  // TODO: Confirm via a dialog or something before deleting.
+  if (!submission.value) return;
+  try {
+    await api.gyms.submissions.deleteSubmission(submission.value.id, authStore);
+    await router.push('/');
+  } catch (error) {
+    console.error(error);
+    showApiErrorToast(i18n, quasar);
+  }
+}
 </script>
 <style scoped>
 .submission-video {

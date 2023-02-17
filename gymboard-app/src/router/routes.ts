@@ -10,7 +10,7 @@ import RegisterPage from 'pages/auth/RegisterPage.vue';
 import RegistrationSuccessPage from 'pages/auth/RegistrationSuccessPage.vue';
 import ActivationPage from 'pages/auth/ActivationPage.vue';
 import SubmissionPage from 'pages/SubmissionPage.vue';
-import UserPage from 'pages/UserPage.vue';
+import UserPage from 'pages/user/UserPage.vue';
 import UserSettingsPage from 'pages/auth/UserSettingsPage.vue';
 import UserSearchPage from 'pages/UserSearchPage.vue';
 
@@ -28,15 +28,11 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: GymSearchPage },
       { path: 'users', component: UserSearchPage },
-      {
-        path: 'users/:userId',
-        children: [
-          { path: '', component: UserPage },
-          { path: 'settings', component: UserSettingsPage }
-        ]
+      { path: 'users/:userId/settings', component: UserSettingsPage },
+      { // Match anything under /users/:userId to the UserPage, since it manages sub-pages manually.
+        path: 'users/:userId+',
+        component: UserPage
       },
-      // { path: 'users/:userId', component: UserPage },
-      // { path: 'users/:userId/settings', component: UserSettingsPage },
       {
         path: 'gyms/:countryCode/:cityShortName/:gymShortName',
         component: GymPage,
