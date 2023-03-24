@@ -15,6 +15,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * A filter that performs token authentication on incoming requests, and if a
+ * user's token is valid, sets the security context's authentication to a new
+ * instance of {@link TokenAuthentication}.
+ */
 @Component
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 	private final TokenService tokenService;

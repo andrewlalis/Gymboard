@@ -53,6 +53,18 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
+	@PostMapping(path = "/auth/me/email-reset-code")
+	public ResponseEntity<Void> generateEmailResetCode(@AuthenticationPrincipal User user, @RequestBody EmailUpdatePayload payload) {
+		userService.generateEmailResetCode(user.getId(), payload);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping(path = "/auth/me/email")
+	public ResponseEntity<Void> updateMyEmail(@AuthenticationPrincipal User user, @RequestParam String code) {
+		userService.updateEmail(user.getId(), code);
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping(path = "/auth/me/personal-details")
 	public UserPersonalDetailsResponse getMyPersonalDetails(@AuthenticationPrincipal User user) {
 		return userService.getPersonalDetails(user.getId());
@@ -85,9 +97,8 @@ public class UserController {
 	}
 
 	@PostMapping(path = "/auth/users/{userId}/followers")
-	public ResponseEntity<Void> followUser(@AuthenticationPrincipal User myUser, @PathVariable String userId) {
-		userService.followUser(myUser.getId(), userId);
-		return ResponseEntity.ok().build();
+	public UserFollowResponse followUser(@AuthenticationPrincipal User myUser, @PathVariable String userId) {
+		return userService.followUser(myUser.getId(), userId);
 	}
 
 	@DeleteMapping(path = "/auth/users/{userId}/followers")
@@ -96,13 +107,23 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
+	@PostMapping(path = "/auth/me/follow-requests/{followRequestId}")
+	public ResponseEntity<Void> respondToFollowRequest(
+			@AuthenticationPrincipal User myUser,
+			@PathVariable long followRequestId,
+			@RequestBody UserFollowRequestApproval payload
+	) {
+		userService.respondToFollowRequest(myUser.getId(), followRequestId, payload.approve());
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping(path = "/auth/me/followers")
-	public Page<UserResponse> getFollowers(@AuthenticationPrincipal User user, Pageable pageable) {
+	public Page<UserResponse> getMyFollowers(@AuthenticationPrincipal User user, Pageable pageable) {
 		return userService.getFollowers(user.getId(), pageable);
 	}
 
 	@GetMapping(path = "/auth/me/following")
-	public Page<UserResponse> getFollowing(@AuthenticationPrincipal User user, Pageable pageable) {
+	public Page<UserResponse> getMyFollowing(@AuthenticationPrincipal User user, Pageable pageable) {
 		return userService.getFollowing(user.getId(), pageable);
 	}
 

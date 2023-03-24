@@ -7,17 +7,20 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
- * A code that's sent to a user's email address to grant them access to change
- * their password without needing to log in.
+ * A code that's sent to a user's new email address to confirm that they own
+ * it. Once confirmed, the user's email address will be updated.
  */
+@Table(name = "auth_email_reset_code")
 @Entity
-@Table(name = "auth_user_password_reset_code")
-public class PasswordResetCode {
+public class EmailResetCode {
 	public static final Duration VALID_FOR = Duration.ofMinutes(30);
 
 	@Id
 	@Column(nullable = false, updatable = false, length = 127)
 	private String code;
+
+	@Column(nullable = false, updatable = false, unique = true)
+	private String newEmail;
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;
@@ -25,15 +28,20 @@ public class PasswordResetCode {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private User user;
 
-	public PasswordResetCode() {}
+	public EmailResetCode() {}
 
-	public PasswordResetCode(String code, User user) {
+	public EmailResetCode(String code, String newEmail, User user) {
 		this.code = code;
+		this.newEmail = newEmail;
 		this.user = user;
 	}
 
 	public String getCode() {
 		return code;
+	}
+
+	public String getNewEmail() {
+		return newEmail;
 	}
 
 	public LocalDateTime getCreatedAt() {

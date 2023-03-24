@@ -5,6 +5,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * A user report is submitted by one user to report inappropriate actions of
+ * another user.
+ */
 @Entity
 @Table(name = "auth_user_report")
 public class UserReport {

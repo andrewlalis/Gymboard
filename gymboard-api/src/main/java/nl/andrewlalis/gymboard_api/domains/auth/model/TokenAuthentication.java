@@ -6,6 +6,13 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * The authentication instance that's used to represent a user who has
+ * authenticated with an API token (so most users).
+ * @param user The user who authenticated. The user entity has its roles eagerly
+ *             loaded.
+ * @param token The token that was used.
+ */
 public record TokenAuthentication(
 		User user,
 		String token

@@ -17,4 +17,7 @@ public interface UserFollowingRepository extends JpaRepository<UserFollowing, Lo
 
 	Page<UserFollowing> findAllByFollowedUserOrderByCreatedAtDesc(User followedUser, Pageable pageable);
 	Page<UserFollowing> findAllByFollowingUserOrderByCreatedAtDesc(User followingUser, Pageable pageable);
+
+	long countByFollowedUser(User followedUser);
+	long countByFollowingUser(User followingUser);
 }
