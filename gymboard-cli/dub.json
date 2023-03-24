@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Andrew Lalis"
+	],
+	"copyright": "Copyright © 2023, Andrew Lalis",
+	"description": "CLI for developing Gymboard",
+	"license": "proprietary",
+	"name": "gymboard-cli"
+}

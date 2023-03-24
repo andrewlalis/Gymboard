@@ -43,6 +43,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests()
 				.requestMatchers(// Allow the following GET endpoints to be public.
 						HttpMethod.GET,
+						"/status",
 						"/exercises",
 						"/leaderboards",
 						"/gyms/**",

@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/gymboard-cli
+gymboard-cli.so
+gymboard-cli.dylib
+gymboard-cli.dll
+gymboard-cli.a
+gymboard-cli.lib
+gymboard-cli-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
