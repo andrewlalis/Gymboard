@@ -136,4 +136,10 @@ public class UserController {
 	public Page<UserResponse> getUserFollowing(@PathVariable String userId, Pageable pageable) {
 		return userService.getFollowing(userId, pageable);
 	}
+
+	@PostMapping(path = "/auth/users/{userId}/reports")
+	public ResponseEntity<Void> reportUser(@PathVariable String userId, @RequestBody UserReportPayload payload) {
+		userService.reportUser(userId, payload);
+		return ResponseEntity.ok().build();
+	}
 }

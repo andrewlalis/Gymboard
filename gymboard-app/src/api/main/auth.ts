@@ -1,7 +1,7 @@
-import {api} from 'src/api/main/index';
-import {AuthStoreType} from 'stores/auth-store';
+import { api } from 'src/api/main/index';
+import { AuthStoreType } from 'stores/auth-store';
 import Timeout = NodeJS.Timeout;
-import {WeightUnit} from 'src/api/main/submission';
+import { WeightUnit } from 'src/api/main/submission';
 
 export interface User {
   id: string;
@@ -15,7 +15,7 @@ export interface User {
 export enum PersonSex {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
-  UNKNOWN = 'UNKNOWN'
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface UserPersonalDetails {
@@ -104,13 +104,25 @@ class AuthModule {
     return response.data;
   }
 
-  public async getUser(userId: string, authStore: AuthStoreType): Promise<User> {
-    const response = await api.get(`/auth/users/${userId}`, authStore.axiosConfig);
+  public async getUser(
+    userId: string,
+    authStore: AuthStoreType
+  ): Promise<User> {
+    const response = await api.get(
+      `/auth/users/${userId}`,
+      authStore.axiosConfig
+    );
     return response.data;
   }
 
-  public async isUserAccessible(userId: string, authStore: AuthStoreType): Promise<boolean> {
-    const response = await api.get(`/auth/users/${userId}/access`, authStore.axiosConfig);
+  public async isUserAccessible(
+    userId: string,
+    authStore: AuthStoreType
+  ): Promise<boolean> {
+    const response = await api.get(
+      `/auth/users/${userId}/access`,
+      authStore.axiosConfig
+    );
     return response.data.accessible;
   }
 
@@ -133,47 +145,130 @@ class AuthModule {
     });
   }
 
-  public async getMyPersonalDetails(authStore: AuthStoreType): Promise<UserPersonalDetails> {
-    const response = await api.get('/auth/me/personal-details', authStore.axiosConfig);
+  public async generateEmailResetCode(
+    newEmail: string,
+    authStore: AuthStoreType
+  ) {
+    await api.post(
+      '/auth/me/email-reset-code',
+      { newEmail: newEmail },
+      authStore.axiosConfig
+    );
+  }
+
+  public async updateMyEmail(code: string, authStore: AuthStoreType) {
+    await api.post('/auth/me/email?code=' + code, null, authStore.axiosConfig);
+  }
+
+  public async getMyPersonalDetails(
+    authStore: AuthStoreType
+  ): Promise<UserPersonalDetails> {
+    const response = await api.get(
+      '/auth/me/personal-details',
+      authStore.axiosConfig
+    );
     return response.data;
   }
 
-  public async updateMyPersonalDetails(authStore: AuthStoreType, newPersonalDetails: UserPersonalDetails): Promise<UserPersonalDetails> {
-    const response = await api.post('/auth/me/personal-details', newPersonalDetails, authStore.axiosConfig);
+  public async updateMyPersonalDetails(
+    authStore: AuthStoreType,
+    newPersonalDetails: UserPersonalDetails
+  ): Promise<UserPersonalDetails> {
+    const response = await api.post(
+      '/auth/me/personal-details',
+      newPersonalDetails,
+      authStore.axiosConfig
+    );
     return response.data;
   }
 
-  public async getMyPreferences(authStore: AuthStoreType): Promise<UserPreferences> {
-    const response = await api.get('/auth/me/preferences', authStore.axiosConfig);
+  public async getMyPreferences(
+    authStore: AuthStoreType
+  ): Promise<UserPreferences> {
+    const response = await api.get(
+      '/auth/me/preferences',
+      authStore.axiosConfig
+    );
     return response.data;
   }
 
-  public async updateMyPreferences(authStore: AuthStoreType, newPreferences: UserPreferences): Promise<UserPreferences> {
-    const response = await api.post('/auth/me/preferences', newPreferences, authStore.axiosConfig);
+  public async updateMyPreferences(
+    authStore: AuthStoreType,
+    newPreferences: UserPreferences
+  ): Promise<UserPreferences> {
+    const response = await api.post(
+      '/auth/me/preferences',
+      newPreferences,
+      authStore.axiosConfig
+    );
     return response.data;
   }
 
-  public async getFollowers(userId: string, authStore: AuthStoreType, page: number, count: number): Promise<User[]> {
-    const response = await api.get(`/auth/users/${userId}/followers?page=${page}&count=${count}`, authStore.axiosConfig);
+  public async getFollowers(
+    userId: string,
+    authStore: AuthStoreType,
+    page: number,
+    count: number
+  ): Promise<User[]> {
+    const response = await api.get(
+      `/auth/users/${userId}/followers?page=${page}&count=${count}`,
+      authStore.axiosConfig
+    );
     return response.data.content;
   }
 
-  public async getFollowing(userId: string, authStore: AuthStoreType, page: number, count: number): Promise<User[]> {
-    const response = await api.get(`/auth/users/${userId}/following?page=${page}&count=${count}`, authStore.axiosConfig);
+  public async getFollowing(
+    userId: string,
+    authStore: AuthStoreType,
+    page: number,
+    count: number
+  ): Promise<User[]> {
+    const response = await api.get(
+      `/auth/users/${userId}/following?page=${page}&count=${count}`,
+      authStore.axiosConfig
+    );
     return response.data.content;
   }
 
-  public async getRelationshipTo(userId: string, targetUserId: string, authStore: AuthStoreType): Promise<UserRelationship> {
-    const response = await api.get(`/auth/users/${userId}/relationship-to/${targetUserId}`, authStore.axiosConfig);
+  public async getRelationshipTo(
+    userId: string,
+    targetUserId: string,
+    authStore: AuthStoreType
+  ): Promise<UserRelationship> {
+    const response = await api.get(
+      `/auth/users/${userId}/relationship-to/${targetUserId}`,
+      authStore.axiosConfig
+    );
     return response.data;
   }
 
-  public async followUser(userId: string, authStore: AuthStoreType) {
-    await api.post(`/auth/users/${userId}/followers`, undefined, authStore.axiosConfig);
+  public async followUser(
+    userId: string,
+    authStore: AuthStoreType
+  ): Promise<string> {
+    const response = await api.post(
+      `/auth/users/${userId}/followers`,
+      undefined,
+      authStore.axiosConfig
+    );
+    return response.data.result;
   }
 
   public async unfollowUser(userId: string, authStore: AuthStoreType) {
     await api.delete(`/auth/users/${userId}/followers`, authStore.axiosConfig);
+  }
+
+  public async reportUser(
+    userId: string,
+    reason: string,
+    description: string | null,
+    authStore?: AuthStoreType
+  ) {
+    await api.post(
+      `/auth/users/${userId}/reports`,
+      { reason, description },
+      authStore?.axiosConfig
+    );
   }
 }
 

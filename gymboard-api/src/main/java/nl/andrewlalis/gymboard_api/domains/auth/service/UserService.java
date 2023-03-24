@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public class UserService {
 	private final UserFollowingRepository userFollowingRepository;
 	private final UserFollowRequestRepository followRequestRepository;
 	private final UserAccessService userAccessService;
+	private final UserReportRepository userReportRepository;
 	private final ULID ulid;
 	private final PasswordEncoder passwordEncoder;
 	private final JavaMailSender mailSender;
@@ -59,7 +61,7 @@ public class UserService {
 			EmailResetCodeRepository emailResetCodeRepository, UserFollowingRepository userFollowingRepository,
 			UserFollowRequestRepository followRequestRepository,
 			UserAccessService userAccessService,
-			ULID ulid,
+			UserReportRepository userReportRepository, ULID ulid,
 			PasswordEncoder passwordEncoder,
 			JavaMailSender mailSender
 	) {
@@ -72,6 +74,7 @@ public class UserService {
 		this.userFollowingRepository = userFollowingRepository;
 		this.followRequestRepository = followRequestRepository;
 		this.userAccessService = userAccessService;
+		this.userReportRepository = userReportRepository;
 		this.ulid = ulid;
 		this.passwordEncoder = passwordEncoder;
 		this.mailSender = mailSender;
@@ -438,5 +441,20 @@ public class UserService {
 				user1FollowingUser2,
 				user1FollowedByUser2
 		);
+	}
+
+	@Transactional
+	public void reportUser(String userId, UserReportPayload payload) {
+		User user = findByIdOrThrow(userId, userRepository);
+		User reporter = null;
+		if (SecurityContextHolder.getContext().getAuthentication() instanceof TokenAuthentication t) {
+			reporter = findByIdOrThrow(t.user().getId(), userRepository);
+		}
+		userReportRepository.save(new UserReport(
+				user,
+				reporter,
+				payload.reason(),
+				payload.description()
+		));
 	}
 }

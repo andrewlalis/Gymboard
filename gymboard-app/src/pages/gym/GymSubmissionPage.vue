@@ -83,24 +83,30 @@ A high-level overview of the submission process is as follows:
   <!-- If the user is not logged in, show a link to log in. -->
   <q-page v-if="!authStore.loggedIn">
     <div class="q-mt-lg text-center">
-      <router-link :to="`/login?next=${route.fullPath}`" class="text-primary">Login or register to submit your lift</router-link>
+      <router-link :to="`/login?next=${route.fullPath}`" class="text-primary"
+        >Login or register to submit your lift</router-link
+      >
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, Ref} from 'vue';
-import {getGymFromRoute} from 'src/router/gym-routing';
+import { onMounted, ref, Ref } from 'vue';
+import { getGymFromRoute } from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
 import api from 'src/api/main';
-import {Gym} from 'src/api/main/gyms';
-import {Exercise} from 'src/api/main/exercises';
-import {useRoute, useRouter} from 'vue-router';
-import {showApiErrorToast, sleep} from 'src/utils';
-import {uploadVideoToCDN, VideoProcessingStatus, waitUntilVideoProcessingComplete} from 'src/api/cdn';
-import {useAuthStore} from 'stores/auth-store';
-import {useI18n} from 'vue-i18n';
-import {useQuasar} from "quasar";
+import { Gym } from 'src/api/main/gyms';
+import { Exercise } from 'src/api/main/exercises';
+import { useRoute, useRouter } from 'vue-router';
+import { showApiErrorToast, sleep } from 'src/utils';
+import {
+  uploadVideoToCDN,
+  VideoProcessingStatus,
+  waitUntilVideoProcessingComplete,
+} from 'src/api/cdn';
+import { useAuthStore } from 'stores/auth-store';
+import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -167,16 +173,24 @@ async function onSubmitted() {
     // 1. Upload the video to the CDN.
     submitButtonLabel.value = i18n.t('gymPage.submitPage.submitUploading');
     await sleep(1000);
-    submissionModel.value.videoFileId = await uploadVideoToCDN(selectedVideoFile.value);
+    submissionModel.value.videoFileId = await uploadVideoToCDN(
+      selectedVideoFile.value
+    );
 
     // 2. Wait for the video to be processed.
-    submitButtonLabel.value = i18n.t('gymPage.submitPage.submitVideoProcessing');
-    const processingStatus = await waitUntilVideoProcessingComplete(submissionModel.value.videoFileId);
+    submitButtonLabel.value = i18n.t(
+      'gymPage.submitPage.submitVideoProcessing'
+    );
+    const processingStatus = await waitUntilVideoProcessingComplete(
+      submissionModel.value.videoFileId
+    );
 
     // 3. If successful upload, create the submission.
     if (processingStatus === VideoProcessingStatus.COMPLETED) {
       try {
-        submitButtonLabel.value = i18n.t('gymPage.submitPage.submitCreatingSubmission');
+        submitButtonLabel.value = i18n.t(
+          'gymPage.submitPage.submitCreatingSubmission'
+        );
         await sleep(1000);
         const submission = await api.gyms.submissions.createSubmission(
           gym.value,
@@ -191,7 +205,7 @@ async function onSubmitted() {
           quasar.notify({
             message: error.response.data.message,
             type: 'warning',
-            position: 'top'
+            position: 'top',
           });
           submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
           await sleep(3000);
@@ -199,7 +213,7 @@ async function onSubmitted() {
           showApiErrorToast(i18n, quasar);
         }
       }
-    // Otherwise, report the failed submission and give up.
+      // Otherwise, report the failed submission and give up.
     } else {
       submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
       await sleep(3000);
