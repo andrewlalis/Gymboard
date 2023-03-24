@@ -27,6 +27,8 @@ public class UserReport {
 	@Column(length = 1024)
 	private String description;
 
+	public UserReport() {}
+
 	public UserReport(User user, User reportedBy, String reason, String description) {
 		this.user = user;
 		this.reportedBy = reportedBy;

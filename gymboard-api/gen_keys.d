@@ -45,5 +45,4 @@ void main() {
         writeln("No DER public key found. Regenerating it.");
         genKeys(publicKeyDerFile);
     }
-    writeln("All keys are now generated.");
 }

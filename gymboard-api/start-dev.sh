@@ -4,4 +4,5 @@
 # should be started via `docker-compose up` in the gymboard root dir.
 
 echo "Starting gymboard-api development server."
+./gen_keys.d
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=development
