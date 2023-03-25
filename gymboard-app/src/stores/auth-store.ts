@@ -7,6 +7,7 @@
 
 import { defineStore } from 'pinia';
 import { User } from 'src/api/main/auth';
+import {AxiosRequestConfig} from "axios";
 
 interface AuthState {
   user: User | null;
@@ -19,7 +20,7 @@ export const useAuthStore = defineStore('authStore', {
   },
   getters: {
     loggedIn: (state) => state.user !== null && state.token !== null,
-    axiosConfig(state) {
+    axiosConfig(state): AxiosRequestConfig {
       if (this.token !== null) {
         return {
           headers: { Authorization: 'Bearer ' + state.token },

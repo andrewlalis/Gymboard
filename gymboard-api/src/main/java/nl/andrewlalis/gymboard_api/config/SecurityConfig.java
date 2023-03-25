@@ -54,7 +54,8 @@ public class SecurityConfig {
 						"/auth/users/*/access",
 						"/auth/users/*/followers",
 						"/auth/users/*/following",
-						"/users/*/recent-submissions"
+						"/users/*/recent-submissions",
+						"/users/*/submissions"
 				).permitAll()
 				.requestMatchers(// Allow the following POST endpoints to be public.
 						HttpMethod.POST,
