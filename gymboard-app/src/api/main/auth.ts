@@ -49,6 +49,22 @@ export interface UserCreationPayload {
   password: string;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  followerCount: string;
+  followingCount: string;
+  followingThisUser: boolean;
+  accountPrivate: boolean;
+  canAccessThisUser: boolean;
+}
+
+export enum UserFollowResponse {
+  FOLLOWED = 'FOLLOWED',
+  REQUESTED = 'REQUESTED',
+  ALREADY_FOLLOWED = 'ALREADY_FOLLOWED'
+}
+
 class AuthModule {
   private static readonly TOKEN_REFRESH_INTERVAL_MS = 30000;
 
@@ -112,6 +128,11 @@ class AuthModule {
       `/auth/users/${userId}`,
       authStore.axiosConfig
     );
+    return response.data;
+  }
+
+  public async getUserProfile(userId: string, authStore: AuthStoreType): Promise<UserProfile> {
+    const response = await api.get(`/auth/users/${userId}/profile`, authStore.axiosConfig);
     return response.data;
   }
 
@@ -245,7 +266,7 @@ class AuthModule {
   public async followUser(
     userId: string,
     authStore: AuthStoreType
-  ): Promise<string> {
+  ): Promise<UserFollowResponse> {
     const response = await api.post(
       `/auth/users/${userId}/followers`,
       undefined,

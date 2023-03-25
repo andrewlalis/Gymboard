@@ -20,4 +20,6 @@ public interface UserFollowingRepository extends JpaRepository<UserFollowing, Lo
 
 	long countByFollowedUser(User followedUser);
 	long countByFollowingUser(User followingUser);
+	long countByFollowedUserId(String id);
+	long countByFollowingUserId(String id);
 }

@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static nl.andrewlalis.gymboard_api.util.DataUtils.findByIdOrThrow;
+import static nl.andrewlalis.gymboard_api.util.DataUtils.*;
 
 @Service
 public class UserService {
@@ -283,23 +283,6 @@ public class UserService {
 		emailResetCodeRepository.delete(emailResetCode);
 	}
 
-	/**
-	 * Scheduled task that periodically removes all old authentication entities
-	 * so that they don't clutter up the system.
-	 */
-	@Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
-	@Transactional
-	public void removeOldAuthEntities() {
-		LocalDateTime passwordResetCodeCutoff = LocalDateTime.now().minus(PasswordResetCode.VALID_FOR);
-		passwordResetCodeRepository.deleteAllByCreatedAtBefore(passwordResetCodeCutoff);
-		LocalDateTime activationCodeCutoff = LocalDateTime.now().minus(UserActivationCode.VALID_FOR);
-		activationCodeRepository.deleteAllByCreatedAtBefore(activationCodeCutoff);
-		LocalDateTime followRequestCutoff = LocalDateTime.now().minus(UserFollowRequest.VALID_FOR);
-		followRequestRepository.deleteAllByCreatedAtBefore(followRequestCutoff);
-		LocalDateTime emailResetCodeCutoff = LocalDateTime.now().minus(EmailResetCode.VALID_FOR);
-		emailResetCodeRepository.deleteAllByCreatedAtBefore(emailResetCodeCutoff);
-	}
-
 	@Transactional
 	public UserPersonalDetailsResponse updatePersonalDetails(String id, UserPersonalDetailsPayload payload) {
 		User user = userRepository.findById(id)
@@ -366,12 +349,14 @@ public class UserService {
 		User followed = findByIdOrThrow(followedId, userRepository);
 
 		if (!userFollowingRepository.existsByFollowedUserAndFollowingUser(followed, follower)) {
-			if (followed.getPreferences().isAccountPrivate()) {
+			if (!followed.getPreferences().isAccountPrivate()) {
 				userFollowingRepository.save(new UserFollowing(followed, follower));
-				return UserFollowResponse.requested();
-			} else {
-				followRequestRepository.save(new UserFollowRequest(follower, followed));
 				return UserFollowResponse.followed();
+			} else {
+				if (!followRequestRepository.existsByRequestingUserAndUserToFollowAndApprovedIsNull(follower, followed)) {
+					followRequestRepository.save(new UserFollowRequest(follower, followed));
+				}
+				return UserFollowResponse.requested();
 			}
 		}
 		return UserFollowResponse.alreadyFollowed();
@@ -382,7 +367,6 @@ public class UserService {
 		if (followerId.equals(followedId)) return;
 		User follower = findByIdOrThrow(followerId, userRepository);
 		User followed = findByIdOrThrow(followedId, userRepository);
-
 		userFollowingRepository.deleteByFollowedUserAndFollowingUser(followed, follower);
 	}
 
@@ -422,12 +406,14 @@ public class UserService {
 				.map(UserResponse::new);
 	}
 
-	public long getFollowerCount(String userId) {
-		return userFollowingRepository.countByFollowedUser(findByIdOrThrow(userId, userRepository));
+	public String getFollowerCount(String userId) {
+		long rawCount = userFollowingRepository.countByFollowedUserId(userId);
+		return formatLargeInt(fuzzInt(rawCount));
 	}
 
-	public long getFollowingCount(String userId) {
-		return userFollowingRepository.countByFollowingUser(findByIdOrThrow(userId, userRepository));
+	public String getFollowingCount(String userId) {
+		long rawCount = userFollowingRepository.countByFollowingUserId(userId);
+		return formatLargeInt(fuzzInt(rawCount));
 	}
 
 	@Transactional(readOnly = true)
@@ -456,5 +442,24 @@ public class UserService {
 				payload.reason(),
 				payload.description()
 		));
+	}
+
+	@Transactional
+	public UserProfileResponse getProfile(String userId) {
+		User user = findByIdOrThrow(userId, userRepository);
+		boolean canAccessThisUser = userAccessService.currentUserHasAccess(user);
+		boolean followingThisUser = false;
+		if (SecurityContextHolder.getContext().getAuthentication() instanceof TokenAuthentication t) {
+			followingThisUser = userFollowingRepository.existsByFollowedUserAndFollowingUser(user, t.user());
+		}
+		return new UserProfileResponse(
+				user.getId(),
+				user.getName(),
+				getFollowerCount(user.getId()),
+				getFollowingCount(user.getId()),
+				followingThisUser,
+				user.getPreferences().isAccountPrivate(),
+				canAccessThisUser
+		);
 	}
 }

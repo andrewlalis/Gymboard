@@ -21,8 +21,8 @@ import { useRoute, useRouter } from 'vue-router';
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
 import { Gym } from 'src/api/main/gyms';
-import PageMenu from "components/PageMenu.vue";
-import {useI18n} from "vue-i18n";
+import PageMenu from 'components/PageMenu.vue';
+import {useI18n} from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
@@ -39,14 +39,4 @@ onMounted(async () => {
     await router.push('/');
   }
 });
-
-const homePageSelected = computed(
-  () => gym.value && getGymRoute(gym.value) === route.fullPath
-);
-const submitPageSelected = computed(
-  () => gym.value && route.fullPath === getGymRoute(gym.value) + '/submit'
-);
-const leaderboardPageSelected = computed(
-  () => gym.value && route.fullPath === getGymRoute(gym.value) + '/leaderboard'
-);
 </script>

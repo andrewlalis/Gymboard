@@ -5,4 +5,4 @@
 
 echo "Starting gymboard-api development server."
 ./gen_keys.d
-./mvnw spring-boot:run -Dspring-boot.run.profiles=development
+./mvnw clean spring-boot:run -Dspring-boot.run.profiles=development

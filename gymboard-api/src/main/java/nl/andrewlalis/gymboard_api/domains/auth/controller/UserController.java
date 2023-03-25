@@ -2,6 +2,7 @@ package nl.andrewlalis.gymboard_api.domains.auth.controller;
 
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.auth.model.UserPreferences;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccessService;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,19 @@ public class UserController {
 	@GetMapping(path = "/auth/users/{userId}")
 	public UserResponse getUser(@PathVariable String userId) {
 		return userService.getUser(userId);
+	}
+
+	/**
+	 * Gets all the information that the app will typically need to display a
+	 * user's profile page. Some information may be omitted if the user has
+	 * set their {@link UserPreferences#isAccountPrivate()}
+	 * to true, and the requesting user isn't following them.
+	 * @param userId The id of the user to fetch profile information for.
+	 * @return The user's profile information.
+	 */
+	@GetMapping(path = "/auth/users/{userId}/profile")
+	public UserProfileResponse getUserProfile(@PathVariable String userId) {
+		return userService.getProfile(userId);
 	}
 
 	@GetMapping(path = "/auth/users/{userId}/access")

@@ -50,6 +50,7 @@ public class SecurityConfig {
 						"/submissions/**",
 						"/auth/reset-password",
 						"/auth/users/*",
+						"/auth/users/*/profile",
 						"/auth/users/*/access",
 						"/auth/users/*/followers",
 						"/auth/users/*/following",

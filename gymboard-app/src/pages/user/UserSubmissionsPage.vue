@@ -19,13 +19,12 @@ import {useQuasar} from 'quasar';
 import {useAuthStore} from 'stores/auth-store';
 import {onMounted, ref, Ref} from 'vue';
 import {ExerciseSubmission} from 'src/api/main/submission';
-import {User} from 'src/api/main/auth';
 import api from 'src/api/main';
 import ExerciseSubmissionListItem from 'components/ExerciseSubmissionListItem.vue';
 import {showApiErrorToast} from 'src/utils';
 
 interface Props {
-  user: User;
+  userId: string;
 }
 const props = defineProps<Props>();
 
@@ -36,7 +35,7 @@ const authStore = useAuthStore();
 const recentSubmissions: Ref<ExerciseSubmission[]> = ref([]);
 onMounted(async () => {
   try {
-    recentSubmissions.value = await api.users.getRecentSubmissions(props.user.id, authStore);
+    recentSubmissions.value = await api.users.getRecentSubmissions(props.userId, authStore);
   } catch (error: any) {
     showApiErrorToast(i18n, quasar);
   }

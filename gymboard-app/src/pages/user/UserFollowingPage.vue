@@ -9,13 +9,13 @@
 </template>
 
 <script setup lang="ts">
-import { User } from 'src/api/main/auth';
-import { useAuthStore } from 'stores/auth-store';
-import { onMounted, ref, Ref } from 'vue';
+import {User} from 'src/api/main/auth';
+import {useAuthStore} from 'stores/auth-store';
+import {onMounted, ref, Ref} from 'vue';
 import api from 'src/api/main';
 
 interface Props {
-  user: User;
+  userId: string;
 }
 const props = defineProps<Props>();
 const authStore = useAuthStore();
@@ -23,7 +23,7 @@ const following: Ref<User[]> = ref([]);
 
 onMounted(async () => {
   following.value = await api.auth.getFollowing(
-    props.user.id,
+    props.userId,
     authStore,
     0,
     10

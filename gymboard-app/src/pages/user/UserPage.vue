@@ -1,15 +1,23 @@
 <template>
   <q-page>
-    <StandardCenteredPage v-if="user">
-      <h3>{{ user?.name }}</h3>
+    <StandardCenteredPage v-if="profile">
+      <h3>{{ profile.name }}</h3>
+      <div v-if="devStore.showDebugInfo">
+        <div>Private: {{ profile.accountPrivate }}</div>
+      </div>
 
-      <div v-if="relationship">
-        <q-btn v-if="!relationship.following" label="Follow" @click="followUser"/>
-        <q-btn v-if="relationship.following" label="Unfollow" @click="unfollowUser"/>
+      <div>
+        <div>Followers: {{ profile.followerCount }}</div>
+        <div>Following: {{ profile.followingCount }}</div>
+      </div>
+
+      <div v-if="authStore.loggedIn && !isOwnUser">
+        <q-btn v-if="!profile.followingThisUser" label="Follow" @click="followUser"/>
+        <q-btn v-if="profile.followingThisUser" label="Unfollow" @click="unfollowUser"/>
       </div>
 
       <PageMenu
-        :base-route="`/users/${user.id}`"
+        :base-route="`/users/${profile.id}`"
         :items="[
           {label: 'Lifts', to: ''},
           {label: 'Followers', to: 'followers'},
@@ -18,18 +26,21 @@
       />
 
       <!-- Sub-pages are rendered here. -->
-      <div v-if="userAccessible">
-        <UserSubmissionsPage :user="user" v-if="route.path === getUserRoute(user)"/>
-        <UserFollowersPage :user="user" v-if="route.path === getUserRoute(user) + '/followers'"/>
-        <UserFollowingPage :user="user" v-if="route.path === getUserRoute(user) + '/following'"/>
+      <div v-if="profile.canAccessThisUser">
+        <UserSubmissionsPage :userId="profile.id" v-if="route.path === `/users/${profile.id}`"/>
+        <UserFollowersPage :userId="profile.id" v-if="route.path === `/users/${profile.id}/followers`"/>
+        <UserFollowingPage :userId="profile.id" v-if="route.path === `/users/${profile.id}/following`"/>
       </div>
 
-      <div v-if="!userAccessible">
+      <!-- If the user can't be accessed, show a placeholder message instead. -->
+      <div v-if="!profile.canAccessThisUser">
         This account is private.
       </div>
 
     </StandardCenteredPage>
-    <StandardCenteredPage v-if="userNotFound">
+
+    <!-- If no user profile was loaded, we show a generic "User not found" message and no content. -->
+    <StandardCenteredPage v-if="!profile">
       <h3>{{ $t('userPage.notFound.title') }}</h3>
       <p>{{ $t('userPage.notFound.description') }}</p>
     </StandardCenteredPage>
@@ -39,36 +50,34 @@
 <script setup lang="ts">
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import {onMounted, ref, Ref, watch} from 'vue';
-import {User, UserRelationship} from 'src/api/main/auth';
+import {UserFollowResponse, UserProfile} from 'src/api/main/auth';
 import api from 'src/api/main';
 import {useRoute} from 'vue-router';
 import {useAuthStore} from 'stores/auth-store';
 import {useI18n} from 'vue-i18n';
 import {useQuasar} from 'quasar';
-import {showApiErrorToast} from 'src/utils';
+import {showApiErrorToast, showInfoToast} from 'src/utils';
 import PageMenu from 'components/PageMenu.vue';
 import UserSubmissionsPage from 'pages/user/UserSubmissionsPage.vue';
-import {getUserRoute} from 'src/router/user-routing';
 import UserFollowersPage from 'pages/user/UserFollowersPage.vue';
 import UserFollowingPage from 'pages/user/UserFollowingPage.vue';
+import {useDevStore} from 'stores/dev-store';
 
 const route = useRoute();
 const authStore = useAuthStore();
+const devStore = useDevStore();
 const i18n = useI18n();
 const quasar = useQuasar();
 
-const user: Ref<User | undefined> = ref();
-const relationship: Ref<UserRelationship | undefined> = ref();
+const profile: Ref<UserProfile | undefined> = ref();
 const isOwnUser = ref(false);
-const userNotFound = ref(false);
-const userAccessible = ref(false);
 
 // If the user id changes, we have to manually reload the new user, since we
 // will end up on the same route component, which means the router won't
 // re-render.
 watch(route, async (updatedRoute) => {
   const userId = updatedRoute.params.userId[0];
-  if (!user.value || user.value.id !== userId) {
+  if (!profile.value || (profile.value.id !== userId)) {
     await loadUser(userId);
   }
 });
@@ -80,41 +89,24 @@ onMounted(async () => {
 
 async function loadUser(id: string) {
   try {
-    user.value = await api.auth.getUser(id, authStore);
-    isOwnUser.value = authStore.loggedIn && user.value.id === authStore.user?.id;
-    userAccessible.value = await api.auth.isUserAccessible(id, authStore);
-    await loadRelationship();
+    profile.value = await api.auth.getUserProfile(id, authStore);
+    isOwnUser.value = authStore.loggedIn && profile.value.id === authStore.user?.id;
   } catch (error: any) {
-    user.value = undefined;
-    relationship.value = undefined;
-    isOwnUser.value = false;
-    userAccessible.value = false;
-    if (error.response && error.response.status === 404) {
-      userNotFound.value = true;
-    } else {
+    if (!(error.response && error.response.status === 404)) {
       showApiErrorToast(i18n, quasar);
     }
-  }
-}
-
-async function loadRelationship() {
-  if (authStore.user && user.value && userAccessible.value && authStore.user.id !== user.value.id) {
-    try {
-      relationship.value = await api.auth.getRelationshipTo(authStore.user.id, user.value.id, authStore);
-    } catch (error) {
-      relationship.value = undefined;
-      showApiErrorToast(i18n, quasar);
-    }
-  } else {
-    relationship.value = undefined;
   }
 }
 
 async function followUser() {
-  if (user.value) {
+  if (profile.value && !profile.value.followingThisUser) {
     try {
-      await api.auth.followUser(user.value?.id, authStore);
-      await loadRelationship();
+      const result = await api.auth.followUser(profile.value.id, authStore);
+      if (result === UserFollowResponse.FOLLOWED) {
+        await loadUser(profile.value.id);
+      } else if (result === UserFollowResponse.REQUESTED) {
+        showInfoToast(quasar, 'Requested to follow this user!');
+      }
     } catch (error) {
       showApiErrorToast(i18n, quasar);
     }
@@ -122,10 +114,10 @@ async function followUser() {
 }
 
 async function unfollowUser() {
-  if (user.value) {
+  if (profile.value && profile.value.followingThisUser) {
     try {
-      await api.auth.unfollowUser(user.value?.id, authStore);
-      await loadRelationship();
+      await api.auth.unfollowUser(profile.value.id, authStore);
+      await loadUser(profile.value.id);
     } catch (error) {
       showApiErrorToast(i18n, quasar);
     }
