@@ -17,3 +17,16 @@ export function showInfoToast(quasar: QVueGlobals, translatedMessage: string) {
     position: 'top'
   });
 }
+
+export function getDocumentHeight() {
+  const d = document;
+  return Math.max(
+    d.body.scrollHeight, d.documentElement.scrollHeight,
+    d.body.offsetHeight, d.documentElement.offsetHeight,
+    d.body.clientHeight, d.documentElement.clientHeight
+  );
+}
+
+export function isScrolledToBottom(margin = 0) {
+  return window.scrollY + window.innerHeight + margin >= getDocumentHeight();
+}

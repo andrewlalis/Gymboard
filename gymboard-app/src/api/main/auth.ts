@@ -2,6 +2,7 @@ import { api } from 'src/api/main/index';
 import { AuthStoreType } from 'stores/auth-store';
 import Timeout = NodeJS.Timeout;
 import { WeightUnit } from 'src/api/main/submission';
+import {Page, PaginationOptions, toQueryParams} from "src/api/main/models";
 
 export interface User {
   id: string;
@@ -228,27 +229,23 @@ class AuthModule {
   public async getFollowers(
     userId: string,
     authStore: AuthStoreType,
-    page: number,
-    count: number
-  ): Promise<User[]> {
-    const response = await api.get(
-      `/auth/users/${userId}/followers?page=${page}&count=${count}`,
-      authStore.axiosConfig
-    );
-    return response.data.content;
+    paginationOptions: PaginationOptions
+  ): Promise<Page<User>> {
+    const config = structuredClone(authStore.axiosConfig);
+    config.params = toQueryParams(paginationOptions);
+    const response = await api.get(`/auth/users/${userId}/followers`, config);
+    return response.data;
   }
 
   public async getFollowing(
     userId: string,
     authStore: AuthStoreType,
-    page: number,
-    count: number
-  ): Promise<User[]> {
-    const response = await api.get(
-      `/auth/users/${userId}/following?page=${page}&count=${count}`,
-      authStore.axiosConfig
-    );
-    return response.data.content;
+    paginationOptions: PaginationOptions
+  ): Promise<Page<User>> {
+    const config = structuredClone(authStore.axiosConfig);
+    config.params = toQueryParams(paginationOptions);
+    const response = await api.get(`/auth/users/${userId}/following`, config);
+    return response.data;
   }
 
   public async getRelationshipTo(
@@ -283,12 +280,12 @@ class AuthModule {
     userId: string,
     reason: string,
     description: string | null,
-    authStore?: AuthStoreType
+    authStore: AuthStoreType
   ) {
     await api.post(
       `/auth/users/${userId}/reports`,
       { reason, description },
-      authStore?.axiosConfig
+      authStore.axiosConfig
     );
   }
 }

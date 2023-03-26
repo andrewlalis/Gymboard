@@ -1,10 +1,14 @@
 module services;
 
+import std.array;
 import std.process;
 import std.stdio;
 import std.string;
 import std.typecons;
 import core.thread;
+import core.atomic;
+
+import consolecolors;
 
 struct ServiceInfo {
     string name;
@@ -62,23 +66,18 @@ struct ServiceStatus {
 class ServiceManager {
     private ServiceRunner[string] serviceRunners;
 
-    public Tuple!(bool, "started", string, "msg") startService(string name) {
-        auto info = getServiceByName(name);
-        if (info.isNull) return tuple!("started", "msg")(false, "Invalid service name.");
-        const ServiceInfo service = info.get();
+    public bool startService(const ServiceInfo service) {
         if (service.name !in serviceRunners || !serviceRunners[service.name].isRunning) {
             // Start all dependencies first.
             foreach (string depName; service.dependencies) {
-                auto result = startService(depName);
-                if (!result.started) {
-                    return tuple!("started", "msg")(
-                        false,
-                        format!"Couldn't start dependency \"%s\": %s"(depName, result.msg)
-                    );
+                bool result = startService(getServiceByName(depName).get);
+                if (!result) {
+                    cwritefln("Can't start %s because dependency %s couldn't be started.".red, service.name.orange, depName.orange);
+                    return false;
                 }
             }
             // Then start the process.
-            writefln!"Starting service: %s"(service.name);
+            cwritefln("Starting service %s".green, service.name.white);
             ProcessPipes pipes = pipeShell(
                 service.startupCommand,
                 Redirect.all,
@@ -89,23 +88,20 @@ class ServiceManager {
             ServiceRunner runner = new ServiceRunner(pipes);
             runner.start();
             serviceRunners[service.name] = runner;
-            return tuple!("started", "msg")(true, "Service started.");
+            cwritefln("Service %s started.".green, service.name.white);
         }
-        return tuple!("started", "msg")(true, "Service already running.");
+        cwritefln("Service %s is already started.".green, service.name.white);
+        return true;
     }
 
-    public Tuple!(bool, "stopped", string, "msg") stopService(string name) {
-        auto info = getServiceByName(name);
-        if (info.isNull) return tuple!("stopped", "msg")(false, "Invalid service name.");
-        const ServiceInfo service = info.get();
+    public bool stopService(const ServiceInfo service) {
         if (service.name in serviceRunners && serviceRunners[service.name].isRunning) {
             int exitStatus = serviceRunners[service.name].stopService();
-            return tuple!("stopped", "msg")(
-                true,
-                format!"Service exited with status %d."(exitStatus)
-            );
+            cwritefln("Service %s exited with code <orange>%d</orange>.".green, service.name.white, exitStatus);
+            return true;
         }
-        return tuple!("stopped", "msg")(true, "Service already stopped.");
+        cwritefln("Service %s already stopped.".green, service.name.white);
+        return true;
     }
 
     public void stopAll() {
@@ -121,6 +117,22 @@ class ServiceManager {
         }
         return statuses;
     }
+
+    public void showLogs(const ServiceInfo service, size_t lineCount = 50) {
+        if (service.name in serviceRunners) {
+            serviceRunners[service.name].showOutput(lineCount);
+        } else {
+            cwritefln("Service %s has not been started.".red, service.name.orange);
+        }
+    }
+
+    public void follow(const ServiceInfo service) {
+        if (service.name in serviceRunners) {
+            serviceRunners[service.name].setFollowing(true);
+        } else {
+            cwritefln("Service %s has not been started.".red, service.name.orange);
+        }
+    }
 }
 
 class ServiceRunner : Thread {
@@ -129,6 +141,8 @@ class ServiceRunner : Thread {
     private File processStdout;
     private File processStderr;
     public Nullable!int exitStatus;
+    private FileGobbler stdoutGobbler;
+    private FileGobbler stderrGobbler;
 
     public this(ProcessPipes pipes) {
         super(&this.run);
@@ -136,9 +150,13 @@ class ServiceRunner : Thread {
         this.processStdin = pipes.stdin();
         this.processStdout = pipes.stdout();
         this.processStderr = pipes.stderr();
+        this.stdoutGobbler = new FileGobbler(pipes.stdout());
+        this.stderrGobbler = new FileGobbler(pipes.stderr());
     }
 
     private void run() {
+        this.stdoutGobbler.start();
+        this.stderrGobbler.start();
         Tuple!(bool, "terminated", int, "status") result = tryWait(this.processId);
         while (!result.terminated) {
             Thread.sleep(msecs(1000));
@@ -148,12 +166,66 @@ class ServiceRunner : Thread {
     }
 
     public int stopService() {
+        if (!exitStatus.isNull) return exitStatus.get();
+
         version(Posix) {
-            import core.sys.posix.signal : SIGTERM;
+            import core.sys.posix.signal : SIGINT, SIGTERM;
+            kill(this.processId, SIGINT);
             kill(this.processId, SIGTERM);
         } else version(Windows) {
             kill(this.processId);
         }
         return wait(this.processId);
+    }
+
+    public void showOutput(size_t lineCount = 50) {
+        this.stdoutGobbler.showOutput(lineCount);
+    }
+
+    public void showErrorOutput(size_t lineCount = 50) {
+        this.stderrGobbler.showOutput(lineCount);
+    }
+
+    public void setFollowing(bool following) {
+        this.stdoutGobbler.setFollowing(following);
+        this.stderrGobbler.setFollowing(following);
+    }
+}
+
+class FileGobbler : Thread {
+    private string[] lines;
+    private File file;
+    private bool following;
+
+    public this(File file) {
+        super(&this.run);
+        this.file = file;
+        this.following = false;
+    }
+
+    private void run() {
+        string line;
+        while ((line = stripRight(this.file.readln())) !is null) {
+            if (atomicLoad(this.following)) {
+                writeln(line);
+            }
+            synchronized(this) {
+                this.lines ~= line;
+            }
+        }
+    }
+
+    public void showOutput(size_t lineCount = 50) {
+        synchronized(this) {
+            size_t startIdx = 0;
+            if (lines.length > lineCount) {
+                startIdx = lines.length - lineCount;
+            }
+            foreach (line; lines[startIdx .. $]) writeln(line);
+        }
+    }
+
+    public void setFollowing(bool f) {
+        atomicStore(this.following, f);
     }
 }

@@ -12,7 +12,7 @@ class UsersModule {
   public async getSubmissions(userId: string, authStore: AuthStoreType, paginationOptions: PaginationOptions = defaultPaginationOptions()): Promise<Page<ExerciseSubmission>> {
     const config = structuredClone(authStore.axiosConfig);
     config.params = toQueryParams(paginationOptions);
-    const response = await api.get(`/users/${userId}/submissions`, {...toQueryParams(paginationOptions), ...authStore.axiosConfig});
+    const response = await api.get(`/users/${userId}/submissions`, config);
     response.data.content = response.data.content.map(parseSubmission);
     return response.data;
   }

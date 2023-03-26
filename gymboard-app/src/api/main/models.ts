@@ -52,3 +52,19 @@ export enum PaginationSortDir {
   ASC = 'asc',
   DESC = 'desc'
 }
+
+export class PaginationHelpers {
+  static sortedBy(prop: string, dir: PaginationSortDir): PaginationOptions {
+    const opts = defaultPaginationOptions();
+    opts.sort = { propertyName: prop, sortDir: dir };
+    return opts;
+  }
+
+  static sortedAscBy(prop: string): PaginationOptions {
+    return PaginationHelpers.sortedBy(prop, PaginationSortDir.ASC);
+  }
+
+  static sortedDescBy(prop: string): PaginationOptions {
+    return PaginationHelpers.sortedBy(prop, PaginationSortDir.DESC);
+  }
+}

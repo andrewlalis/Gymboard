@@ -3,6 +3,9 @@
 		"Andrew Lalis"
 	],
 	"copyright": "Copyright © 2023, Andrew Lalis",
+	"dependencies": {
+		"console-colors": "~>1.1.0"
+	},
 	"description": "CLI for developing Gymboard",
 	"license": "proprietary",
 	"name": "gymboard-cli"

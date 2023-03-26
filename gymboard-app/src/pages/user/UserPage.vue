@@ -1,3 +1,12 @@
+<!--
+The page for displaying a user's profile. This is the main landing point when
+someone wants to look at a particular user. It has a basic header area with
+some simple information about the user, and then a page menu that provides
+navigation to the different sub-pages on the user page:
+- Lifts (default)
+- Followers (list of users that follow this one)
+- Following (list of users that this one follows)
+-->
 <template>
   <q-page>
     <StandardCenteredPage v-if="profile">

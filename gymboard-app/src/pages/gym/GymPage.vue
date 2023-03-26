@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, Ref } from 'vue';
+import { onMounted, ref, Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
