@@ -26,6 +26,10 @@ public class GymboardSearchApplication {
 	private final JdbcIndexGenerator gymIndexGenerator;
 	private final JdbcIndexGenerator userIndexGenerator;
 
+	/**
+	 * Scheduled task to regenerate the indexes regularly, which is good enough
+	 * for now.
+	 */
 	@Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
 	public void reIndex() {
 		gymIndexGenerator.generate();
