@@ -101,11 +101,10 @@ import EditablePropertyRow from 'components/EditablePropertyRow.vue';
 import {WeightUnit} from 'src/api/main/submission';
 import {resolveLocale, supportedLocales} from 'src/i18n';
 import {useI18n} from 'vue-i18n';
-import {useQuasar} from 'quasar';
+import {showApiErrorToast, showSuccessToast, showWarningToast} from 'src/utils';
 
 const route = useRoute();
 const router = useRouter();
-const quasar = useQuasar();
 const authStore = useAuthStore();
 const i18n = useI18n({useScope: 'global'});
 
@@ -121,7 +120,7 @@ onMounted(async () => {
   // Redirect away from the page if the user isn't viewing their own settings.
   const userId = route.params.userId as string;
   if (!authStore.user || authStore.user.id !== userId) {
-    await router.push(`/users/${userId}`);
+    await router.replace(`/users/${userId}`);
   }
 
   personalDetails.value = await api.auth.getMyPersonalDetails(authStore);
@@ -157,7 +156,7 @@ async function savePersonalDetails() {
       if (error.response && error.response.status === 400) {
         console.warn('bad request');
       } else {
-        console.error(error);
+        showApiErrorToast(error);
       }
     }
   }
@@ -189,25 +188,13 @@ async function updatePassword() {
   try {
     await api.auth.updatePassword(newPassword.value, authStore);
     newPassword.value = '';
-    quasar.notify({
-      message: i18n.t('userSettingsPage.passwordUpdated'),
-      type: 'positive',
-      position: 'top'
-    });
+    showSuccessToast('userSettingsPage.passwordUpdated');
   } catch (error: any) {
     if (error.response && error.response.status === 400) {
       newPassword.value = '';
-      quasar.notify({
-        message: i18n.t('userSettingsPage.passwordInvalid'),
-        type: 'warning',
-        position: 'top'
-      });
+      showWarningToast('userSettingsPage.passwordInvalid');
     } else {
-      quasar.notify({
-        message: i18n.t('generalErrors.apiError'),
-        type: 'danger',
-        position: 'top'
-      });
+      showApiErrorToast(error);
     }
   }
 }

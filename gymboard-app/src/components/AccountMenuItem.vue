@@ -1,3 +1,7 @@
+<!--
+An item that's meant for the main UI menu, and features a dropdown with some
+account-related actions.
+-->
 <template>
   <div class="q-mx-sm">
     <q-btn-dropdown

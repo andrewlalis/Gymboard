@@ -10,8 +10,6 @@
 
 const { configure } = require('quasar/wrappers');
 const path = require('path');
-const { withCtx } = require('vue');
-
 // Load environment variables from different files depending on if we're in development.
 let envPath = '.env.production';
 if (process.env.NODE_ENV === 'development') {
@@ -22,7 +20,7 @@ if (result.error) {
   throw result.error;
 }
 
-module.exports = configure(function (ctx) {
+module.exports = configure(function () {
   return {
     eslint: {
       // fix: true,
@@ -123,7 +121,7 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Notify'],
+      plugins: ['Notify', 'Dialog'],
     },
 
     // animations: 'all', // --- includes all animations

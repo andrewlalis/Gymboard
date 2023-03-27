@@ -52,6 +52,7 @@ export default {
     },
     accountPrivate: 'This account is private.',
     recentLifts: 'Recent Lifts',
+    requestedToFollow: 'Requested to follow this user.',
   },
   userSearchPage: {
     searchHint: 'Search for a user'
@@ -82,6 +83,11 @@ export default {
     },
     save: 'Save',
     undo: 'Undo'
+  },
+  submissionPage: {
+    confirmDeletion: 'Confirm Deletion',
+    confirmDeletionMsg: 'Are you sure you want to delete this submission? It will be removed permanently.',
+    deletionSuccessful: 'Submission deleted successfully.'
   },
   accountMenuItem: {
     logIn: 'Login',

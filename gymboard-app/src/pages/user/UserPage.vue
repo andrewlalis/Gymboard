@@ -63,8 +63,6 @@ import {UserFollowResponse, UserProfile} from 'src/api/main/auth';
 import api from 'src/api/main';
 import {useRoute} from 'vue-router';
 import {useAuthStore} from 'stores/auth-store';
-import {useI18n} from 'vue-i18n';
-import {useQuasar} from 'quasar';
 import {showApiErrorToast, showInfoToast} from 'src/utils';
 import PageMenu from 'components/PageMenu.vue';
 import UserSubmissionsPage from 'pages/user/UserSubmissionsPage.vue';
@@ -75,8 +73,6 @@ import {useDevStore} from 'stores/dev-store';
 const route = useRoute();
 const authStore = useAuthStore();
 const devStore = useDevStore();
-const i18n = useI18n();
-const quasar = useQuasar();
 
 const profile: Ref<UserProfile | undefined> = ref();
 const isOwnUser = ref(false);
@@ -102,7 +98,7 @@ async function loadUser(id: string) {
     isOwnUser.value = authStore.loggedIn && profile.value.id === authStore.user?.id;
   } catch (error: any) {
     if (!(error.response && error.response.status === 404)) {
-      showApiErrorToast(i18n, quasar);
+      showApiErrorToast(error);
     }
   }
 }
@@ -114,10 +110,10 @@ async function followUser() {
       if (result === UserFollowResponse.FOLLOWED) {
         await loadUser(profile.value.id);
       } else if (result === UserFollowResponse.REQUESTED) {
-        showInfoToast(quasar, 'Requested to follow this user!');
+        showInfoToast('userPage.requestedToFollow');
       }
     } catch (error) {
-      showApiErrorToast(i18n, quasar);
+      showApiErrorToast(error);
     }
   }
 }
@@ -128,7 +124,7 @@ async function unfollowUser() {
       await api.auth.unfollowUser(profile.value.id, authStore);
       await loadUser(profile.value.id);
     } catch (error) {
-      showApiErrorToast(i18n, quasar);
+      showApiErrorToast(error);
     }
   }
 }

@@ -63,16 +63,30 @@ onMounted(async () => {
     }
 });
 
+/**
+ * Shows a confirmation dialog asking the user if they really want to delete
+ * their submission, and if they say okay, go ahead and delete it, and bring
+ * the user back to their home page that shows all their lifts.
+ */
 async function deleteSubmission() {
-  // TODO: Confirm via a dialog or something before deleting.
-  if (!submission.value) return;
-  try {
-    await api.gyms.submissions.deleteSubmission(submission.value.id, authStore);
-    await router.push('/');
-  } catch (error) {
-    console.error(error);
-    showApiErrorToast(i18n, quasar);
-  }
+  quasar.dialog({
+    title: i18n.t('submissionPage.confirmDeletion'),
+    message: i18n.t('submissionPage.confirmDeletionMsg'),
+    cancel: true
+  }).onOk(async () => {
+    if (!submission.value) return;
+    try {
+      await api.gyms.submissions.deleteSubmission(submission.value.id, authStore);
+      await router.replace(`/users/${submission.value.user.id}`);
+      quasar.notify({
+        message: i18n.t('submissionPage.deletionSuccessful'),
+        position: 'top',
+        color: 'secondary'
+      })
+    } catch (error) {
+      showApiErrorToast(error);
+    }
+  });
 }
 </script>
 <style scoped>

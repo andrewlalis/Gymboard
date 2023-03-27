@@ -47,6 +47,7 @@ export default {
     },
     accountPrivate: 'Dit account is privaat.',
     recentLifts: 'Recente liften',
+    requestedToFollow: 'Gevraagd om deze gebruiker te volgen.',
   },
   userSearchPage: {
     searchHint: 'Zoek een gebruiker'
@@ -77,6 +78,11 @@ export default {
     },
     save: 'Opslaan',
     undo: 'Terugzetten'
+  },
+  submissionPage: {
+    confirmDeletion: 'Bevestig verwijderen',
+    confirmDeletionMsg: 'Ben je zeker dat je dit submissie willen verwijderen? Het zal permanent verwijderd worden.',
+    deletionSuccessful: 'Submissie succesvol verwijderd.'
   },
   accountMenuItem: {
     logIn: 'Inloggen',

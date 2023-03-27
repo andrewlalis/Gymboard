@@ -14,8 +14,6 @@
 </template>
 
 <script setup lang="ts">
-import {useI18n} from 'vue-i18n';
-import {useQuasar} from 'quasar';
 import {useAuthStore} from 'stores/auth-store';
 import {onMounted, ref, Ref} from 'vue';
 import api from 'src/api/main';
@@ -30,20 +28,14 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const i18n = useI18n();
-const quasar = useQuasar();
 const authStore = useAuthStore();
 
 const submissions: Ref<ExerciseSubmission[]> = ref([]);
 const loader = new InfinitePageLoader(submissions, async paginationOptions => {
   try {
     return await api.users.getSubmissions(props.userId, authStore, paginationOptions);
-  } catch (error: any) {
-    if (error.response) {
-      showApiErrorToast(i18n, quasar);
-    } else {
-      console.log(error);
-    }
+  } catch (error) {
+    showApiErrorToast(error);
   }
 });
 

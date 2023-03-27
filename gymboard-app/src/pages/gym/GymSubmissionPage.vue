@@ -210,7 +210,7 @@ async function onSubmitted() {
           submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
           await sleep(3000);
         } else {
-          showApiErrorToast(i18n, quasar);
+          showApiErrorToast(error);
         }
       }
       // Otherwise, report the failed submission and give up.
@@ -219,7 +219,7 @@ async function onSubmitted() {
       await sleep(3000);
     }
   } catch (error: any) {
-    showApiErrorToast(i18n, quasar);
+    showApiErrorToast(error);
   } finally {
     submitting.value = false;
     submitButtonLabel.value = i18n.t('gymPage.submitPage.submit');
