@@ -40,10 +40,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { DateTime } from 'luxon';
 import { getFileUrl } from 'src/api/cdn';
 import { getGymRoute } from 'src/router/gym-routing';
-import {useAuthStore} from "stores/auth-store";
-import {showApiErrorToast} from "src/utils";
-import {useI18n} from "vue-i18n";
-import {useQuasar} from "quasar";
+import {useAuthStore} from 'stores/auth-store';
+import {showApiErrorToast} from 'src/utils';
+import {useI18n} from 'vue-i18n';
+import {useQuasar} from 'quasar';
 
 const submission: Ref<ExerciseSubmission | undefined> = ref();
 

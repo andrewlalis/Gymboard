@@ -26,7 +26,7 @@ public class GymboardSearchApplication {
 	private final JdbcIndexGenerator gymIndexGenerator;
 	private final JdbcIndexGenerator userIndexGenerator;
 
-	@Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+	@Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
 	public void reIndex() {
 		gymIndexGenerator.generate();
 		userIndexGenerator.generate();

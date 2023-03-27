@@ -31,7 +31,7 @@ class SearchApi {
 
   public async getStatus(): Promise<boolean> {
     try {
-      const response = await api.get(`/status`);
+      await api.get('/status');
       return true;
     } catch (error) {
       return false;

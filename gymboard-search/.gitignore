@@ -32,5 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 
-gym-index/
-user-index/
+indexes/

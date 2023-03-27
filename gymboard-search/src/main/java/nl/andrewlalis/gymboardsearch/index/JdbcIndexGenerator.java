@@ -33,15 +33,7 @@ public class JdbcIndexGenerator {
 
 	public void generate() {
 		log.info("Generating index at {}.", indexDir);
-		if (Files.exists(indexDir)) {
-			try {
-				FileSystemUtils.deleteRecursively(indexDir);
-				Files.createDirectories(indexDir);
-			} catch (IOException e) {
-				log.error("Failed to reset index directory.", e);
-				return;
-			}
-		}
+		long start = System.currentTimeMillis();
 		try (
 				Connection conn = connectionSupplier.getConnection();
 				ResultSet rs = resultSetSupplier.supply(conn);
@@ -62,7 +54,8 @@ public class JdbcIndexGenerator {
 					log.error("Failed to add document.", e);
 				}
 			}
-			log.info("Indexed {} entities.", count);
+			long dur = System.currentTimeMillis() - start;
+			log.info("Indexed {} entities for {} index in {} ms.", count, indexDir, dur);
 			indexWriter.close();
 		} catch (Exception e) {
 			log.error("Failed to prepare indexing components.", e);

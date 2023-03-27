@@ -36,7 +36,7 @@ public class IndexComponents {
 	@Bean
 	public JdbcIndexGenerator userIndexGenerator(JdbcConnectionSupplier connectionSupplier) throws IOException {
 		return new JdbcIndexGenerator(
-				Path.of("user-index"),
+				Path.of("indexes", "users"),
 				connectionSupplier,
 				PlainQueryResultSetSupplier.fromResourceFile("/sql/select-users.sql"),
 				rs -> {
@@ -66,7 +66,7 @@ public class IndexComponents {
 	@Bean
 	public JdbcIndexGenerator gymIndexGenerator(JdbcConnectionSupplier connectionSupplier) throws IOException {
 		return new JdbcIndexGenerator(
-				Path.of("gym-index"),
+				Path.of("indexes", "gyms"),
 				connectionSupplier,
 				PlainQueryResultSetSupplier.fromResourceFile("/sql/select-gyms.sql"),
 				rs -> {
