@@ -59,7 +59,7 @@ public class IndexComponents {
 						.withField("name", 1f)
 						.build(s),
 				10,
-				Path.of("user-index")
+				Path.of("indexes", "users")
 		);
 	}
 
@@ -116,7 +116,7 @@ public class IndexComponents {
 						.withField("street_address", 0.1f)
 						.build(s),
 				10,
-				Path.of("gym-index")
+				Path.of("indexes", "gyms")
 		);
 	}
 }

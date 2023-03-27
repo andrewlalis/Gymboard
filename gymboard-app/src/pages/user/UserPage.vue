@@ -20,9 +20,9 @@ navigation to the different sub-pages on the user page:
         <div>Following: {{ profile.followingCount }}</div>
       </div>
 
-      <div v-if="authStore.loggedIn && !isOwnUser">
-        <q-btn v-if="!profile.followingThisUser" label="Follow" @click="followUser"/>
-        <q-btn v-if="profile.followingThisUser" label="Unfollow" @click="unfollowUser"/>
+      <div v-if="authStore.loggedIn && !isOwnUser" class="q-my-md">
+        <q-btn color="secondary" v-if="!profile.followingThisUser" label="Follow" @click="followUser"/>
+        <q-btn color="secondary" v-if="profile.followingThisUser" label="Unfollow" @click="unfollowUser"/>
       </div>
 
       <PageMenu
@@ -61,7 +61,7 @@ import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import {onMounted, ref, Ref, watch} from 'vue';
 import {UserFollowResponse, UserProfile} from 'src/api/main/auth';
 import api from 'src/api/main';
-import {useRoute} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 import {useAuthStore} from 'stores/auth-store';
 import {showApiErrorToast, showInfoToast} from 'src/utils';
 import PageMenu from 'components/PageMenu.vue';
@@ -71,6 +71,7 @@ import UserFollowingPage from 'pages/user/UserFollowingPage.vue';
 import {useDevStore} from 'stores/dev-store';
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const devStore = useDevStore();
 
@@ -109,6 +110,8 @@ async function followUser() {
       const result = await api.auth.followUser(profile.value.id, authStore);
       if (result === UserFollowResponse.FOLLOWED) {
         await loadUser(profile.value.id);
+        // Put our user back at the target user's main page.
+        await router.replace(`/users/${profile.value.id}`);
       } else if (result === UserFollowResponse.REQUESTED) {
         showInfoToast('userPage.requestedToFollow');
       }
@@ -123,6 +126,8 @@ async function unfollowUser() {
     try {
       await api.auth.unfollowUser(profile.value.id, authStore);
       await loadUser(profile.value.id);
+      // Put our user back at the target user's main page.
+      await router.replace(`/users/${profile.value.id}`);
     } catch (error) {
       showApiErrorToast(error);
     }
