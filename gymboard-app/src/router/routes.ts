@@ -13,6 +13,8 @@ import SubmissionPage from 'pages/SubmissionPage.vue';
 import UserPage from 'pages/user/UserPage.vue';
 import UserSettingsPage from 'pages/auth/UserSettingsPage.vue';
 import UserSearchPage from 'pages/UserSearchPage.vue';
+import AdminPage from "pages/admin/AdminPage.vue";
+import {useAuthStore} from "stores/auth-store";
 
 const routes: RouteRecordRaw[] = [
   // Auth-related pages, which live outside the main layout.
@@ -43,6 +45,12 @@ const routes: RouteRecordRaw[] = [
         ],
       },
       { path: 'submissions/:submissionId', component: SubmissionPage },
+      { // The admin page, and all child pages within it, are only accessible for users with the 'admin' role.
+        path: 'admin', component: AdminPage, beforeEnter: () => {
+          const s = useAuthStore();
+          if (!s.isAdmin) return '/'; // Redirect non-admins to the main page.
+        }
+      }
     ],
   },
 

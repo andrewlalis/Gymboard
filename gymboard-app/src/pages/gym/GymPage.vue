@@ -16,15 +16,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, Ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import {onMounted, ref, Ref} from 'vue';
+import {useRouter} from 'vue-router';
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
-import { getGymFromRoute, getGymRoute } from 'src/router/gym-routing';
-import { Gym } from 'src/api/main/gyms';
+import {getGymFromRoute, getGymRoute} from 'src/router/gym-routing';
+import {Gym} from 'src/api/main/gyms';
 import PageMenu from 'components/PageMenu.vue';
 import {useI18n} from 'vue-i18n';
 
-const route = useRoute();
 const router = useRouter();
 const t = useI18n().t;
 

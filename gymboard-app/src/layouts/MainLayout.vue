@@ -37,6 +37,11 @@
             <q-item-label>Users</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item clickable to="/admin" v-if="authStore.isAdmin">
+          <q-item-section>
+            <q-item-label>Admin Panel</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
@@ -49,7 +54,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import AccountMenuItem from 'components/AccountMenuItem.vue';
+import {useAuthStore} from 'stores/auth-store';
 
+const authStore = useAuthStore();
 const leftDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {

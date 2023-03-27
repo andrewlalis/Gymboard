@@ -1,6 +1,7 @@
 package nl.andrewlalis.gymboard_api.domains.auth.controller;
 
 import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
+import nl.andrewlalis.gymboard_api.domains.auth.model.Role;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.model.UserPreferences;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccessService;
@@ -10,6 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -155,5 +159,10 @@ public class UserController {
 	public ResponseEntity<Void> reportUser(@PathVariable String userId, @RequestBody UserReportPayload payload) {
 		userService.reportUser(userId, payload);
 		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping(path = "/auth/me/roles")
+	public List<String> getMyRoles(@AuthenticationPrincipal User myUser) {
+		return myUser.getRoles().stream().map(Role::getShortName).toList();
 	}
 }

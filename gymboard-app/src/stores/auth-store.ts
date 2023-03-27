@@ -7,16 +7,28 @@
 
 import { defineStore } from 'pinia';
 import { User } from 'src/api/main/auth';
-import {AxiosRequestConfig} from "axios";
+import {AxiosRequestConfig} from 'axios';
 
 interface AuthState {
+  /**
+   * The currently authenticated user.
+   */
   user: User | null;
+
+  /**
+   * The token that was used to authenticate the current user.
+   */
   token: string | null;
+
+  /**
+   * The list of roles that the currently authenticated user has.
+   */
+  roles: string[];
 }
 
 export const useAuthStore = defineStore('authStore', {
   state: (): AuthState => {
-    return { user: null, token: null };
+    return { user: null, token: null, roles: [] };
   },
   getters: {
     loggedIn: (state) => state.user !== null && state.token !== null,
@@ -29,6 +41,7 @@ export const useAuthStore = defineStore('authStore', {
         return {};
       }
     },
+    isAdmin: state => state.roles.indexOf('admin') !== -1,
   },
 });
 

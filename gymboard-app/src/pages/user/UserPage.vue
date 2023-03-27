@@ -82,9 +82,11 @@ const isOwnUser = ref(false);
 // will end up on the same route component, which means the router won't
 // re-render.
 watch(route, async (updatedRoute) => {
-  const userId = updatedRoute.params.userId[0];
-  if (!profile.value || (profile.value.id !== userId)) {
-    await loadUser(userId);
+  if (updatedRoute.params.userId && updatedRoute.params.userId.length > 0) {
+    const userId = updatedRoute.params.userId[0];
+    if (!profile.value || (profile.value.id !== userId)) {
+      await loadUser(userId);
+    }
   }
 });
 

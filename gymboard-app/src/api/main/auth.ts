@@ -1,5 +1,5 @@
 import { api } from 'src/api/main/index';
-import { AuthStoreType } from 'stores/auth-store';
+import {AuthStoreType, useAuthStore} from 'stores/auth-store';
 import Timeout = NodeJS.Timeout;
 import { WeightUnit } from 'src/api/main/submission';
 import {Page, PaginationOptions, toQueryParams} from "src/api/main/models";
@@ -81,8 +81,14 @@ class AuthModule {
     authStore.token = await this.getNewToken(credentials);
     authStore.user = await this.getMyUser(authStore);
     // Load the user's attached data right away too.
-    authStore.user.personalDetails = await this.getMyPersonalDetails(authStore);
-    authStore.user.preferences = await this.getMyPreferences(authStore);
+    const [personalDetails, preferences, roles] = await Promise.all([
+      this.getMyPersonalDetails(authStore),
+      this.getMyPreferences(authStore),
+      this.getMyRoles(authStore)
+    ]);
+    authStore.user.personalDetails = personalDetails;
+    authStore.user.preferences = preferences;
+    authStore.roles = roles;
 
     clearTimeout(this.tokenRefreshTimer);
     this.tokenRefreshTimer = setTimeout(
@@ -287,6 +293,11 @@ class AuthModule {
       { reason, description },
       authStore.axiosConfig
     );
+  }
+
+  public async getMyRoles(authStore: AuthStoreType): Promise<string[]> {
+    const response = await api.get('/auth/me/roles', authStore.axiosConfig);
+    return response.data;
   }
 }
 
