@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/gymboard-uploads
+gymboard-uploads.so
+gymboard-uploads.dylib
+gymboard-uploads.dll
+gymboard-uploads.a
+gymboard-uploads.lib
+gymboard-uploads-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
