@@ -83,7 +83,12 @@ const isOwnUser = ref(false);
 // re-render.
 watch(route, async (updatedRoute) => {
   if (updatedRoute.params.userId && updatedRoute.params.userId.length > 0) {
-    const userId = updatedRoute.params.userId[0];
+    let userId;
+    if (Array.isArray(updatedRoute.params.userId)) {
+      userId = updatedRoute.params.userId[0];
+    } else {
+      userId = updatedRoute.params.userId;
+    }
     if (!profile.value || (profile.value.id !== userId)) {
       await loadUser(userId);
     }

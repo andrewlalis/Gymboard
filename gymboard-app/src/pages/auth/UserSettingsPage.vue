@@ -117,19 +117,19 @@ let initialPreferences: UserPreferences | null = null;
 const newPassword = ref('');
 
 onMounted(async () => {
-  // Redirect away from the page if the user isn't viewing their own settings.
   const userId = route.params.userId as string;
-  if (!authStore.user || authStore.user.id !== userId) {
+  if (authStore.user && authStore.user.id === userId) {
+    personalDetails.value = await api.auth.getMyPersonalDetails(authStore);
+    initialPersonalDetails = structuredClone(toRaw(personalDetails.value));
+
+    preferences.value = await api.auth.getMyPreferences(authStore);
+    initialPreferences = structuredClone(toRaw(preferences.value));
+
+    newPassword.value = '';
+  } else {
+    // Redirect away from the page if the user isn't viewing their own settings.
     await router.replace(`/users/${userId}`);
   }
-
-  personalDetails.value = await api.auth.getMyPersonalDetails(authStore);
-  initialPersonalDetails = structuredClone(toRaw(personalDetails.value));
-
-  preferences.value = await api.auth.getMyPreferences(authStore);
-  initialPreferences = structuredClone(toRaw(preferences.value));
-
-  newPassword.value = '';
 });
 
 const personalDetailsChanged = computed(() => {

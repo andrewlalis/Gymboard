@@ -55,19 +55,17 @@
 <script setup lang="ts">
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
 import SlimForm from 'components/SlimForm.vue';
-import { ref } from 'vue';
-import api from 'src/api/main';
-import { useAuthStore } from 'stores/auth-store';
-import { useRoute, useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import { resolveLocale } from 'src/i18n';
-import { useQuasar } from 'quasar';
+import {ref} from 'vue';
+import {useAuthStore} from 'stores/auth-store';
+import {useRoute, useRouter} from 'vue-router';
+import {useI18n} from 'vue-i18n';
+import {resolveLocale} from 'src/i18n';
+import {showApiErrorToast, showWarningToast} from 'src/utils';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const i18n = useI18n({ useScope: 'global' });
-const quasar = useQuasar();
 
 const loginModel = ref({
   email: '',
@@ -84,7 +82,7 @@ const passwordVisible = ref(false);
  */
 async function tryLogin() {
   try {
-    await api.auth.login(authStore, loginModel.value);
+    await authStore.logInWithCredentials(loginModel.value);
 
     // Set the locale to the user's preferred locale.
     i18n.locale.value = resolveLocale(authStore.user?.preferences?.locale).value;
@@ -96,18 +94,9 @@ async function tryLogin() {
     await router.push(dest);
   } catch (error: any) {
     if (error.response && error.response.status === 401) {
-      quasar.notify({
-        message: i18n.t('loginPage.authFailed'),
-        type: 'warning',
-        position: 'top',
-      });
+      showWarningToast('loginPage.authFailed');
     } else {
-      quasar.notify({
-        message: i18n.t('generalErrors.apiError'),
-        type: 'negative',
-        position: 'top',
-      });
-      console.error(error);
+      showApiErrorToast(error);
     }
   }
 }

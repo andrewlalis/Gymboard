@@ -22,7 +22,7 @@ account-related actions.
             <q-item-label>{{ $t('accountMenuItem.settings') }}</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item clickable v-close-popup @click="api.auth.logout(authStore)">
+        <q-item clickable v-close-popup @click="authStore.logOut()">
           <q-item-section>
             <q-item-label>{{ $t('accountMenuItem.logOut') }}</q-item-label>
           </q-item-section>
@@ -42,7 +42,6 @@ account-related actions.
 
 <script setup lang="ts">
 import { useAuthStore } from 'stores/auth-store';
-import api from 'src/api/main';
 import { useRoute, useRouter } from 'vue-router';
 import { getUserRoute } from 'src/router/user-routing';
 

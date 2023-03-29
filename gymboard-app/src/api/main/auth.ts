@@ -1,6 +1,5 @@
 import { api } from 'src/api/main/index';
 import {AuthStoreType} from 'stores/auth-store';
-import Timeout = NodeJS.Timeout;
 import { WeightUnit } from 'src/api/main/submission';
 import {Page, PaginationOptions, toQueryParams} from 'src/api/main/models';
 
@@ -67,41 +66,6 @@ export enum UserFollowResponse {
 }
 
 class AuthModule {
-  private static readonly TOKEN_REFRESH_INTERVAL_MS = 30000;
-
-  private tokenRefreshTimer?: Timeout;
-
-  /**
-   * Attempts to use the given credentials to obtain an access token for
-   * sending authenticated requests.
-   * @param authStore The auth store to use to update app state.
-   * @param credentials The credentials for logging in.
-   */
-  public async login(authStore: AuthStoreType, credentials: TokenCredentials) {
-    authStore.token = await this.getNewToken(credentials);
-    authStore.user = await this.getMyUser(authStore);
-    // Load the user's attached data right away too.
-    const [personalDetails, preferences, roles] = await Promise.all([
-      this.getMyPersonalDetails(authStore),
-      this.getMyPreferences(authStore),
-      this.getMyRoles(authStore)
-    ]);
-    authStore.user.personalDetails = personalDetails;
-    authStore.user.preferences = preferences;
-    authStore.roles = roles;
-
-    clearTimeout(this.tokenRefreshTimer);
-    this.tokenRefreshTimer = setInterval(
-      () => this.refreshToken(authStore),
-      AuthModule.TOKEN_REFRESH_INTERVAL_MS
-    );
-  }
-
-  public logout(authStore: AuthStoreType) {
-    authStore.logOut();
-    clearTimeout(this.tokenRefreshTimer);
-  }
-
   public async register(payload: UserCreationPayload): Promise<User> {
     const response = await api.post('/auth/register', payload);
     return response.data;
@@ -117,18 +81,9 @@ class AuthModule {
     return response.data.token;
   }
 
-  public async refreshToken(authStore: AuthStoreType) {
-    try {
-      const response = await api.get('/auth/token', authStore.axiosConfig);
-      authStore.token = response.data.token;
-    } catch (error: any) {
-      authStore.logOut();
-      if (error.response) {
-        console.warn('Failed to refresh token: ', error.response);
-      } else {
-        console.error(error);
-      }
-    }
+  public async refreshToken(authStore: AuthStoreType): Promise<string> {
+    const response = await api.get('/auth/token', authStore.axiosConfig);
+    return response.data.token;
   }
 
   public async getMyUser(authStore: AuthStoreType): Promise<User> {
