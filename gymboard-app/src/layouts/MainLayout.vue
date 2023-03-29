@@ -24,22 +24,27 @@
       <q-list>
         <q-item clickable to="/">
           <q-item-section>
-            <q-item-label>Gyms</q-item-label>
+            <q-item-label>{{ $t('mainLayout.menu.gyms') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-item clickable>
           <q-item-section>
-            <q-item-label>Global Leaderboard</q-item-label>
+            <q-item-label>{{ $t('mainLayout.menu.leaderboard') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-item clickable to="/users">
           <q-item-section>
-            <q-item-label>Users</q-item-label>
+            <q-item-label>{{ $t('mainLayout.menu.users') }}</q-item-label>
           </q-item-section>
         </q-item>
         <q-item clickable to="/admin" v-if="authStore.isAdmin">
           <q-item-section>
-            <q-item-label>Admin Panel</q-item-label>
+            <q-item-label>{{ $t('mainLayout.menu.adminPanel') }}</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item clickable to="/about">
+          <q-item-section>
+            <q-item-label>{{ $t('mainLayout.menu.about')}}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>

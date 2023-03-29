@@ -13,8 +13,9 @@ import SubmissionPage from 'pages/SubmissionPage.vue';
 import UserPage from 'pages/user/UserPage.vue';
 import UserSettingsPage from 'pages/auth/UserSettingsPage.vue';
 import UserSearchPage from 'pages/UserSearchPage.vue';
-import AdminPage from "pages/admin/AdminPage.vue";
-import {useAuthStore} from "stores/auth-store";
+import AdminPage from 'pages/admin/AdminPage.vue';
+import {useAuthStore} from 'stores/auth-store';
+import AboutPage from 'pages/AboutPage.vue';
 
 const routes: RouteRecordRaw[] = [
   // Auth-related pages, which live outside the main layout.
@@ -50,7 +51,8 @@ const routes: RouteRecordRaw[] = [
           const s = useAuthStore();
           if (!s.isAdmin) return '/'; // Redirect non-admins to the main page.
         }
-      }
+      },
+      { path: 'about', component: AboutPage },
     ],
   },
 

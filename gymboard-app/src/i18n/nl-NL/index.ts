@@ -2,6 +2,13 @@ export default {
   mainLayout: {
     language: 'Taal',
     pages: "Pagina's",
+    menu: {
+      gyms: 'Sportscholen',
+      leaderboard: 'Wereldwijd klassement',
+      users: 'Gebruikers',
+      adminPanel: 'Adminpaneel',
+      about: 'Over Gymboard'
+    }
   },
   registerPage: {
     title: 'Maak een nieuwe Gymboard account aan',

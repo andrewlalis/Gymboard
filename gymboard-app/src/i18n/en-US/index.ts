@@ -2,6 +2,13 @@ export default {
   mainLayout: {
     language: 'Language',
     pages: 'Pages',
+    menu: {
+      gyms: 'Gyms',
+      leaderboard: 'Global Leaderboard',
+      users: 'Users',
+      adminPanel: 'Admin Panel',
+      about: 'About Gymboard'
+    }
   },
   registerPage: {
     title: 'Create a Gymboard Account',
