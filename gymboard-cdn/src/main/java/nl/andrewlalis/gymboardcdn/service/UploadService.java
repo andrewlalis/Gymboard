@@ -25,6 +25,8 @@ import java.time.format.DateTimeFormatter;
 public class UploadService {
 	private static final Logger log = LoggerFactory.getLogger(UploadService.class);
 
+	private static final long MAX_UPLOAD_SIZE_BYTES = (1024 * 1024 * 1024); // 1 Gb
+
 	private final StoredFileRepository storedFileRepository;
 	private final VideoProcessingTaskRepository videoTaskRepository;
 	private final FileService fileService;
@@ -46,6 +48,14 @@ public class UploadService {
 	 */
 	@Transactional
 	public FileUploadResponse processableVideoUpload(HttpServletRequest request) {
+		String contentLengthStr = request.getHeader("Content-Length");
+		if (contentLengthStr == null || !contentLengthStr.matches("\\d+")) {
+			throw new ResponseStatusException(HttpStatus.LENGTH_REQUIRED);
+		}
+		long contentLength = Long.parseUnsignedLong(contentLengthStr);
+		if (contentLength > MAX_UPLOAD_SIZE_BYTES) {
+			throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE);
+		}
 		Path tempFile;
 		String filename = request.getHeader("X-Gymboard-Filename");
 		if (filename == null) filename = "unnamed.mp4";

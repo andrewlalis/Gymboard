@@ -44,6 +44,7 @@ public class UploadServiceTest {
 		);
 		HttpServletRequest mockRequest = mock(HttpServletRequest.class);
 		when(mockRequest.getHeader("X-Filename")).thenReturn("testing.mp4");
+		when(mockRequest.getHeader("Content-Length")).thenReturn("123");
 		ServletInputStream mockRequestInputStream = mock(ServletInputStream.class);
 		when(mockRequest.getInputStream()).thenReturn(mockRequestInputStream);
 		var expectedResponse = new FileUploadResponse("abc");
