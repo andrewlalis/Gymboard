@@ -43,6 +43,34 @@ export const useAuthStore = defineStore('authStore', {
     },
     isAdmin: state => state.roles.indexOf('admin') !== -1,
   },
+  actions: {
+    /**
+     * Logs a user into the application.
+     * @param user The user who was logged in.
+     * @param token The token that was obtained.
+     * @param roles The list of the user's roles.
+     */
+    logIn(user: User, token: string, roles: string[]) {
+      this.user = user;
+      this.token = token;
+      this.roles = roles;
+    },
+    /**
+     * Logs a user out of the application, resetting the auth state.
+     */
+    logOut() {
+      this.user = null;
+      this.token = null;
+      this.roles = [];
+    },
+    /**
+     * Updates the token that's stored for the currently authenticated user.
+     * @param token The new token.
+     */
+    updateToken(token: string) {
+      this.token = token;
+    }
+  }
 });
 
 export type AuthStoreType = ReturnType<typeof useAuthStore>;

@@ -1,8 +1,8 @@
 import { api } from 'src/api/main/index';
-import {AuthStoreType, useAuthStore} from 'stores/auth-store';
+import {AuthStoreType} from 'stores/auth-store';
 import Timeout = NodeJS.Timeout;
 import { WeightUnit } from 'src/api/main/submission';
-import {Page, PaginationOptions, toQueryParams} from "src/api/main/models";
+import {Page, PaginationOptions, toQueryParams} from 'src/api/main/models';
 
 export interface User {
   id: string;
@@ -91,14 +91,14 @@ class AuthModule {
     authStore.roles = roles;
 
     clearTimeout(this.tokenRefreshTimer);
-    this.tokenRefreshTimer = setTimeout(
+    this.tokenRefreshTimer = setInterval(
       () => this.refreshToken(authStore),
       AuthModule.TOKEN_REFRESH_INTERVAL_MS
     );
   }
 
   public logout(authStore: AuthStoreType) {
-    authStore.$reset();
+    authStore.logOut();
     clearTimeout(this.tokenRefreshTimer);
   }
 
@@ -118,8 +118,17 @@ class AuthModule {
   }
 
   public async refreshToken(authStore: AuthStoreType) {
-    const response = await api.get('/auth/token', authStore.axiosConfig);
-    authStore.token = response.data.token;
+    try {
+      const response = await api.get('/auth/token', authStore.axiosConfig);
+      authStore.token = response.data.token;
+    } catch (error: any) {
+      authStore.logOut();
+      if (error.response) {
+        console.warn('Failed to refresh token: ', error.response);
+      } else {
+        console.error(error);
+      }
+    }
   }
 
   public async getMyUser(authStore: AuthStoreType): Promise<User> {
