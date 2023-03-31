@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {ref} from 'vue';
 import AccountMenuItem from 'components/AccountMenuItem.vue';
 import {useAuthStore} from 'stores/auth-store';
 
@@ -67,8 +67,4 @@ const leftDrawerOpen = ref(false);
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
-
-onMounted(async () => {
-  await authStore.tryLogInWithStoredToken();
-});
 </script>

@@ -14,6 +14,8 @@ public interface UserFollowingRepository extends JpaRepository<UserFollowing, Lo
 
 	@Modifying
 	void deleteByFollowedUserAndFollowingUser(User followedUser, User followingUser);
+	@Modifying
+	void deleteAllByFollowedUserOrFollowingUser(User followedUser, User followingUser);
 
 	Page<UserFollowing> findAllByFollowedUserOrderByCreatedAtDesc(User followedUser, Pageable pageable);
 	Page<UserFollowing> findAllByFollowingUserOrderByCreatedAtDesc(User followingUser, Pageable pageable);

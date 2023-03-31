@@ -3,13 +3,18 @@ The page where users can edit their personal information and preferences.
 -->
 <template>
   <q-page>
-    <StandardCenteredPage v-if="authStore.loggedIn">
+    <StandardCenteredPage>
       <h3>{{ $t('userSettingsPage.title') }}</h3>
       <hr>
 
       <div class="row justify-between">
         <span class="property-label">{{ $t('userSettingsPage.email') }}</span>
         <q-input type="email" v-model="authStore.user.email" dense readonly/>
+      </div>
+      <div class="row justify-end">
+        <router-link to="/me/update-email" class="text-secondary">
+          {{ $t('userSettingsPage.changeEmail') }}
+        </router-link>
       </div>
       <div class="row justify-between">
         <span class="property-label">{{ $t('userSettingsPage.name') }}</span>
@@ -86,13 +91,22 @@ The page where users can edit their personal information and preferences.
         />
       </div>
 
+      <div>
+        <h4>{{ $t('userSettingsPage.actions.title') }}</h4>
+        <div class="row q-my-md">
+          <q-btn :label="$t('userSettingsPage.actions.requestData')" color="secondary" to="/me/request-account-data"/>
+        </div>
+        <div class="row q-my-md">
+          <q-btn :label="$t('userSettingsPage.actions.deleteAccount')" color="secondary" to="/me/delete-account"/>
+        </div>
+      </div>
+
     </StandardCenteredPage>
   </q-page>
 </template>
 
 <script setup lang="ts">
 import StandardCenteredPage from 'components/StandardCenteredPage.vue';
-import {useRoute, useRouter} from 'vue-router';
 import {useAuthStore} from 'stores/auth-store';
 import {computed, onMounted, ref, Ref, toRaw} from 'vue';
 import {UserPersonalDetails, UserPreferences} from 'src/api/main/auth';
@@ -103,8 +117,6 @@ import {resolveLocale, supportedLocales} from 'src/i18n';
 import {useI18n} from 'vue-i18n';
 import {showApiErrorToast, showSuccessToast, showWarningToast} from 'src/utils';
 
-const route = useRoute();
-const router = useRouter();
 const authStore = useAuthStore();
 const i18n = useI18n({useScope: 'global'});
 
@@ -117,19 +129,13 @@ let initialPreferences: UserPreferences | null = null;
 const newPassword = ref('');
 
 onMounted(async () => {
-  const userId = route.params.userId as string;
-  if (authStore.user && authStore.user.id === userId) {
-    personalDetails.value = await api.auth.getMyPersonalDetails(authStore);
-    initialPersonalDetails = structuredClone(toRaw(personalDetails.value));
+  personalDetails.value = await api.auth.getMyPersonalDetails(authStore);
+  initialPersonalDetails = structuredClone(toRaw(personalDetails.value));
 
-    preferences.value = await api.auth.getMyPreferences(authStore);
-    initialPreferences = structuredClone(toRaw(preferences.value));
+  preferences.value = await api.auth.getMyPreferences(authStore);
+  initialPreferences = structuredClone(toRaw(preferences.value));
 
-    newPassword.value = '';
-  } else {
-    // Redirect away from the page if the user isn't viewing their own settings.
-    await router.replace(`/users/${userId}`);
-  }
+  newPassword.value = '';
 });
 
 const personalDetailsChanged = computed(() => {

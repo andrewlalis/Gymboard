@@ -4,7 +4,7 @@
 	],
 	"copyright": "Copyright © 2023, Andrew Lalis",
 	"dependencies": {
-		"handy-httpd": "~>5.7.0",
+		"handy-httpd": "~>6.0.0",
 		"slf4d": "~>2.1.1"
 	},
 	"description": "Service for handling Gymboard file uploads.",

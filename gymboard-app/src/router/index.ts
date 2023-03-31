@@ -7,6 +7,7 @@ import {
 } from 'vue-router';
 
 import routes from './routes';
+import {useAuthStore} from 'stores/auth-store';
 
 /*
  * If not building with SSR mode, you can
@@ -24,7 +25,7 @@ export default route(function (/* { store, ssrContext } */) {
     ? createWebHistory
     : createWebHashHistory;
 
-  const Router = createRouter({
+  const router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
 
@@ -34,5 +35,16 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
-  return Router;
+  // Before navigating to any route, we add a guard that tries to log in if the
+  // user has a stored authentication token. This way, if a user reloads a page
+  // that can only be accessed through authentication, they'll go back to it
+  // instead of being kicked out to the main page.
+  router.beforeEach(async () => {
+    const authStore = useAuthStore();
+    if (!authStore.loggedIn) {
+      await authStore.tryLogInWithStoredToken();
+    }
+  });
+
+  return router;
 });

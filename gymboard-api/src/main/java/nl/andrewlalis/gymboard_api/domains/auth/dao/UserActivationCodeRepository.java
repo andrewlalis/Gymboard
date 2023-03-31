@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.auth.dao;
 
+import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.model.UserActivationCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,4 +15,6 @@ public interface UserActivationCodeRepository extends JpaRepository<UserActivati
 
 	@Modifying
 	void deleteAllByCreatedAtBefore(LocalDateTime cutoff);
+	@Modifying
+	void deleteAllByUser(User user);
 }

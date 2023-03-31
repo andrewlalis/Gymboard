@@ -236,6 +236,8 @@ public class UserService {
 		if (userRepository.existsByEmail(payload.newEmail())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is taken.");
 		}
+		// Delete any existing email reset code for the chosen email.
+		emailResetCodeRepository.deleteByNewEmail(payload.newEmail());
 		EmailResetCode emailResetCode = emailResetCodeRepository.save(new EmailResetCode(
 				StringGenerator.randomString(127, StringGenerator.Alphabet.ALPHANUMERIC),
 				payload.newEmail(),

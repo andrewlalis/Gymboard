@@ -1,5 +1,5 @@
-import {useQuasar} from 'quasar';
-import {useI18n} from 'vue-i18n';
+import {i18n} from 'boot/i18n';
+import {Notify, Dialog, QDialogOptions} from 'quasar';
 
 /**
  * Sleeps for a given number of milliseconds before resolving.
@@ -7,11 +7,36 @@ import {useI18n} from 'vue-i18n';
  */
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Shows a confirmation dialog that returns a promise which resolves if the
+ * user clicks on the affirmative button choice.
+ * @param options Options to supply to the dialog, instead of defaults.
+ */
+export function confirm(options?: QDialogOptions): Promise<void> {
+  const { t } = i18n.global;
+  const dialogOpts: QDialogOptions = {
+    title: t('confirm.title'),
+    message: t('confirm.message'),
+    cancel: true
+  };
+  if (options?.title) {
+    dialogOpts.title = options.title;
+  }
+  if (options?.message) {
+    dialogOpts.message = options.message;
+  }
+  return new Promise((resolve, reject) => {
+    Dialog.create(dialogOpts)
+      .onOk(resolve)
+      .onCancel(reject)
+      .onDismiss(reject);
+  });
+}
+
 function showToast(type: string, messageKey: string) {
-  const quasar = useQuasar();
-  const i18n = useI18n();
-  quasar.notify({
-    message: i18n.t(messageKey),
+  const { t } = i18n.global;
+  Notify.create({
+    message: t(messageKey),
     type: type,
     position: 'top'
   });
@@ -25,10 +50,10 @@ function showToast(type: string, messageKey: string) {
  * @param error The error to display.
  */
 export function showApiErrorToast(error?: unknown) {
-  showToast('danger', 'generalErrors.apiError');
   if (error) {
     console.error(error);
   }
+  showToast('danger', 'generalErrors.apiError');
 }
 
 export function showInfoToast(messageKey: string) {

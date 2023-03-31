@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * A code that's sent to a user's new email address to confirm that they own
  * it. Once confirmed, the user's email address will be updated.
  */
-@Table(name = "auth_email_reset_code")
+@Table(name = "auth_user_email_reset_code")
 @Entity
 public class EmailResetCode {
 	public static final Duration VALID_FOR = Duration.ofMinutes(30);

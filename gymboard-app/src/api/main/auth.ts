@@ -263,6 +263,14 @@ class AuthModule {
     const response = await api.get('/auth/me/roles', authStore.axiosConfig);
     return response.data;
   }
+
+  public async requestAccountData(authStore: AuthStoreType): Promise<void> {
+    await api.post('/auth/me/data-requests', null, authStore.axiosConfig);
+  }
+
+  public async deleteAccount(authStore: AuthStoreType): Promise<void> {
+    await api.delete('/auth/me', authStore.axiosConfig);
+  }
 }
 
 export default AuthModule;

@@ -1,7 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"handy-httpd": "5.7.0",
+		"handy-httpd": "6.0.0",
 		"httparsed": "1.2.1",
 		"slf4d": "2.1.1"
 	}

@@ -1,9 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.auth.service;
 
-import nl.andrewlalis.gymboard_api.domains.auth.dao.EmailResetCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.PasswordResetCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.UserActivationCodeRepository;
-import nl.andrewlalis.gymboard_api.domains.auth.dao.UserFollowRequestRepository;
+import nl.andrewlalis.gymboard_api.domains.auth.dao.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.EmailResetCode;
 import nl.andrewlalis.gymboard_api.domains.auth.model.PasswordResetCode;
 import nl.andrewlalis.gymboard_api.domains.auth.model.UserActivationCode;
@@ -21,12 +18,20 @@ public class CleanupService {
 	private final UserActivationCodeRepository activationCodeRepository;
 	private final UserFollowRequestRepository followRequestRepository;
 	private final EmailResetCodeRepository emailResetCodeRepository;
+	private final UserRepository userRepository;
 
-	public CleanupService(PasswordResetCodeRepository passwordResetCodeRepository, UserActivationCodeRepository activationCodeRepository, UserFollowRequestRepository followRequestRepository, EmailResetCodeRepository emailResetCodeRepository) {
+	public CleanupService(
+			PasswordResetCodeRepository passwordResetCodeRepository,
+			UserActivationCodeRepository activationCodeRepository,
+			UserFollowRequestRepository followRequestRepository,
+			EmailResetCodeRepository emailResetCodeRepository,
+			UserRepository userRepository
+	) {
 		this.passwordResetCodeRepository = passwordResetCodeRepository;
 		this.activationCodeRepository = activationCodeRepository;
 		this.followRequestRepository = followRequestRepository;
 		this.emailResetCodeRepository = emailResetCodeRepository;
+		this.userRepository = userRepository;
 	}
 
 	/**
@@ -44,5 +49,7 @@ public class CleanupService {
 		followRequestRepository.deleteAllByCreatedAtBefore(followRequestCutoff);
 		LocalDateTime emailResetCodeCutoff = LocalDateTime.now().minus(EmailResetCode.VALID_FOR);
 		emailResetCodeRepository.deleteAllByCreatedAtBefore(emailResetCodeCutoff);
+		LocalDateTime inactiveUserCutoff = LocalDateTime.now().minusDays(7);
+		userRepository.deleteAllByActivatedFalseAndCreatedAtBefore(inactiveUserCutoff);
 	}
 }

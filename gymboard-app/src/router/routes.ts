@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from 'vue-router';
+import {RouteRecordRaw} from 'vue-router';
 import MainLayout from 'layouts/MainLayout.vue';
 import GymSearchPage from 'pages/GymSearchPage.vue';
 import GymPage from 'pages/gym/GymPage.vue';
@@ -16,6 +16,9 @@ import UserSearchPage from 'pages/UserSearchPage.vue';
 import AdminPage from 'pages/admin/AdminPage.vue';
 import {useAuthStore} from 'stores/auth-store';
 import AboutPage from 'pages/AboutPage.vue';
+import UpdateEmailPage from "pages/auth/UpdateEmailPage.vue";
+import RequestAccountDataPage from "pages/auth/RequestAccountDataPage.vue";
+import DeleteAccountPage from "pages/auth/DeleteAccountPage.vue";
 
 const routes: RouteRecordRaw[] = [
   // Auth-related pages, which live outside the main layout.
@@ -31,7 +34,6 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: GymSearchPage },
       { path: 'users', component: UserSearchPage },
-      { path: 'users/:userId/settings', component: UserSettingsPage },
       { // Match anything under /users/:userId to the UserPage, since it manages sub-pages manually.
         path: 'users/:userId+',
         component: UserPage
@@ -53,6 +55,21 @@ const routes: RouteRecordRaw[] = [
         }
       },
       { path: 'about', component: AboutPage },
+
+      // Pages under /me are accessible only when authenticated.
+      {
+        path: 'me',
+        beforeEnter: () => {
+          const s = useAuthStore();
+          if (!s.loggedIn) return '/';
+        },
+        children: [
+          { path: 'settings', component: UserSettingsPage },
+          { path: 'update-email', component: UpdateEmailPage },
+          { path: 'request-account-data', component: RequestAccountDataPage },
+          { path: 'delete-account', component: DeleteAccountPage }
+        ]
+      }
     ],
   },
 

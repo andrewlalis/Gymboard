@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Files;
@@ -29,6 +30,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+/**
+ * This service is responsible for generating, verifying, and generally managing
+ * authentication tokens.
+ */
 @Service
 public class TokenService {
 	private static final Logger log = LoggerFactory.getLogger(TokenService.class);
@@ -47,7 +52,12 @@ public class TokenService {
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public String generateAccessToken(User user) {
+	/**
+	 * Generates a new short-lived access token for the given user.
+	 * @param user The user to generate an access token for.
+	 * @return The access token string.
+	 */
+	private String generateAccessToken(User user) {
 		Instant expiration = Instant.now().plus(30, ChronoUnit.MINUTES);
 		return Jwts.builder()
 				.setSubject(user.getId())
@@ -63,6 +73,12 @@ public class TokenService {
 				.compact();
 	}
 
+	/**
+	 * Generates a new access token for a given set of credentials.
+	 * @param credentials The credentials to use for authentication.
+	 * @return A token response.
+	 */
+	@Transactional(readOnly = true)
 	public TokenResponse generateAccessToken(TokenCredentials credentials) {
 		User user = userRepository.findByEmailWithRoles(credentials.email())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));

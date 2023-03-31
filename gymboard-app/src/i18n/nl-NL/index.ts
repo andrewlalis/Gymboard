@@ -62,6 +62,7 @@ export default {
   userSettingsPage: {
     title: 'Account instellingen',
     email: 'E-mail',
+    changeEmail: 'E-mail adres wijzigen',
     name: 'Naam',
     password: 'Wachtwoord',
     passwordHint: 'Stel een nieuw wachtwoord voor je account in.',

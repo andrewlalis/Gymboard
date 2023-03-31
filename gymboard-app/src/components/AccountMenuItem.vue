@@ -17,7 +17,7 @@ account-related actions.
             <q-item-label>{{ $t('accountMenuItem.profile') }}</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item clickable v-close-popup :to="getUserRoute(authStore.user) + '/settings'">
+        <q-item clickable v-close-popup to="/me/settings">
           <q-item-section>
             <q-item-label>{{ $t('accountMenuItem.settings') }}</q-item-label>
           </q-item-section>

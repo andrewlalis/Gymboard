@@ -1,8 +1,8 @@
 <template>
   <StandardCenteredPage>
     <h3 class="text-center">{{ $t('registrationSuccessPage.title') }}</h3>
-    <p>Check your email for the link to activate your account.</p>
-    <p>You may safely close this page.</p>
+    <p>{{ $t('registrationSuccessPage.p1') }}</p>
+    <p>{{ $t('registrationSuccessPage.p2') }}</p>
   </StandardCenteredPage>
 </template>
 

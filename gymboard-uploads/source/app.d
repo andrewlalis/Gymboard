@@ -10,6 +10,7 @@ void main() {
 		ctx.response.writeBodyString("online");
 	});
 	pathHandler.addMapping("POST", "/uploads", new VideoUploadHandler());
+	pathHandler.addMapping("POST", "/uploads/{uploadId}/process", new VideoProcessingHandler());
 
 	HttpServer server = new HttpServer(pathHandler, getServerConfig());
 	server.start();

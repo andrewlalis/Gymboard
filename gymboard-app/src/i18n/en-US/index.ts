@@ -18,6 +18,11 @@ export default {
     register: 'Register',
     error: 'An error occurred.',
   },
+  registrationSuccessPage: {
+    title: 'Account Registration Complete!',
+    p1: 'Check your email for the link to activate your account.',
+    p2: 'You may safely close this page.'
+  },
   loginPage: {
     title: 'Login to Gymboard',
     email: 'Email',
@@ -67,6 +72,7 @@ export default {
   userSettingsPage: {
     title: 'Account Settings',
     email: 'Email',
+    changeEmail: 'Change your email address',
     name: 'Name',
     password: 'Password',
     passwordHint: 'Set a new password for your account.',
@@ -89,7 +95,33 @@ export default {
       language: 'Language'
     },
     save: 'Save',
-    undo: 'Undo'
+    undo: 'Undo',
+    actions: {
+      title: 'Actions',
+      requestData: 'Request Account Data',
+      deleteAccount: 'Delete Account'
+    }
+  },
+  updateEmailPage: {
+    title: 'Update Email Address',
+    inputHint: 'Enter your new email address here',
+    beforeUpdateInfo: "To update your email address, we'll send a secret code to your new address.",
+    updateButton: 'Update Email Address',
+    resetCodeSent: 'A reset code has been sent to your new email address.',
+    resetCodeInputHint: 'Enter your code here',
+    emailUpdated: 'Your email has been updated successfully.'
+  },
+  requestAccountDataPage: {
+    title: 'Request Account Data',
+    requestButton: 'Request Account Data',
+    requestSent: 'Request sent. You will receive an email with a link to download your data in a few days.'
+  },
+  deleteAccountPage: {
+    title: 'Delete Account',
+    deleteButton: 'Delete Account',
+    confirmTitle: 'Confirm Deletion',
+    confirmMessage: 'Are you absolutely certain that you want to delete your Gymboard account? This CANNOT be undone.',
+    accountDeleted: 'Account deleted. You will now be logged out. Goodbye 😭'
   },
   submissionPage: {
     confirmDeletion: 'Confirm Deletion',
@@ -108,5 +140,9 @@ export default {
   weightUnit: {
     kilograms: 'Kilograms',
     pounds: 'Pounds'
+  },
+  confirm: {
+    title: 'Confirm',
+    message: 'Are you sure you want to continue?'
   }
 };

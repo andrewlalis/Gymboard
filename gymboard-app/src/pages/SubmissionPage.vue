@@ -41,7 +41,7 @@ import { DateTime } from 'luxon';
 import { getFileUrl } from 'src/api/cdn';
 import { getGymRoute } from 'src/router/gym-routing';
 import {useAuthStore} from 'stores/auth-store';
-import {showApiErrorToast} from 'src/utils';
+import {confirm, showApiErrorToast} from 'src/utils';
 import {useI18n} from 'vue-i18n';
 import {useQuasar} from 'quasar';
 
@@ -69,11 +69,10 @@ onMounted(async () => {
  * the user back to their home page that shows all their lifts.
  */
 async function deleteSubmission() {
-  quasar.dialog({
+  confirm({
     title: i18n.t('submissionPage.confirmDeletion'),
-    message: i18n.t('submissionPage.confirmDeletionMsg'),
-    cancel: true
-  }).onOk(async () => {
+    message: i18n.t('submissionPage.confirmDeletionMsg')
+  }).then(async () => {
     if (!submission.value) return;
     try {
       await api.gyms.submissions.deleteSubmission(submission.value.id, authStore);

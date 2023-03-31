@@ -21,13 +21,13 @@ declare module 'vue-i18n' {
 }
 /* eslint-enable @typescript-eslint/no-empty-interface */
 
-export default boot(({ app }) => {
-  const i18n = createI18n({
-    locale: 'en-US',
-    legacy: false,
-    messages,
-  });
+export const i18n = createI18n({
+  locale: 'en-US',
+  legacy: false,
+  messages,
+});
 
+export default boot(({ app }) => {
   // Set the locale to the preferred locale, if possible.
   const userLocale = window.navigator.language;
   if (userLocale === 'nl-NL') {

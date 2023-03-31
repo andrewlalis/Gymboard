@@ -4,7 +4,9 @@ import nl.andrewlalis.gymboard_api.domains.auth.dto.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.Role;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.model.UserPreferences;
+import nl.andrewlalis.gymboard_api.domains.auth.service.DataRequestService;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccessService;
+import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccountDeletionService;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,16 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class UserController {
 	private final UserService userService;
+	private final DataRequestService dataRequestService;
+	private final UserAccountDeletionService accountDeletionService;
 	private final UserAccessService userAccessService;
 
-	public UserController(UserService userService, UserAccessService userAccessService) {
+	public UserController(UserService userService, DataRequestService dataRequestService, UserAccountDeletionService accountDeletionService, UserAccessService userAccessService) {
 		this.userService = userService;
+		this.dataRequestService = dataRequestService;
+		this.accountDeletionService = accountDeletionService;
 		this.userAccessService = userAccessService;
 	}
 
@@ -164,5 +169,17 @@ public class UserController {
 	@GetMapping(path = "/auth/me/roles")
 	public List<String> getMyRoles(@AuthenticationPrincipal User myUser) {
 		return myUser.getRoles().stream().map(Role::getShortName).toList();
+	}
+
+	@PostMapping(path = "/auth/me/data-requests")
+	public ResponseEntity<Void> requestData(@AuthenticationPrincipal User myUser) {
+		dataRequestService.createRequest(myUser.getId());
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping(path = "/auth/me")
+	public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal User myUser) {
+		accountDeletionService.deleteAccount(myUser);
+		return ResponseEntity.ok().build();
 	}
 }
