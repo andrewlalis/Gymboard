@@ -1,6 +1,7 @@
 module handlers;
 
 import handy_httpd;
+import handy_httpd.util.range;
 import slf4d;
 import std.conv : to;
 import std.path;
