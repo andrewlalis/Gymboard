@@ -18,3 +18,5 @@ Therefore, **gymboard-uploads** is responsible for the following actions:
 - Processing of raw videos to reduce file size and optimize for web. This will most likely be done using FFMPEG in the backend.
 - Reporting the status of video processing for recently uploaded videos.
 - Serving processed video files.
+
+**THIS PROJECT IS A WORK-IN-PROGRESS** Do not use it for production.
