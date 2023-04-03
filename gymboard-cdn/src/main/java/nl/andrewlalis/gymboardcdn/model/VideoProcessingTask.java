@@ -30,32 +30,14 @@ public class VideoProcessingTask {
 	@Column(nullable = false)
 	private Status status;
 
-	/**
-	 * The original filename.
-	 */
-	@Column(nullable = false)
-	private String filename;
-
-	/**
-	 * The path to the temporary file that we'll use as input.
-	 */
-	@Column(nullable = false)
-	private String tempFilePath;
-
-	/**
-	 * The identifier that will be used to identify the final video, if it
-	 * is processed successfully.
-	 */
 	@Column(nullable = false, updatable = false, length = 26)
-	private String videoIdentifier;
+	private String rawUploadFileId;
 
 	public VideoProcessingTask() {}
 
-	public VideoProcessingTask(Status status, String filename, String tempFilePath, String videoIdentifier) {
+	public VideoProcessingTask(Status status, String rawUploadFileId) {
 		this.status = status;
-		this.filename = filename;
-		this.tempFilePath = tempFilePath;
-		this.videoIdentifier = videoIdentifier;
+		this.rawUploadFileId = rawUploadFileId;
 	}
 
 	public Long getId() {
@@ -66,10 +48,6 @@ public class VideoProcessingTask {
 		return createdAt;
 	}
 
-	public String getFilename() {
-		return filename;
-	}
-
 	public Status getStatus() {
 		return status;
 	}
@@ -78,11 +56,7 @@ public class VideoProcessingTask {
 		this.status = status;
 	}
 
-	public String getTempFilePath() {
-		return tempFilePath;
-	}
-
-	public String getVideoIdentifier() {
-		return videoIdentifier;
+	public String getRawUploadFileId() {
+		return rawUploadFileId;
 	}
 }

@@ -3,7 +3,7 @@ package nl.andrewlalis.gymboardcdn.service;
 import jakarta.servlet.http.HttpServletRequest;
 import nl.andrewlalis.gymboardcdn.api.FileUploadResponse;
 import nl.andrewlalis.gymboardcdn.api.VideoProcessingTaskStatusResponse;
-import nl.andrewlalis.gymboardcdn.model.StoredFileRepository;
+import nl.andrewlalis.gymboardcdn.model.FileMetadata;
 import nl.andrewlalis.gymboardcdn.model.VideoProcessingTask;
 import nl.andrewlalis.gymboardcdn.model.VideoProcessingTaskRepository;
 import org.slf4j.Logger;
@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 @Service
 public class UploadService {
@@ -23,11 +22,11 @@ public class UploadService {
 	private static final long MAX_UPLOAD_SIZE_BYTES = (1024 * 1024 * 1024); // 1 Gb
 
 	private final VideoProcessingTaskRepository videoTaskRepository;
-	private final FileService fileService;
+	private final FileStorageService fileStorageService;
 
-	public UploadService(VideoProcessingTaskRepository videoTaskRepository, FileService fileService) {
+	public UploadService(VideoProcessingTaskRepository videoTaskRepository, FileStorageService fileStorageService) {
 		this.videoTaskRepository = videoTaskRepository;
-		this.fileService = fileService;
+		this.fileStorageService = fileStorageService;
 	}
 
 	/**
@@ -47,23 +46,23 @@ public class UploadService {
 		if (contentLength > MAX_UPLOAD_SIZE_BYTES) {
 			throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE);
 		}
-		Path tempFile;
-		String filename = request.getHeader("X-Gymboard-Filename");
-		if (filename == null) filename = "unnamed.mp4";
+		FileMetadata metadata = new FileMetadata();
+		metadata.mimeType = request.getContentType();
+		metadata.filename = request.getHeader("X-Gymboard-Filename");
+		if (metadata.filename == null) metadata.filename = "unnamed.mp4";
+		String fileId;
 		try {
-			tempFile = fileService.saveToTempFile(request.getInputStream(), filename);
+			fileId = fileStorageService.save(request.getInputStream(), metadata, contentLength);
 		} catch (IOException e) {
 			log.error("Failed to save video upload to temp file.", e);
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		String identifier = fileService.createNewFileIdentifier();
 		videoTaskRepository.save(new VideoProcessingTask(
 				VideoProcessingTask.Status.WAITING,
-				filename,
-				tempFile.toString(),
-				identifier
+				fileId,
+				"bleh"
 		));
-		return new FileUploadResponse(identifier);
+		return new FileUploadResponse("bleh");
 	}
 
 	/**

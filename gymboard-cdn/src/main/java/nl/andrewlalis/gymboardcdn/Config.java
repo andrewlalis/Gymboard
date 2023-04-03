@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboardcdn;
 
+import nl.andrewlalis.gymboardcdn.service.FileStorageService;
 import nl.andrewlalis.gymboardcdn.util.ULID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,5 +36,10 @@ public class Config {
 	@Bean
 	public ULID ulid() {
 		return new ULID();
+	}
+
+	@Bean
+	public FileStorageService fileStorageService() {
+		return new FileStorageService(ulid(), "cdn-files");
 	}
 }

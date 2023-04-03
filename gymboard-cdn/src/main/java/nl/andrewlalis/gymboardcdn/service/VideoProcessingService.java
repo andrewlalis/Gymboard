@@ -1,7 +1,5 @@
 package nl.andrewlalis.gymboardcdn.service;
 
-import nl.andrewlalis.gymboardcdn.model.StoredFile;
-import nl.andrewlalis.gymboardcdn.model.StoredFileRepository;
 import nl.andrewlalis.gymboardcdn.model.VideoProcessingTask;
 import nl.andrewlalis.gymboardcdn.model.VideoProcessingTaskRepository;
 import org.slf4j.Logger;
@@ -25,21 +23,19 @@ public class VideoProcessingService {
 
 	private final Executor taskExecutor;
 	private final VideoProcessingTaskRepository taskRepo;
-	private final StoredFileRepository storedFileRepository;
-	private final FileService fileService;
+	private final FileStorageService fileStorageService;
 
-	public VideoProcessingService(Executor taskExecutor, VideoProcessingTaskRepository taskRepo, StoredFileRepository storedFileRepository, FileService fileService) {
+	public VideoProcessingService(Executor taskExecutor, VideoProcessingTaskRepository taskRepo, FileStorageService fileStorageService) {
 		this.taskExecutor = taskExecutor;
 		this.taskRepo = taskRepo;
-		this.storedFileRepository = storedFileRepository;
-		this.fileService = fileService;
+		this.fileStorageService = fileStorageService;
 	}
 
 	@Scheduled(fixedDelay = 5, timeUnit = TimeUnit.SECONDS)
 	public void startWaitingTasks() {
 		List<VideoProcessingTask> waitingTasks = taskRepo.findAllByStatusOrderByCreatedAtDesc(VideoProcessingTask.Status.WAITING);
 		for (var task : waitingTasks) {
-			log.info("Queueing processing of video {}.", task.getVideoIdentifier());
+			log.info("Queueing processing of task {}.", task.getId());
 			updateTask(task, VideoProcessingTask.Status.IN_PROGRESS);
 			taskExecutor.execute(() -> processVideo(task));
 		}
@@ -51,33 +47,34 @@ public class VideoProcessingService {
 		List<VideoProcessingTask> oldTasks = taskRepo.findAllByCreatedAtBefore(cutoff);
 		for (var task : oldTasks) {
 			if (task.getStatus() == VideoProcessingTask.Status.COMPLETED) {
-				log.info("Deleting completed task for video {}.", task.getVideoIdentifier());
+				log.info("Deleting completed task {}.", task.getId());
 				taskRepo.delete(task);
 			} else if (task.getStatus() == VideoProcessingTask.Status.FAILED) {
-				log.info("Deleting failed task for video {}.", task.getVideoIdentifier());
+				log.info("Deleting failed task {}.", task.getId());
 				taskRepo.delete(task);
 			} else if (task.getStatus() == VideoProcessingTask.Status.IN_PROGRESS) {
-				log.info("Task for video {} was in progress for too long; deleting.", task.getVideoIdentifier());
+				log.info("Task {} was in progress for too long; deleting.", task.getId());
 				taskRepo.delete(task);
 			} else if (task.getStatus() == VideoProcessingTask.Status.WAITING) {
-				log.info("Task for video {} was waiting for too long; deleting.", task.getVideoIdentifier());
+				log.info("Task {} was waiting for too long; deleting.", task.getId());
 				taskRepo.delete(task);
 			}
 		}
 	}
 
 	private void processVideo(VideoProcessingTask task) {
-		log.info("Started processing video {}.", task.getVideoIdentifier());
+		log.info("Started processing task {}.", task.getId());
 
-		Path tempFile = Path.of(task.getTempFilePath());
-		if (Files.notExists(tempFile) || !Files.isReadable(tempFile)) {
-			log.error("Temp file {} doesn't exist or isn't readable.", tempFile);
+		Path tempFilePath = fileStorageService.getStoragePathForFile(task.getRawUploadFileId());
+		if (Files.notExists(tempFilePath) || !Files.isReadable(tempFilePath)) {
+			log.error("Temp file {} doesn't exist or isn't readable.", tempFilePath);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
 			return;
 		}
 
 		// Then begin running the actual FFMPEG processing.
-		Path tempDir = tempFile.getParent();
+		Path tempDir = tempFilePath.getParent();
+		Files.createTempFile()
 		Path ffmpegOutputFile = tempDir.resolve(task.getVideoIdentifier());
 		try {
 			processVideoWithFFMPEG(tempDir, tempFile, ffmpegOutputFile);
