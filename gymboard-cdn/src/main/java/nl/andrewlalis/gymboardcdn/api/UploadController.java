@@ -1,7 +1,6 @@
 package nl.andrewlalis.gymboardcdn.api;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import nl.andrewlalis.gymboardcdn.service.UploadService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,15 +23,5 @@ public class UploadController {
 	@GetMapping(path = "/uploads/video/{id}/status")
 	public VideoProcessingTaskStatusResponse getVideoProcessingStatus(@PathVariable String id) {
 		return uploadService.getVideoProcessingStatus(id);
-	}
-
-	@GetMapping(path = "/files/{id}")
-	public void getFile(@PathVariable String id, HttpServletResponse response) {
-		uploadService.streamFile(id, response);
-	}
-
-	@GetMapping(path = "/files/{id}/metadata")
-	public FileMetadataResponse getFileMetadata(@PathVariable String id) {
-		return uploadService.getFileMetadata(id);
 	}
 }

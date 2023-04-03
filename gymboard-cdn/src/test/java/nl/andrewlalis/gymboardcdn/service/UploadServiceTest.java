@@ -3,7 +3,6 @@ package nl.andrewlalis.gymboardcdn.service;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import nl.andrewlalis.gymboardcdn.api.FileUploadResponse;
-import nl.andrewlalis.gymboardcdn.model.StoredFileRepository;
 import nl.andrewlalis.gymboardcdn.model.VideoProcessingTask;
 import nl.andrewlalis.gymboardcdn.model.VideoProcessingTaskRepository;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,6 @@ public class UploadServiceTest {
 	 */
 	@Test
 	public void processableVideoUploadSuccess() throws IOException {
-		StoredFileRepository storedFileRepository = Mockito.mock(StoredFileRepository.class);
 		VideoProcessingTaskRepository videoTaskRepository = Mockito.mock(VideoProcessingTaskRepository.class);
 		when(videoTaskRepository.save(any(VideoProcessingTask.class)))
 				.then(returnsFirstArg());
@@ -38,7 +36,6 @@ public class UploadServiceTest {
 		when(fileService.createNewFileIdentifier()).thenReturn("abc");
 
 		UploadService uploadService = new UploadService(
-				storedFileRepository,
 				videoTaskRepository,
 				fileService
 		);
