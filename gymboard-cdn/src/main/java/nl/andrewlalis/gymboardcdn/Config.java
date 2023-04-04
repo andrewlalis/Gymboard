@@ -1,7 +1,7 @@
 package nl.andrewlalis.gymboardcdn;
 
-import nl.andrewlalis.gymboardcdn.service.FileStorageService;
-import nl.andrewlalis.gymboardcdn.util.ULID;
+import nl.andrewlalis.gymboardcdn.files.FileStorageService;
+import nl.andrewlalis.gymboardcdn.files.util.ULID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

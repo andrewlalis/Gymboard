@@ -1,7 +1,7 @@
-package nl.andrewlalis.gymboardcdn.api;
+package nl.andrewlalis.gymboardcdn.uploads.api;
 
 import jakarta.servlet.http.HttpServletRequest;
-import nl.andrewlalis.gymboardcdn.service.UploadService;
+import nl.andrewlalis.gymboardcdn.uploads.service.UploadService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,12 +16,17 @@ public class UploadController {
 	}
 
 	@PostMapping(path = "/uploads/video", consumes = {"video/mp4"})
-	public FileUploadResponse uploadVideo(HttpServletRequest request) {
+	public VideoUploadResponse uploadVideo(HttpServletRequest request) {
 		return uploadService.processableVideoUpload(request);
 	}
 
-	@GetMapping(path = "/uploads/video/{id}/status")
-	public VideoProcessingTaskStatusResponse getVideoProcessingStatus(@PathVariable String id) {
-		return uploadService.getVideoProcessingStatus(id);
+	@PostMapping(path = "/uploads/video/{taskId}/start")
+	public void startVideoProcessing(@PathVariable long taskId) {
+		uploadService.startVideoProcessing(taskId);
+	}
+
+	@GetMapping(path = "/uploads/video/{taskId}/status")
+	public VideoProcessingTaskStatusResponse getVideoProcessingStatus(@PathVariable long taskId) {
+		return uploadService.getVideoProcessingStatus(taskId);
 	}
 }

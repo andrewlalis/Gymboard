@@ -1,21 +1,11 @@
 package nl.andrewlalis.gymboardcdn.service;
 
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import nl.andrewlalis.gymboardcdn.api.FileUploadResponse;
-import nl.andrewlalis.gymboardcdn.model.VideoProcessingTask;
-import nl.andrewlalis.gymboardcdn.model.VideoProcessingTaskRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 public class UploadServiceTest {
 	/**

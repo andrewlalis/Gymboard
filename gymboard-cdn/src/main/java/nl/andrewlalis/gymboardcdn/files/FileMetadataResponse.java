@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboardcdn.api;
+package nl.andrewlalis.gymboardcdn.files;
 
 public record FileMetadataResponse(
 		String filename,

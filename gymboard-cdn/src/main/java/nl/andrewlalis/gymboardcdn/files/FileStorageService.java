@@ -1,10 +1,8 @@
-package nl.andrewlalis.gymboardcdn.service;
+package nl.andrewlalis.gymboardcdn.files;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import nl.andrewlalis.gymboardcdn.model.FileMetadata;
-import nl.andrewlalis.gymboardcdn.model.FullFileMetadata;
-import nl.andrewlalis.gymboardcdn.util.ULID;
+import nl.andrewlalis.gymboardcdn.files.util.ULID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -44,6 +42,10 @@ public class FileStorageService {
 	public FileStorageService(ULID ulid, String baseStorageDir) {
 		this.ulid = ulid;
 		this.baseStorageDir = baseStorageDir;
+	}
+
+	public String generateFileId() {
+		return ulid.nextULID();
 	}
 
 	/**
@@ -106,8 +108,8 @@ public class FileStorageService {
 			FileMetadata metadata = readMetadata(in);
 			LocalDateTime date = dateFromULID(ULID.parseULID(rawId));
 			return new FullFileMetadata(
-					metadata.filename,
-					metadata.mimeType,
+					metadata.filename(),
+					metadata.mimeType(),
 					Files.size(filePath) - HEADER_SIZE,
 					date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 			);
@@ -131,7 +133,7 @@ public class FileStorageService {
 
 		try (var in = Files.newInputStream(filePath)) {
 			FileMetadata metadata = readMetadata(in);
-			response.setContentType(metadata.mimeType);
+			response.setContentType(metadata.mimeType());
 			response.setContentLengthLong(Files.size(filePath) - HEADER_SIZE);
 			response.addHeader("Cache-Control", "max-age=604800, immutable");
 			var out = response.getOutputStream();

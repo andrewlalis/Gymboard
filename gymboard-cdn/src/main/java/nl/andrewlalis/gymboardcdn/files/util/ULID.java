@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboardcdn.util;
+package nl.andrewlalis.gymboardcdn.files.util;
 
 /*
  * sulky-modules - several general-purpose modules.

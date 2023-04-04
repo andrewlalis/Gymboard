@@ -1,7 +1,10 @@
-package nl.andrewlalis.gymboardcdn.service;
+package nl.andrewlalis.gymboardcdn.uploads.service;
 
-import nl.andrewlalis.gymboardcdn.model.VideoProcessingTask;
-import nl.andrewlalis.gymboardcdn.model.VideoProcessingTaskRepository;
+import nl.andrewlalis.gymboardcdn.files.FileMetadata;
+import nl.andrewlalis.gymboardcdn.files.FileStorageService;
+import nl.andrewlalis.gymboardcdn.files.util.ULID;
+import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTask;
+import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -65,7 +68,7 @@ public class VideoProcessingService {
 	private void processVideo(VideoProcessingTask task) {
 		log.info("Started processing task {}.", task.getId());
 
-		Path tempFilePath = fileStorageService.getStoragePathForFile(task.getRawUploadFileId());
+		Path tempFilePath = fileStorageService.getStoragePathForFile(task.getUploadFileId());
 		if (Files.notExists(tempFilePath) || !Files.isReadable(tempFilePath)) {
 			log.error("Temp file {} doesn't exist or isn't readable.", tempFilePath);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
@@ -74,19 +77,20 @@ public class VideoProcessingService {
 
 		// Then begin running the actual FFMPEG processing.
 		Path tempDir = tempFilePath.getParent();
-		Files.createTempFile()
-		Path ffmpegOutputFile = tempDir.resolve(task.getVideoIdentifier());
+		Path ffmpegOutputFile = tempDir.resolve(task.getUploadFileId() + "-video-out");
+		Path ffmpegThumbnailOutputFile = tempDir.resolve(task.getUploadFileId() + "-thumbnail-out");
 		try {
-			processVideoWithFFMPEG(tempDir, tempFile, ffmpegOutputFile);
+			generateThumbnailWithFFMPEG(tempDir, tempFilePath, ffmpegThumbnailOutputFile);
+			processVideoWithFFMPEG(tempDir, tempFilePath, ffmpegOutputFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("""
-					Video processing failed for video {}:
+					Video processing failed for task {}:
 					  Input file:        {}
 					  Output file:       {}
 					  Exception message: {}""",
-					task.getVideoIdentifier(),
-					tempFile,
+					task.getId(),
+					tempFilePath,
 					ffmpegOutputFile,
 					e.getMessage()
 			);
@@ -95,24 +99,41 @@ public class VideoProcessingService {
 		}
 
 		// And finally, copy the output to the final location.
-		try {
-			StoredFile storedFile = new StoredFile(
-					task.getVideoIdentifier(),
-					task.getFilename(),
-					"video/mp4",
-					Files.size(ffmpegOutputFile),
-					task.getCreatedAt()
+		try (
+				var videoIn = Files.newInputStream(ffmpegOutputFile);
+				var thumbnailIn = Files.newInputStream(ffmpegThumbnailOutputFile)
+		) {
+			// Save the video to a final file location.
+			var originalMetadata = fileStorageService.getMetadata(task.getUploadFileId());
+			FileMetadata metadata = new FileMetadata(
+					originalMetadata.filename(),
+					originalMetadata.mimeType(),
+					true
 			);
-			Path finalFilePath = fileService.getStoragePathForFile(storedFile);
-			Files.move(ffmpegOutputFile, finalFilePath);
-			Files.deleteIfExists(tempFile);
-			Files.deleteIfExists(ffmpegOutputFile);
-			storedFileRepository.saveAndFlush(storedFile);
+			fileStorageService.save(ULID.parseULID(task.getVideoFileId()), videoIn, metadata, Files.size(ffmpegOutputFile));
+			// Save the thumbnail too.
+			FileMetadata thumbnailMetadata = new FileMetadata(
+					"thumbnail.jpeg",
+					"image/jpeg",
+					true
+			);
+			fileStorageService.save(thumbnailIn, thumbnailMetadata, Files.size(ffmpegThumbnailOutputFile));
 			updateTask(task, VideoProcessingTask.Status.COMPLETED);
-			log.info("Finished processing video {}.", task.getVideoIdentifier());
+			log.info("Finished processing task {}.", task.getId());
+
+			// TODO: Send HTTP POST to API, with video id and thumbnail id.
 		} catch (IOException e) {
 			log.error("Failed to copy processed video to final storage location.", e);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
+		} finally {
+			try {
+				fileStorageService.delete(task.getUploadFileId());
+				Files.deleteIfExists(ffmpegOutputFile);
+				Files.deleteIfExists(ffmpegThumbnailOutputFile);
+			} catch (IOException e) {
+				log.error("Couldn't delete temporary FFMPEG output file: {}", ffmpegOutputFile);
+				e.printStackTrace();
+			}
 		}
 	}
 

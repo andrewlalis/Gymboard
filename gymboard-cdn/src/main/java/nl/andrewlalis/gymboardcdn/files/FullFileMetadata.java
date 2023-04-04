@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboardcdn.model;
+package nl.andrewlalis.gymboardcdn.files;
 
 public record FullFileMetadata(
 		String filename,

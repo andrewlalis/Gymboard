@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboardcdn.service;
+package nl.andrewlalis.gymboardcdn.uploads.service;
 
 import java.io.IOException;
 import java.nio.file.Path;

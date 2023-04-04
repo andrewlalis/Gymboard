@@ -1,8 +1,6 @@
-package nl.andrewlalis.gymboardcdn.api;
+package nl.andrewlalis.gymboardcdn.files;
 
 import jakarta.servlet.http.HttpServletResponse;
-import nl.andrewlalis.gymboardcdn.model.FullFileMetadata;
-import nl.andrewlalis.gymboardcdn.service.FileStorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
