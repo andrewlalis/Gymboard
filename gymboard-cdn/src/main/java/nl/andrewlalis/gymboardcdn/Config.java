@@ -2,6 +2,10 @@ package nl.andrewlalis.gymboardcdn;
 
 import nl.andrewlalis.gymboardcdn.files.FileStorageService;
 import nl.andrewlalis.gymboardcdn.files.util.ULID;
+import nl.andrewlalis.gymboardcdn.uploads.service.process.FfmpegThumbnailGenerator;
+import nl.andrewlalis.gymboardcdn.uploads.service.process.FfmpegVideoProcessor;
+import nl.andrewlalis.gymboardcdn.uploads.service.process.ThumbnailGenerator;
+import nl.andrewlalis.gymboardcdn.uploads.service.process.VideoProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +15,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Configuration
 @EnableScheduling
@@ -41,5 +47,20 @@ public class Config {
 	@Bean
 	public FileStorageService fileStorageService() {
 		return new FileStorageService(ulid(), "cdn-files");
+	}
+
+	@Bean
+	public VideoProcessor videoProcessor() {
+		return new FfmpegVideoProcessor();
+	}
+
+	@Bean
+	public ThumbnailGenerator thumbnailGenerator() {
+		return new FfmpegThumbnailGenerator();
+	}
+
+	@Bean
+	public Executor videoProcessingExecutor() {
+		return Executors.newFixedThreadPool(1);
 	}
 }
