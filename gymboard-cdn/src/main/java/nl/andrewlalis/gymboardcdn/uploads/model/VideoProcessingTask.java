@@ -45,20 +45,11 @@ public class VideoProcessingTask {
 	@Column(nullable = false, updatable = false, length = 26)
 	private String uploadFileId;
 
-	/**
-	 * The file id for the final processed video file. This doesn't exist yet,
-	 * but we generate the video id right away, just in case there's a need to
-	 * preemptively link to it.
-	 */
-	@Column(nullable = false, updatable = false, length = 26)
-	private String videoFileId;
-
 	public VideoProcessingTask() {}
 
-	public VideoProcessingTask(Status status, String uploadFileId, String videoFileId) {
+	public VideoProcessingTask(Status status, String uploadFileId) {
 		this.status = status;
 		this.uploadFileId = uploadFileId;
-		this.videoFileId = videoFileId;
 	}
 
 	public Long getId() {
@@ -79,9 +70,5 @@ public class VideoProcessingTask {
 
 	public String getUploadFileId() {
 		return uploadFileId;
-	}
-
-	public String getVideoFileId() {
-		return videoFileId;
 	}
 }

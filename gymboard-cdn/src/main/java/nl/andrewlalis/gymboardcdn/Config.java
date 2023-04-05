@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboardcdn;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.andrewlalis.gymboardcdn.files.FileStorageService;
 import nl.andrewlalis.gymboardcdn.files.util.ULID;
 import nl.andrewlalis.gymboardcdn.uploads.service.process.FfmpegThumbnailGenerator;
@@ -45,8 +46,13 @@ public class Config {
 	}
 
 	@Bean
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
+	}
+
+	@Bean
 	public FileStorageService fileStorageService() {
-		return new FileStorageService(ulid(), "cdn-files");
+		return new FileStorageService(ulid(), objectMapper(), "cdn-files");
 	}
 
 	@Bean

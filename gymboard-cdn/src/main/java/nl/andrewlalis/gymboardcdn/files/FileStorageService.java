@@ -36,16 +36,23 @@ public class FileStorageService {
 	private static final int HEADER_SIZE = 1024;
 
 	private final ULID ulid;
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper;
 	private final String baseStorageDir;
 
-	public FileStorageService(ULID ulid, String baseStorageDir) {
+	public FileStorageService(ULID ulid, ObjectMapper objectMapper, String baseStorageDir) {
 		this.ulid = ulid;
+		this.objectMapper = objectMapper;
 		this.baseStorageDir = baseStorageDir;
 	}
 
 	public String generateFileId() {
 		return ulid.nextULID();
+	}
+
+	public String save(Path inputFile, FileMetadata metadata) throws IOException {
+		try (var in = Files.newInputStream(inputFile)) {
+			return save(in, metadata, -1);
+		}
 	}
 
 	/**
@@ -182,7 +189,7 @@ public class FileStorageService {
 	private FileMetadata readMetadata(InputStream in) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE);
 		int readCount = in.read(buffer.array(), 0, HEADER_SIZE);
-		if (readCount != HEADER_SIZE) throw new IOException("Invalid header.");
+		if (readCount != HEADER_SIZE) throw new IOException("Invalid header. Read " + readCount + " bytes instead of " + HEADER_SIZE);
 		short metadataBytesLength = buffer.getShort();
 		byte[] metadataBytes = new byte[metadataBytesLength];
 		buffer.get(metadataBytes);

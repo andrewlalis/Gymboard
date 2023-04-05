@@ -64,8 +64,7 @@ public class UploadService {
 		}
 		var task = videoTaskRepository.save(new VideoProcessingTask(
 				VideoProcessingTask.Status.NOT_STARTED,
-				uploadFileId,
-				fileStorageService.generateFileId()
+				uploadFileId
 		));
 		return new VideoUploadResponse(task.getId());
 	}

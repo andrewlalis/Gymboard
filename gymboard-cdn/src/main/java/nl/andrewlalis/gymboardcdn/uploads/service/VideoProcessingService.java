@@ -1,8 +1,9 @@
 package nl.andrewlalis.gymboardcdn.uploads.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.andrewlalis.gymboardcdn.files.FileMetadata;
 import nl.andrewlalis.gymboardcdn.files.FileStorageService;
-import nl.andrewlalis.gymboardcdn.files.util.ULID;
 import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTask;
 import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTaskRepository;
 import nl.andrewlalis.gymboardcdn.uploads.service.process.ThumbnailGenerator;
@@ -13,6 +14,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -29,17 +34,24 @@ public class VideoProcessingService {
 	private final FileStorageService fileStorageService;
 	private final VideoProcessor videoProcessor;
 	private final ThumbnailGenerator thumbnailGenerator;
+	private final ObjectMapper objectMapper;
 
 	public VideoProcessingService(Executor videoProcessingExecutor,
 								  VideoProcessingTaskRepository taskRepo,
 								  FileStorageService fileStorageService,
 								  VideoProcessor videoProcessor,
-								  ThumbnailGenerator thumbnailGenerator) {
+								  ThumbnailGenerator thumbnailGenerator, ObjectMapper objectMapper) {
 		this.videoProcessingExecutor = videoProcessingExecutor;
 		this.taskRepo = taskRepo;
 		this.fileStorageService = fileStorageService;
 		this.videoProcessor = videoProcessor;
 		this.thumbnailGenerator = thumbnailGenerator;
+		this.objectMapper = objectMapper;
+	}
+
+	private void updateTask(VideoProcessingTask task, VideoProcessingTask.Status status) {
+		task.setStatus(status);
+		taskRepo.saveAndFlush(task);
 	}
 
 	@Scheduled(fixedDelay = 5, timeUnit = TimeUnit.SECONDS)
@@ -83,6 +95,7 @@ public class VideoProcessingService {
 			return;
 		}
 
+		// Run the actual processing here.
 		Path videoFile = uploadFile.resolveSibling(task.getUploadFileId() + "-vid-out");
 		Path thumbnailFile = uploadFile.resolveSibling(task.getUploadFileId() + "-thm-out");
 		try {
@@ -107,29 +120,20 @@ public class VideoProcessingService {
 		}
 
 		// And finally, copy the output to the final location.
-		try (
-				var videoIn = Files.newInputStream(videoFile);
-				var thumbnailIn = Files.newInputStream(thumbnailFile)
-		) {
+		try {
 			// Save the video to a final file location.
 			var originalMetadata = fileStorageService.getMetadata(task.getUploadFileId());
-			FileMetadata metadata = new FileMetadata(
-					originalMetadata.filename(),
-					originalMetadata.mimeType(),
-					true
-			);
-			fileStorageService.save(ULID.parseULID(task.getVideoFileId()), videoIn, metadata, Files.size(videoFile));
+			FileMetadata metadata = new FileMetadata(originalMetadata.filename(), originalMetadata.mimeType(), true);
+			String videoFileId = fileStorageService.save(videoFile, metadata);
+
 			// Save the thumbnail too.
-			FileMetadata thumbnailMetadata = new FileMetadata(
-					"thumbnail.jpeg",
-					"image/jpeg",
-					true
-			);
-			fileStorageService.save(thumbnailIn, thumbnailMetadata, Files.size(thumbnailFile));
+			FileMetadata thumbnailMetadata = new FileMetadata("thumbnail.jpeg", "image/jpeg", true);
+			String thumbnailFileId = fileStorageService.save(thumbnailFile, thumbnailMetadata);
 			updateTask(task, VideoProcessingTask.Status.COMPLETED);
 			log.info("Finished processing task {}.", task.getId());
 
-			// TODO: Send HTTP POST to API, with video id and thumbnail id.
+			// Send HTTP POST to API, with video id and thumbnail id.
+			sendProcessedDataToApi(videoFileId, thumbnailFileId);
 		} catch (IOException e) {
 			log.error("Failed to copy processed video to final storage location.", e);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
@@ -145,8 +149,24 @@ public class VideoProcessingService {
 		}
 	}
 
-	private void updateTask(VideoProcessingTask task, VideoProcessingTask.Status status) {
-		task.setStatus(status);
-		taskRepo.saveAndFlush(task);
+	private void sendProcessedDataToApi(String videoId, String thumbnailId) throws IOException {
+		ObjectNode obj = objectMapper.createObjectNode();
+		obj.put("videoFileId", videoId);
+		obj.put("thumbnailFileId", thumbnailId);
+		String json = objectMapper.writeValueAsString(obj);
+		HttpClient httpClient = HttpClient.newBuilder().build();
+		HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:8080/submissions/123/processed-data"))
+				.header("Authorization", "Bearer bullshit")
+				.POST(HttpRequest.BodyPublishers.ofString(json))
+				.build();
+		try {
+			HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+			if (response.statusCode() == 200) {
+				// We can now delete the task.
+			}
+		} catch (InterruptedException e) {
+			// TODO: Retry!
+			throw new RuntimeException(e);
+		}
 	}
 }
