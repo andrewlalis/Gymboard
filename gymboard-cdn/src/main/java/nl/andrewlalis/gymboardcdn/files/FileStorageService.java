@@ -180,6 +180,20 @@ public class FileStorageService {
 		Files.deleteIfExists(filePath);
 	}
 
+	public void copyTo(String fileId, Path filePath) throws IOException {
+		Path inputFilePath = getStoragePathForFile(fileId);
+		if (Files.notExists(inputFilePath)) {
+			throw new IOException("File " + fileId + " not found.");
+		}
+		try (
+				var in = Files.newInputStream(inputFilePath);
+				var out = Files.newOutputStream(filePath)
+		) {
+			readMetadata(in);
+			in.transferTo(out);
+		}
+	}
+
 	private static LocalDateTime dateFromULID(ULID.Value value) {
 		return Instant.ofEpochMilli(value.timestamp())
 				.atOffset(ZoneOffset.UTC)

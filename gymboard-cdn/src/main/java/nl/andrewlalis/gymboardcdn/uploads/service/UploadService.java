@@ -78,7 +78,11 @@ public class UploadService {
 	public VideoProcessingTaskStatusResponse getVideoProcessingStatus(long id) {
 		VideoProcessingTask task = videoTaskRepository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		return new VideoProcessingTaskStatusResponse(task.getStatus().name());
+		return new VideoProcessingTaskStatusResponse(
+				task.getStatus().name(),
+				task.getVideoFileId(),
+				task.getThumbnailFileId()
+		);
 	}
 
 	/**
@@ -91,7 +95,9 @@ public class UploadService {
 	public void startVideoProcessing(long taskId) {
 		VideoProcessingTask task = videoTaskRepository.findById(taskId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		task.setStatus(VideoProcessingTask.Status.WAITING);
-		videoTaskRepository.save(task);
+		if (task.getStatus() == VideoProcessingTask.Status.NOT_STARTED) {
+			task.setStatus(VideoProcessingTask.Status.WAITING);
+			videoTaskRepository.save(task);
+		}
 	}
 }

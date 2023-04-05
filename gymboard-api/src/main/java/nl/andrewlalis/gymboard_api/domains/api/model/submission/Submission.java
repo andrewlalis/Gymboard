@@ -33,12 +33,23 @@ public class Submission {
 	private LocalDateTime performedAt;
 
 	/**
+	 * The id of the video processing task that a user gives to us when they
+	 * create the submission, so that when the task finishes processing, we can
+	 * route its data to the right submission.
+	 */
+	@Column(nullable = false, updatable = false)
+	private long videoProcessingTaskId;
+
+	/**
 	 * The id of the video file that was submitted for this submission. It lives
 	 * on the <em>gymboard-cdn</em> service as a stored file, which can be
 	 * accessed via <code>GET https://CDN-HOST/files/{videoFileId}</code>.
 	 */
-	@Column(nullable = false, updatable = false, length = 26)
-	private String videoFileId;
+	@Column(length = 26)
+	private String videoFileId = null;
+
+	@Column(length = 26)
+	private String thumbnailFileId = null;
 
 	@Column(nullable = false, precision = 7, scale = 2)
 	private BigDecimal rawWeight;
@@ -64,7 +75,7 @@ public class Submission {
 		Exercise exercise,
 		User user,
 		LocalDateTime performedAt,
-		String videoFileId,
+		long videoProcessingTaskId,
 		BigDecimal rawWeight,
 		WeightUnit unit,
 		BigDecimal metricWeight,
@@ -73,9 +84,9 @@ public class Submission {
 		this.id = id;
 		this.gym = gym;
 		this.exercise = exercise;
-		this.videoFileId = videoFileId;
 		this.user = user;
 		this.performedAt = performedAt;
+		this.videoProcessingTaskId = videoProcessingTaskId;
 		this.rawWeight = rawWeight;
 		this.weightUnit = unit;
 		this.metricWeight = metricWeight;
@@ -99,8 +110,24 @@ public class Submission {
 		return exercise;
 	}
 
+	public long getVideoProcessingTaskId() {
+		return videoProcessingTaskId;
+	}
+
 	public String getVideoFileId() {
 		return videoFileId;
+	}
+
+	public String getThumbnailFileId() {
+		return thumbnailFileId;
+	}
+
+	public void setVideoFileId(String videoFileId) {
+		this.videoFileId = videoFileId;
+	}
+
+	public void setThumbnailFileId(String thumbnailFileId) {
+		this.thumbnailFileId = thumbnailFileId;
 	}
 
 	public User getUser() {

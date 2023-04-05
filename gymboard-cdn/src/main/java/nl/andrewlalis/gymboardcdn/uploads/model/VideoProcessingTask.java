@@ -45,6 +45,12 @@ public class VideoProcessingTask {
 	@Column(nullable = false, updatable = false, length = 26)
 	private String uploadFileId;
 
+	@Column(length = 26)
+	private String videoFileId;
+
+	@Column(length = 26)
+	private String thumbnailFileId;
+
 	public VideoProcessingTask() {}
 
 	public VideoProcessingTask(Status status, String uploadFileId) {
@@ -70,5 +76,21 @@ public class VideoProcessingTask {
 
 	public String getUploadFileId() {
 		return uploadFileId;
+	}
+
+	public String getVideoFileId() {
+		return videoFileId;
+	}
+
+	public void setVideoFileId(String videoFileId) {
+		this.videoFileId = videoFileId;
+	}
+
+	public String getThumbnailFileId() {
+		return thumbnailFileId;
+	}
+
+	public void setThumbnailFileId(String thumbnailFileId) {
+		this.thumbnailFileId = thumbnailFileId;
 	}
 }

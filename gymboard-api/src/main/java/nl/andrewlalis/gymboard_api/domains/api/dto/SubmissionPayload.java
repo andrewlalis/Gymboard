@@ -8,5 +8,5 @@ public record SubmissionPayload(
 		float weight,
 		String weightUnit,
 		int reps,
-		String videoFileId
+		long taskId
 ) {}

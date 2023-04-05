@@ -89,20 +89,29 @@ public class VideoProcessingService {
 		log.info("Started processing task {}.", task.getId());
 
 		Path uploadFile = fileStorageService.getStoragePathForFile(task.getUploadFileId());
+		Path rawUploadFile = uploadFile.resolveSibling(task.getUploadFileId() + "-vid-in");
 		if (Files.notExists(uploadFile) || !Files.isReadable(uploadFile)) {
 			log.error("Uploaded video file {} doesn't exist or isn't readable.", uploadFile);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
 			return;
 		}
+		try {
+			fileStorageService.copyTo(task.getUploadFileId(), rawUploadFile);
+		} catch (IOException e) {
+			log.error("Failed to copy raw video file {} to {}.", uploadFile, rawUploadFile);
+			e.printStackTrace();
+			updateTask(task, VideoProcessingTask.Status.FAILED);
+			return;
+		}
 
 		// Run the actual processing here.
-		Path videoFile = uploadFile.resolveSibling(task.getUploadFileId() + "-vid-out");
-		Path thumbnailFile = uploadFile.resolveSibling(task.getUploadFileId() + "-thm-out");
+		Path videoFile = uploadFile.resolveSibling(task.getUploadFileId() + "-vid-out.mp4");
+		Path thumbnailFile = uploadFile.resolveSibling(task.getUploadFileId() + "-thm-out.jpeg");
 		try {
 			log.info("Processing video for uploaded video file {}.", uploadFile.getFileName());
-			videoProcessor.processVideo(uploadFile, videoFile);
+			videoProcessor.processVideo(rawUploadFile, videoFile);
 			log.info("Generating thumbnail for uploaded video file {}.", uploadFile.getFileName());
-			thumbnailGenerator.generateThumbnailImage(uploadFile, thumbnailFile);
+			thumbnailGenerator.generateThumbnailImage(videoFile, thumbnailFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("""
@@ -111,7 +120,7 @@ public class VideoProcessingService {
 					  Output file:       {}
 					  Exception message: {}""",
 					task.getId(),
-					uploadFile,
+					rawUploadFile,
 					videoFile,
 					e.getMessage()
 			);
@@ -129,6 +138,9 @@ public class VideoProcessingService {
 			// Save the thumbnail too.
 			FileMetadata thumbnailMetadata = new FileMetadata("thumbnail.jpeg", "image/jpeg", true);
 			String thumbnailFileId = fileStorageService.save(thumbnailFile, thumbnailMetadata);
+
+			task.setVideoFileId(videoFileId);
+			task.setThumbnailFileId(thumbnailFileId);
 			updateTask(task, VideoProcessingTask.Status.COMPLETED);
 			log.info("Finished processing task {}.", task.getId());
 
@@ -140,6 +152,7 @@ public class VideoProcessingService {
 		} finally {
 			try {
 				fileStorageService.delete(task.getUploadFileId());
+				Files.deleteIfExists(rawUploadFile);
 				Files.deleteIfExists(videoFile);
 				Files.deleteIfExists(thumbnailFile);
 			} catch (IOException e) {

@@ -50,4 +50,14 @@ public class CdnClient {
 		HttpResponse<String> response = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
 		return objectMapper.readValue(response.body(), responseType);
 	}
+
+	public void post(String urlPath) throws IOException, InterruptedException {
+		HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + urlPath))
+				.POST(HttpRequest.BodyPublishers.noBody())
+				.build();
+		HttpResponse<Void> response = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
+		if (response.statusCode() != 200) {
+			throw new IOException("Request failed with code " + response.statusCode());
+		}
+	}
 }

@@ -56,7 +56,7 @@ public class SampleDataLoader implements ApplicationListener<ContextRefreshedEve
 				gen.generate();
 				completed.add(gen);
 			} catch (Exception e) {
-				throw new RuntimeException("Generator failed: " + gen.getClass().getSimpleName());
+				throw new RuntimeException("Generator failed: " + gen.getClass().getSimpleName(), e);
 			}
 		}
 	}

@@ -1,21 +1,25 @@
 package nl.andrewlalis.gymboard_api.util.sample_data;
 
-import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
+import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
-import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.submission.Submission;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
-import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
+import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.UploadsClient;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.util.ULID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -25,35 +29,30 @@ import java.util.*;
 @Component
 @Profile("development")
 public class SampleSubmissionGenerator implements SampleDataGenerator {
+	private static final Logger log = LoggerFactory.getLogger(SampleSubmissionGenerator.class);
+
 	private final GymRepository gymRepository;
 	private final UserRepository userRepository;
 	private final ExerciseRepository exerciseRepository;
-	private final ExerciseSubmissionService submissionService;
 	private final SubmissionRepository submissionRepository;
 	private final ULID ulid;
 
 	@Value("${app.cdn-origin}")
 	private String cdnOrigin;
 
-	public SampleSubmissionGenerator(GymRepository gymRepository, UserRepository userRepository, ExerciseRepository exerciseRepository, ExerciseSubmissionService submissionService, SubmissionRepository submissionRepository, ULID ulid) {
+	public SampleSubmissionGenerator(GymRepository gymRepository, UserRepository userRepository, ExerciseRepository exerciseRepository, SubmissionRepository submissionRepository, ULID ulid) {
 		this.gymRepository = gymRepository;
 		this.userRepository = userRepository;
 		this.exerciseRepository = exerciseRepository;
-		this.submissionService = submissionService;
 		this.submissionRepository = submissionRepository;
 		this.ulid = ulid;
 	}
 
 	@Override
 	public void generate() throws Exception {
-		final CdnClient cdnClient = new CdnClient(cdnOrigin);
+		var uploads = generateUploads();
 
-		List<String> videoIds = new ArrayList<>();
-		var video1 = cdnClient.uploads.uploadVideo(Path.of("sample_data", "sample_video_curl.mp4"), "video/mp4");
-		var video2 = cdnClient.uploads.uploadVideo(Path.of("sample_data", "sample_video_ohp.mp4"), "video/mp4");
-		videoIds.add(video1.id());
-		videoIds.add(video2.id());
-
+		// Now that uploads are complete, we can proceed with generating the submissions.
 		List<Gym> gyms = gymRepository.findAll();
 		List<User> users = userRepository.findAll();
 		List<Exercise> exercises = exerciseRepository.findAll();
@@ -65,24 +64,27 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 		Random random = new Random(1);
 		List<Submission> submissions = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
-			submissions.add(generateRandomSubmission(
+			Submission submission = generateRandomSubmission(
 					gyms,
 					users,
 					exercises,
-					videoIds,
+					uploads,
 					earliestSubmission,
 					latestSubmission,
 					random
-			));
+			);
+			submissions.add(submission);
 		}
 		submissionRepository.saveAll(submissions);
+
+		// After adding all the submissions, we'll signal to CDN that it can start processing.
 	}
 
 	private Submission generateRandomSubmission(
 			List<Gym> gyms,
 			List<User> users,
 			List<Exercise> exercises,
-			List<String> videoIds,
+			Map<Long, Pair<String, String>> uploads,
 			LocalDateTime earliestSubmission,
 			LocalDateTime latestSubmission,
 			Random random
@@ -102,13 +104,16 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 			randomChoice(exercises, random),
 			randomChoice(users, random),
 			time,
-			randomChoice(videoIds, random),
+			randomChoice(new ArrayList<>(uploads.keySet()), random),
 			rawWeight,
 			weightUnit,
 			metricWeight,
 			random.nextInt(13) + 1
 		);
 		submission.setVerified(true);
+		var uploadData = uploads.get(submission.getVideoProcessingTaskId());
+		submission.setVideoFileId(uploadData.getFirst());
+		submission.setThumbnailFileId(uploadData.getSecond());
 		return submission;
 	}
 
@@ -124,5 +129,49 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 	private LocalDateTime randomTime(LocalDateTime start, LocalDateTime end, Random rand) {
 		Duration dur = Duration.between(start, end);
 		return start.plusSeconds(rand.nextLong(dur.toSeconds() + 1));
+	}
+
+	/**
+	 * Generates a set of sample video uploads to use for all the sample
+	 * submissions.
+	 * @return A map containing keys representing video processing task ids, and
+	 * values being a pair of video and thumbnail file ids.
+	 * @throws Exception If an error occurs.
+	 */
+	private Map<Long, Pair<String, String>> generateUploads() throws Exception {
+		final CdnClient cdnClient = new CdnClient(cdnOrigin);
+
+		List<Long> taskIds = new ArrayList<>();
+		taskIds.add(cdnClient.uploads.uploadVideo(Path.of("sample_data", "sample_video_curl.mp4"), "video/mp4"));
+		taskIds.add(cdnClient.uploads.uploadVideo(Path.of("sample_data", "sample_video_ohp.mp4"), "video/mp4"));
+
+		Map<Long, UploadsClient.VideoProcessingTaskStatusResponse> taskStatus = new HashMap<>();
+		for (long taskId : taskIds) {
+			cdnClient.uploads.startTask(taskId);
+			taskStatus.put(taskId, cdnClient.uploads.getVideoProcessingTaskStatus(taskId));
+		}
+
+		// Wait for all video uploads to complete.
+		while (
+				taskStatus.values().stream()
+						.map(UploadsClient.VideoProcessingTaskStatusResponse::status)
+						.anyMatch(status -> !List.of("COMPLETED", "FAILED").contains(status.toUpperCase()))
+		) {
+			log.info("Waiting for sample video upload tasks to finish...");
+			Thread.sleep(1000);
+			for (long taskId : taskIds) taskStatus.put(taskId, cdnClient.uploads.getVideoProcessingTaskStatus(taskId));
+		}
+
+		// If any upload failed, throw an exception and cancel this generator.
+		if (taskStatus.values().stream().anyMatch(r -> r.status().equalsIgnoreCase("FAILED"))) {
+			throw new IOException("Video upload task processing failed.");
+		}
+
+		// Prepare the final data structure.
+		Map<Long, Pair<String, String>> finalResults = new HashMap<>();
+		for (var entry : taskStatus.entrySet()) {
+			finalResults.put(entry.getKey(), Pair.of(entry.getValue().videoFileId(), entry.getValue().thumbnailFileId()));
+		}
+		return finalResults;
 	}
 }

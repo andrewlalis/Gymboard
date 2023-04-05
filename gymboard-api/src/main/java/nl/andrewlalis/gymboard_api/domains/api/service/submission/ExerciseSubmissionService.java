@@ -91,9 +91,14 @@ public class ExerciseSubmissionService {
 		Submission submission = submissionRepository.saveAndFlush(new Submission(
 				ulid.nextULID(), gym, exercise, user,
 				performedAt,
-				payload.videoFileId(),
+				payload.taskId(),
 				rawWeight, weightUnit, metricWeight, payload.reps()
 		));
+		try {
+			cdnClient.uploads.startTask(submission.getVideoProcessingTaskId());
+		} catch (Exception e) {
+			log.error("Failed to start video processing task for submission " + submission.getId(), e);
+		}
 		return new SubmissionResponse(submission);
 	}
 
@@ -118,17 +123,13 @@ public class ExerciseSubmissionService {
 		}
 
 		try {
-			UploadsClient.FileMetadataResponse metadata = cdnClient.uploads.getFileMetadata(data.videoFileId());
-			if (metadata == null) {
-				response.addMessage("Missing video file.");
-			} else if (!metadata.availableForDownload()) {
-				response.addMessage("File not yet available for download.");
-			} else if (!"video/mp4".equals(metadata.mimeType())) {
-				response.addMessage("Invalid video file format.");
+			var status = cdnClient.uploads.getVideoProcessingTaskStatus(data.taskId());
+			if (!status.status().equalsIgnoreCase("NOT_STARTED")) {
+				response.addMessage("Invalid video processing task.");
 			}
 		} catch (Exception e) {
-			log.error("Error fetching file metadata.", e);
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching uploaded video file metadata.");
+			log.error("Error fetching task status.", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching uploaded video task status.");
 		}
 		return response;
 	}
