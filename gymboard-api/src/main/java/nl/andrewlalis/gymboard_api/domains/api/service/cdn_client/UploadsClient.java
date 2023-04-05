@@ -10,24 +10,12 @@ public record UploadsClient(CdnClient client) {
 			String thumbnailFileId
 	) {}
 
-	public record FileMetadataResponse(
-			String filename,
-			String mimeType,
-			long size,
-			String uploadedAt,
-			boolean availableForDownload
-	) {}
-
 	public long uploadVideo(Path filePath, String contentType) throws Exception {
 		return client.postFile("/uploads/video", filePath, contentType, FileUploadResponse.class).taskId();
 	}
 
 	public VideoProcessingTaskStatusResponse getVideoProcessingTaskStatus(long id) throws Exception {
 		return client.get("/uploads/video/" + id + "/status", VideoProcessingTaskStatusResponse.class);
-	}
-
-	public FileMetadataResponse getFileMetadata(String id) throws Exception {
-		return client.get("/files/" + id + "/metadata", FileMetadataResponse.class);
 	}
 
 	public void startTask(long taskId) throws Exception {

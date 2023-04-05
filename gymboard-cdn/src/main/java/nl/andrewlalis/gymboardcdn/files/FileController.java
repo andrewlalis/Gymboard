@@ -2,6 +2,7 @@ package nl.andrewlalis.gymboardcdn.files;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +34,16 @@ public class FileController {
 			return data;
 		} catch (IOException e) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Couldn't read file metadata.", e);
+		}
+	}
+
+	@DeleteMapping(path = "/files/{id}")
+	public void deleteFile(@PathVariable String id) {
+		// TODO: Secure this so only API can access it!
+		try {
+			fileStorageService.delete(id);
+		} catch (IOException e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete file.", e);
 		}
 	}
 }

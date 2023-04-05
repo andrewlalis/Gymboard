@@ -7,8 +7,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SubmissionRepository extends JpaRepository<Submission, String>, JpaSpecificationExecutor<Submission> {
 	@Modifying
 	void deleteAllByUser(User user);
+
+	List<Submission> findAllByVideoProcessingTaskId(long taskId);
 }

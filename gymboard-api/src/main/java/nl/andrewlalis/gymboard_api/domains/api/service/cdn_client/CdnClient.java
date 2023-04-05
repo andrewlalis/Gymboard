@@ -16,6 +16,7 @@ public class CdnClient {
 	private final ObjectMapper objectMapper;
 
 	public final UploadsClient uploads;
+	public final FilesClient files;
 
 	public CdnClient(String baseUrl) {
 		this.httpClient = HttpClient.newBuilder()
@@ -25,6 +26,7 @@ public class CdnClient {
 		this.baseUrl = baseUrl;
 		this.objectMapper = new ObjectMapper();
 		this.uploads = new UploadsClient(this);
+		this.files = new FilesClient(this);
 	}
 
 	public <T> T get(String urlPath, Class<T> responseType) throws IOException, InterruptedException {
@@ -57,6 +59,15 @@ public class CdnClient {
 				.build();
 		HttpResponse<Void> response = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
 		if (response.statusCode() != 200) {
+			throw new IOException("Request failed with code " + response.statusCode());
+		}
+	}
+
+	public void delete(String urlPath) throws IOException, InterruptedException {
+		HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + urlPath))
+				.DELETE().build();
+		HttpResponse<Void> response = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
+		if (response.statusCode() >= 400) {
 			throw new IOException("Request failed with code " + response.statusCode());
 		}
 	}

@@ -141,7 +141,32 @@ public class ExerciseSubmissionService {
 		if (!submission.getUser().getId().equals(user.getId())) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot delete other user's submission.");
 		}
-		// TODO: Find a secure way to delete the associated video.
+		try {
+
+			if (submission.getVideoFileId() != null) {
+				cdnClient.files.deleteFile(submission.getVideoFileId());
+			}
+			if (submission.getThumbnailFileId() != null) {
+				cdnClient.files.deleteFile(submission.getThumbnailFileId());
+			}
+		} catch (Exception e) {
+			log.error("Couldn't delete CDN content for submission " + submissionId, e);
+		}
 		submissionRepository.delete(submission);
+	}
+
+	@Transactional
+	public void handleVideoProcessingComplete(VideoProcessingCompletePayload payload) {
+		for (var submission : submissionRepository.findAllByVideoProcessingTaskId(payload.taskId())) {
+			if (payload.status().equalsIgnoreCase("COMPLETE")) {
+				submission.setVideoFileId(payload.videoFileId());
+				submission.setThumbnailFileId(payload.thumbnailFileId());
+				submissionRepository.save(submission);
+				// TODO: Send notification of successful processing to the user!
+			} else if (payload.status().equalsIgnoreCase("FAILED")) {
+				submissionRepository.delete(submission);
+				// TODO: Send notification of failed video processing to the user!
+			}
+		}
 	}
 }
