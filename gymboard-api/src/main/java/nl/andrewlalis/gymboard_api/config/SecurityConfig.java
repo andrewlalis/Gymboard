@@ -62,7 +62,8 @@ public class SecurityConfig {
 						"/auth/token",
 						"/auth/register",
 						"/auth/activate",
-						"/auth/reset-password"
+						"/auth/reset-password",
+						"/submissions/video-processing-complete"
 				).permitAll()
 				// Everything else must be authenticated, just to be safe.
 				.anyRequest().authenticated();

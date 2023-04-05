@@ -157,7 +157,9 @@ public class ExerciseSubmissionService {
 
 	@Transactional
 	public void handleVideoProcessingComplete(VideoProcessingCompletePayload payload) {
-		for (var submission : submissionRepository.findAllByVideoProcessingTaskId(payload.taskId())) {
+		var submissionsToUpdate = submissionRepository.findUnprocessedByTaskId(payload.taskId());
+		log.info("Received video processing complete message from CDN: {}, affecting {} submissions.", payload, submissionsToUpdate.size());
+		for (var submission : submissionsToUpdate) {
 			if (payload.status().equalsIgnoreCase("COMPLETE")) {
 				submission.setVideoFileId(payload.videoFileId());
 				submission.setThumbnailFileId(payload.thumbnailFileId());

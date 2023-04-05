@@ -116,10 +116,15 @@ public class TokenService {
 
 	public Jws<Claims> getToken(String token) {
 		if (token == null) return null;
-		var builder = Jwts.parserBuilder()
-				.setSigningKey(this.getPrivateKey())
-				.requireIssuer(ISSUER);
-		return builder.build().parseClaimsJws(token);
+		try {
+			var builder = Jwts.parserBuilder()
+					.setSigningKey(this.getPrivateKey())
+					.requireIssuer(ISSUER);
+			return builder.build().parseClaimsJws(token);
+		} catch (Exception e) {
+			log.warn("Error parsing JWT.", e);
+			return null;
+		}
 	}
 
 	private PrivateKey getPrivateKey() {

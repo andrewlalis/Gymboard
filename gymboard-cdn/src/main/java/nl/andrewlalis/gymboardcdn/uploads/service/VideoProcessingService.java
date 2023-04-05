@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboardcdn.uploads.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.andrewlalis.gymboardcdn.files.FileMetadata;
@@ -10,6 +11,7 @@ import nl.andrewlalis.gymboardcdn.uploads.service.process.ThumbnailGenerator;
 import nl.andrewlalis.gymboardcdn.uploads.service.process.VideoProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -35,6 +38,9 @@ public class VideoProcessingService {
 	private final VideoProcessor videoProcessor;
 	private final ThumbnailGenerator thumbnailGenerator;
 	private final ObjectMapper objectMapper;
+
+	@Value("${app.api-origin}")
+	private String apiOrigin;
 
 	public VideoProcessingService(Executor videoProcessingExecutor,
 								  VideoProcessingTaskRepository taskRepo,
@@ -52,6 +58,9 @@ public class VideoProcessingService {
 	private void updateTask(VideoProcessingTask task, VideoProcessingTask.Status status) {
 		task.setStatus(status);
 		taskRepo.saveAndFlush(task);
+		if (status == VideoProcessingTask.Status.COMPLETED || status == VideoProcessingTask.Status.FAILED) {
+			sendTaskCompleteToApi(task);
+		}
 	}
 
 	@Scheduled(fixedDelay = 5, timeUnit = TimeUnit.SECONDS)
@@ -143,9 +152,6 @@ public class VideoProcessingService {
 			task.setThumbnailFileId(thumbnailFileId);
 			updateTask(task, VideoProcessingTask.Status.COMPLETED);
 			log.info("Finished processing task {}.", task.getId());
-
-			// Send HTTP POST to API, with video id and thumbnail id.
-			sendProcessedDataToApi(videoFileId, thumbnailFileId);
 		} catch (IOException e) {
 			log.error("Failed to copy processed video to final storage location.", e);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
@@ -162,24 +168,37 @@ public class VideoProcessingService {
 		}
 	}
 
-	private void sendProcessedDataToApi(String videoId, String thumbnailId) throws IOException {
+	/**
+	 * Sends an update message to the Gymboard API when a task finishes its
+	 * processing.
+	 * @param task The task to send.
+	 */
+	private void sendTaskCompleteToApi(VideoProcessingTask task) {
 		ObjectNode obj = objectMapper.createObjectNode();
-		obj.put("videoFileId", videoId);
-		obj.put("thumbnailFileId", thumbnailId);
-		String json = objectMapper.writeValueAsString(obj);
+		obj.put("taskId", task.getId());
+		obj.put("status", task.getStatus().name());
+		obj.put("videoFileId", task.getVideoFileId());
+		obj.put("thumbnailFileId", task.getThumbnailFileId());
+		String json;
+		try {
+			json = objectMapper.writeValueAsString(obj);
+		} catch (JsonProcessingException e) {
+			log.error("JSON error while sending task data to API for task " + task.getId(), e);
+			return;
+		}
 		HttpClient httpClient = HttpClient.newBuilder().build();
-		HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:8080/submissions/123/processed-data"))
-				.header("Authorization", "Bearer bullshit")
+		HttpRequest request = HttpRequest.newBuilder(URI.create(apiOrigin + "/submissions/video-processing-complete"))
+				.header("Content-Type", "application/json")
+				.timeout(Duration.ofSeconds(3))
 				.POST(HttpRequest.BodyPublishers.ofString(json))
 				.build();
 		try {
 			HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-			if (response.statusCode() == 200) {
-				// We can now delete the task.
+			if (response.statusCode() >= 400) {
+				log.error("API returned not-ok response {}", response.statusCode());
 			}
-		} catch (InterruptedException e) {
-			// TODO: Retry!
-			throw new RuntimeException(e);
+		} catch (Exception e) {
+			log.error("Failed to send HTTP request to API.", e);
 		}
 	}
 }
