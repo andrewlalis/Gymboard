@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboard_api.domains.api.model.submission;
+package nl.andrewlalis.gymboard_api.domains.submission.model;
 
 import jakarta.persistence.*;
 import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
@@ -48,6 +48,10 @@ public class Submission {
 	@Column(length = 26)
 	private String videoFileId = null;
 
+	/**
+	 * The id of the thumbnail file that was generated for this submission.
+	 * Similarly to the video file id, it refers to a file managed by the CDN.
+	 */
 	@Column(length = 26)
 	private String thumbnailFileId = null;
 

@@ -2,14 +2,15 @@ package nl.andrewlalis.gymboard_api.domains.api.service.submission;
 
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dao.ExerciseRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.api.dto.*;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
-import nl.andrewlalis.gymboard_api.domains.api.model.submission.Submission;
+import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionPayload;
+import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.submission.model.Submission;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
-import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.UploadsClient;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.util.ULID;

@@ -1,7 +1,8 @@
-package nl.andrewlalis.gymboard_api.domains.api.model.submission;
+package nl.andrewlalis.gymboard_api.domains.submission.model;
 
 import jakarta.persistence.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.submission.model.Submission;
 
 @Entity
 @Table(

@@ -1,6 +1,6 @@
-package nl.andrewlalis.gymboard_api.domains.api.dao.submission;
+package nl.andrewlalis.gymboard_api.domains.submission.dao;
 
-import nl.andrewlalis.gymboard_api.domains.api.model.submission.Submission;
+import nl.andrewlalis.gymboard_api.domains.submission.model.Submission;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

@@ -1,8 +1,7 @@
-package nl.andrewlalis.gymboard_api.domains.api.controller;
+package nl.andrewlalis.gymboard_api.domains.submission.controller;
 
-import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dto.VideoProcessingCompletePayload;
-import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.UploadsClient;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import org.springframework.http.ResponseEntity;

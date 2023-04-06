@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.auth.service;
 
-import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import org.slf4j.Logger;

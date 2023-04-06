@@ -1,6 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.api.controller;
 
-import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.UserSubmissionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

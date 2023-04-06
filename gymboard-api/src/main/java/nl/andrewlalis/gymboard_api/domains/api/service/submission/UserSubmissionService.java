@@ -1,7 +1,7 @@
 package nl.andrewlalis.gymboard_api.domains.api.service.submission;
 
-import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import nl.andrewlalis.gymboard_api.domains.auth.service.UserAccessService;
@@ -9,10 +9,8 @@ import nl.andrewlalis.gymboard_api.util.PredicateBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 

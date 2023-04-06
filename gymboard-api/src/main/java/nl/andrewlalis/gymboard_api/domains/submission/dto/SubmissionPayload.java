@@ -1,4 +1,4 @@
-package nl.andrewlalis.gymboard_api.domains.api.dto;
+package nl.andrewlalis.gymboard_api.domains.submission.dto;
 
 import java.time.LocalDateTime;
 

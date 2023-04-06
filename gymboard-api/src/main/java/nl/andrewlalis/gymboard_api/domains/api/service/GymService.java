@@ -1,10 +1,10 @@
 package nl.andrewlalis.gymboard_api.domains.api.service;
 
 import nl.andrewlalis.gymboard_api.domains.api.dto.CompoundGymId;
-import nl.andrewlalis.gymboard_api.domains.api.dto.SubmissionResponse;
+import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dto.GymResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dao.GymRepository;
-import nl.andrewlalis.gymboard_api.domains.api.dao.submission.SubmissionRepository;
+import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
 import nl.andrewlalis.gymboard_api.util.PredicateBuilder;
 import org.slf4j.Logger;
