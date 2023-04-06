@@ -17,6 +17,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, String>,
 
 	@Query("SELECT s FROM Submission s " +
 			"WHERE s.videoProcessingTaskId = :taskId AND " +
-			"(s.videoFileId IS NULL OR s.thumbnailFileId IS NULL)")
+			"s.processing = TRUE")
 	List<Submission> findUnprocessedByTaskId(long taskId);
+
+	List<Submission> findAllByProcessingTrue();
 }

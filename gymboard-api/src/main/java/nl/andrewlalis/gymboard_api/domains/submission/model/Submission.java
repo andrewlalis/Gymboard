@@ -1,15 +1,33 @@
 package nl.andrewlalis.gymboard_api.domains.submission.model;
 
 import jakarta.persistence.*;
-import nl.andrewlalis.gymboard_api.domains.api.model.Exercise;
 import nl.andrewlalis.gymboard_api.domains.api.model.Gym;
-import nl.andrewlalis.gymboard_api.domains.api.model.WeightUnit;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * The Submission entity represents a user's posted video of a lift they did at
+ * a gym.
+ * <p>
+ *     A submission is created in the front-end using the following flow:
+ * </p>
+ * <ol>
+ *     <li>User uploads a raw video of their lift.</li>
+ *     <li>User enters some basic information about the lift.</li>
+ *     <li>User submits the lift.</li>
+ *     <li>API validates the information.</li>
+ *     <li>API creates a new Submission, and tells the CDN service to process
+ *     the uploaded video.</li>
+ *     <li>Once processing completes successfully, the CDN sends the final video
+ *     and thumbnail file ids to the API and the Submission's "processing" flag
+ *     is removed.</li>
+ *     <li>If for whatever reason the CDN's video processing fails or never
+ *     completes, the Submission is deleted and the user is notified of the
+ *     issue.</li>
+ * </ol>
+ */
 @Entity
 @Table(name = "submission")
 public class Submission {
@@ -24,21 +42,15 @@ public class Submission {
 	private Gym gym;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Exercise exercise;
-
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private User user;
-
-	@Column(nullable = false)
-	private LocalDateTime performedAt;
 
 	/**
 	 * The id of the video processing task that a user gives to us when they
 	 * create the submission, so that when the task finishes processing, we can
 	 * route its data to the right submission.
 	 */
-	@Column(nullable = false, updatable = false)
-	private long videoProcessingTaskId;
+	@Column
+	private Long videoProcessingTaskId;
 
 	/**
 	 * The id of the video file that was submitted for this submission. It lives
@@ -55,18 +67,19 @@ public class Submission {
 	@Column(length = 26)
 	private String thumbnailFileId = null;
 
-	@Column(nullable = false, precision = 7, scale = 2)
-	private BigDecimal rawWeight;
+	/**
+	 * The user-specified properties of the submission.
+	 */
+	@Embedded
+	private SubmissionProperties properties;
 
-	@Enumerated(EnumType.STRING)
+	/**
+	 * A flag that indicates whether this submission is currently processing.
+	 * A submission is processing until its associated processing task completes
+	 * either successfully or unsuccessfully.
+	 */
 	@Column(nullable = false)
-	private WeightUnit weightUnit;
-
-	@Column(nullable = false, precision = 7, scale = 2)
-	private BigDecimal metricWeight;
-
-	@Column(nullable = false)
-	private int reps;
+	private boolean processing;
 
 	@Column(nullable = false)
 	private boolean verified;
@@ -76,25 +89,15 @@ public class Submission {
 	public Submission(
 		String id,
 		Gym gym,
-		Exercise exercise,
 		User user,
-		LocalDateTime performedAt,
 		long videoProcessingTaskId,
-		BigDecimal rawWeight,
-		WeightUnit unit,
-		BigDecimal metricWeight,
-		int reps
+		SubmissionProperties properties
 	) {
 		this.id = id;
 		this.gym = gym;
-		this.exercise = exercise;
 		this.user = user;
-		this.performedAt = performedAt;
 		this.videoProcessingTaskId = videoProcessingTaskId;
-		this.rawWeight = rawWeight;
-		this.weightUnit = unit;
-		this.metricWeight = metricWeight;
-		this.reps = reps;
+		this.properties = properties;
 		this.verified = false;
 	}
 
@@ -110,11 +113,7 @@ public class Submission {
 		return gym;
 	}
 
-	public Exercise getExercise() {
-		return exercise;
-	}
-
-	public long getVideoProcessingTaskId() {
+	public Long getVideoProcessingTaskId() {
 		return videoProcessingTaskId;
 	}
 
@@ -138,24 +137,16 @@ public class Submission {
 		return user;
 	}
 
-	public LocalDateTime getPerformedAt() {
-		return performedAt;
+	public SubmissionProperties getProperties() {
+		return properties;
 	}
 
-	public BigDecimal getRawWeight() {
-		return rawWeight;
+	public boolean isProcessing() {
+		return processing;
 	}
 
-	public WeightUnit getWeightUnit() {
-		return weightUnit;
-	}
-
-	public BigDecimal getMetricWeight() {
-		return metricWeight;
-	}
-
-	public int getReps() {
-		return reps;
+	public void setProcessing(boolean processing) {
+		this.processing = processing;
 	}
 
 	public boolean isVerified() {

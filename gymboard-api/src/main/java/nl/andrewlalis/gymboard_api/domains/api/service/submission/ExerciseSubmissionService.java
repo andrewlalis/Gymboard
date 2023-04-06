@@ -13,16 +13,20 @@ import nl.andrewlalis.gymboard_api.domains.submission.model.Submission;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.submission.model.SubmissionProperties;
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service which handles the rather mundane tasks associated with exercise
@@ -89,17 +93,23 @@ public class ExerciseSubmissionService {
 		if (weightUnit == WeightUnit.POUNDS) {
 			metricWeight = WeightUnit.toKilograms(rawWeight);
 		}
-		Submission submission = submissionRepository.saveAndFlush(new Submission(
-				ulid.nextULID(), gym, exercise, user,
+		SubmissionProperties properties = new SubmissionProperties(
+				exercise,
 				performedAt,
-				payload.taskId(),
-				rawWeight, weightUnit, metricWeight, payload.reps()
-		));
+				rawWeight,
+				weightUnit,
+				payload.reps()
+		);
+
+		Submission submission = new Submission(ulid.nextULID(), gym, user, payload.taskId(), properties);
 		try {
 			cdnClient.uploads.startTask(submission.getVideoProcessingTaskId());
+			submission.setProcessing(true);
 		} catch (Exception e) {
-			log.error("Failed to start video processing task for submission " + submission.getId(), e);
+			log.error("Failed to start video processing task for submission.", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to start video processing.");
 		}
+		submission = submissionRepository.save(submission);
 		return new SubmissionResponse(submission);
 	}
 
@@ -125,7 +135,7 @@ public class ExerciseSubmissionService {
 
 		try {
 			var status = cdnClient.uploads.getVideoProcessingTaskStatus(data.taskId());
-			if (!status.status().equalsIgnoreCase("NOT_STARTED")) {
+			if (status == null || !status.status().equalsIgnoreCase("NOT_STARTED")) {
 				response.addMessage("Invalid video processing task.");
 			}
 		} catch (Exception e) {
@@ -156,6 +166,14 @@ public class ExerciseSubmissionService {
 		submissionRepository.delete(submission);
 	}
 
+	/**
+	 * This method is invoked when the CDN calls this API's endpoint to notify
+	 * us that a video processing task has completed. If the task completed
+	 * successfully, we can set any related submissions' video and thumbnail
+	 * file ids and remove its "processing" flag. Otherwise, we should delete
+	 * the failed submission.
+	 * @param payload The information about the task.
+	 */
 	@Transactional
 	public void handleVideoProcessingComplete(VideoProcessingCompletePayload payload) {
 		var submissionsToUpdate = submissionRepository.findUnprocessedByTaskId(payload.taskId());
@@ -164,11 +182,102 @@ public class ExerciseSubmissionService {
 			if (payload.status().equalsIgnoreCase("COMPLETE")) {
 				submission.setVideoFileId(payload.videoFileId());
 				submission.setThumbnailFileId(payload.thumbnailFileId());
+				submission.setProcessing(false);
 				submissionRepository.save(submission);
 				// TODO: Send notification of successful processing to the user!
 			} else if (payload.status().equalsIgnoreCase("FAILED")) {
 				submissionRepository.delete(submission);
 				// TODO: Send notification of failed video processing to the user!
+			}
+		}
+	}
+
+	/**
+	 * A scheduled task that checks and resolves issues with any submission that
+	 * stays in the "processing" state for too long.
+	 * TODO: Find some way to clean up this mess of logic!
+	 */
+	@Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
+	public void checkProcessingSubmissions() {
+		var processingSubmissions = submissionRepository.findAllByProcessingTrue();
+		LocalDateTime actionCutoff = LocalDateTime.now().minus(Duration.ofMinutes(10));
+		LocalDateTime deleteCutoff = LocalDateTime.now().minus(Duration.ofMinutes(30));
+		for (var submission : processingSubmissions) {
+			if (submission.getCreatedAt().isBefore(actionCutoff)) {
+				// Sanity check to remove any inconsistent submission that doesn't have a task id for whatever reason.
+				if (submission.getVideoProcessingTaskId() == null) {
+					log.warn(
+							"Removing long-processing submission {} for user {} because it doesn't have a task id.",
+							submission.getId(), submission.getUser().getEmail()
+					);
+					submissionRepository.delete(submission);
+					// TODO: Send notification to user.
+					continue;
+				}
+
+				try {
+					var status = cdnClient.uploads.getVideoProcessingTaskStatus(submission.getVideoProcessingTaskId());
+					if (status == null) {
+						// The task no longer exists on the CDN, so remove the submission.
+						log.warn(
+								"Removing long-processing submission {} for user {} because its task no longer exists on the CDN.",
+								submission.getId(), submission.getUser().getEmail()
+						);
+						submissionRepository.delete(submission);
+						// TODO: Send notification to user.
+					} else if (status.status().equalsIgnoreCase("FAILED")) {
+						// The task failed, so we should remove the submission.
+						log.warn(
+								"Removing long-processing submission {} for user {} because its task failed.",
+								submission.getId(), submission.getUser().getEmail()
+						);
+						submissionRepository.delete(submission);
+						// TODO: Send notification to user.
+					} else if (status.status().equalsIgnoreCase("COMPLETED")) {
+						// The submission should be marked as complete.
+						submission.setVideoFileId(status.videoFileId());
+						submission.setThumbnailFileId(status.thumbnailFileId());
+						submission.setProcessing(false);
+						submissionRepository.save(submission);
+						// TODO: Send notification to user.
+					} else if (status.status().equalsIgnoreCase("NOT_STARTED")) {
+						// If for whatever reason the submission's video processing never started, start now.
+						try {
+							cdnClient.uploads.startTask(submission.getVideoProcessingTaskId());
+						} catch (Exception e) {
+							log.error("Failed to start processing task " + submission.getVideoProcessingTaskId(), e);
+							if (submission.getCreatedAt().isBefore(deleteCutoff)) {
+								log.warn(
+										"Removing long-processing submission {} for user {} because it is waiting or processing for too long.",
+										submission.getId(), submission.getUser().getEmail()
+								);
+								submissionRepository.delete(submission);
+								// TODO: Send notification to user.
+							}
+						}
+					} else {
+						// The task is waiting or processing, so delete the submission if it's been in that state for an unreasonably long time.
+						if (submission.getCreatedAt().isBefore(deleteCutoff)) {
+							log.warn(
+									"Removing long-processing submission {} for user {} because it is waiting or processing for too long.",
+									submission.getId(), submission.getUser().getEmail()
+							);
+							submissionRepository.delete(submission);
+							// TODO: Send notification to user.
+						}
+					}
+				} catch (Exception e) {
+					log.error("Couldn't fetch status of long-processing submission " + submission.getId() + " for user " + submission.getUser().getEmail(), e);
+					// We can't reliably remove this submission yet, so we'll try again on the next pass.
+					if (submission.getCreatedAt().isBefore(deleteCutoff)) {
+						log.warn(
+								"Removing long-processing submission {} for user {} because it is waiting or processing for too long.",
+								submission.getId(), submission.getUser().getEmail()
+						);
+						submissionRepository.delete(submission);
+						// TODO: Send notification to user.
+					}
+				}
 			}
 		}
 	}

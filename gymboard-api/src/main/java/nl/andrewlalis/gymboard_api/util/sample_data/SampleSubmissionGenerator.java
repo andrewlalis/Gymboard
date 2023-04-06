@@ -11,6 +11,7 @@ import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.CdnClient;
 import nl.andrewlalis.gymboard_api.domains.api.service.cdn_client.UploadsClient;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.UserRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.submission.model.SubmissionProperties;
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,8 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 
 	@Override
 	public void generate() throws Exception {
+		// First we generate a small set of uploaded files that all the
+		// submissions can link to, instead of having them all upload new content.
 		var uploads = generateUploads();
 
 		// Now that uploads are complete, we can proceed with generating the submissions.
@@ -76,8 +79,6 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 			submissions.add(submission);
 		}
 		submissionRepository.saveAll(submissions);
-
-		// After adding all the submissions, we'll signal to CDN that it can start processing.
 	}
 
 	private Submission generateRandomSubmission(
@@ -97,20 +98,23 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 			weightUnit = WeightUnit.POUNDS;
 			rawWeight = metricWeight.multiply(new BigDecimal("2.2046226218"));
 		}
+		SubmissionProperties properties = new SubmissionProperties(
+				randomChoice(exercises, random),
+				time,
+				rawWeight,
+				weightUnit,
+				random.nextInt(13) + 1
+		);
 
 		var submission = new Submission(
 			ulid.nextULID(),
 			randomChoice(gyms, random),
-			randomChoice(exercises, random),
 			randomChoice(users, random),
-			time,
 			randomChoice(new ArrayList<>(uploads.keySet()), random),
-			rawWeight,
-			weightUnit,
-			metricWeight,
-			random.nextInt(13) + 1
+			properties
 		);
 		submission.setVerified(true);
+		submission.setProcessing(false);
 		var uploadData = uploads.get(submission.getVideoProcessingTaskId());
 		submission.setVideoFileId(uploadData.getFirst());
 		submission.setThumbnailFileId(uploadData.getSecond());

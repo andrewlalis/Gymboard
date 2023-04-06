@@ -10,34 +10,39 @@ public record SubmissionResponse(
 		String id,
 		String createdAt,
 		GymSimpleResponse gym,
-		ExerciseResponse exercise,
 		UserResponse user,
-		String performedAt,
 		long videoProcessingTaskId,
 		String videoFileId,
 		String thumbnailFileId,
+		boolean processing,
+		boolean verified,
+
+		// From SubmissionProperties
+		ExerciseResponse exercise,
+		String performedAt,
 		double rawWeight,
 		String weightUnit,
 		double metricWeight,
-		int reps,
-		boolean verified
+		int reps
 ) {
 	public SubmissionResponse(Submission submission) {
 		this(
 				submission.getId(),
 				StandardDateFormatter.format(submission.getCreatedAt()),
 				new GymSimpleResponse(submission.getGym()),
-				new ExerciseResponse(submission.getExercise()),
 				new UserResponse(submission.getUser()),
-				StandardDateFormatter.format(submission.getPerformedAt()),
 				submission.getVideoProcessingTaskId(),
 				submission.getVideoFileId(),
 				submission.getThumbnailFileId(),
-				submission.getRawWeight().doubleValue(),
-				submission.getWeightUnit().name(),
-				submission.getMetricWeight().doubleValue(),
-				submission.getReps(),
-				submission.isVerified()
+				submission.isProcessing(),
+				submission.isVerified(),
+
+				new ExerciseResponse(submission.getProperties().getExercise()),
+				StandardDateFormatter.format(submission.getCreatedAt()),
+				submission.getProperties().getRawWeight().doubleValue(),
+				submission.getProperties().getWeightUnit().name(),
+				submission.getProperties().getMetricWeight().doubleValue(),
+				submission.getProperties().getReps()
 		);
 	}
 }
