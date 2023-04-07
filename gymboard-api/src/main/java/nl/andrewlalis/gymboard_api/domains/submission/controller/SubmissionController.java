@@ -1,5 +1,6 @@
 package nl.andrewlalis.gymboard_api.domains.submission.controller;
 
+import nl.andrewlalis.gymboard_api.config.ServiceOnly;
 import nl.andrewlalis.gymboard_api.domains.submission.dto.SubmissionResponse;
 import nl.andrewlalis.gymboard_api.domains.api.dto.VideoProcessingCompletePayload;
 import nl.andrewlalis.gymboard_api.domains.api.service.submission.ExerciseSubmissionService;
@@ -28,9 +29,8 @@ public class SubmissionController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PostMapping(path = "/video-processing-complete")
+	@PostMapping(path = "/video-processing-complete") @ServiceOnly
 	public ResponseEntity<Void> handleVideoProcessingComplete(@RequestBody VideoProcessingCompletePayload taskStatus) {
-		// TODO: Validate that the request came ONLY from the CDN service.
 		submissionService.handleVideoProcessingComplete(taskStatus);
 		return ResponseEntity.noContent().build();
 	}

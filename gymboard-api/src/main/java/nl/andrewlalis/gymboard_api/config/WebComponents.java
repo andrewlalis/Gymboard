@@ -22,9 +22,11 @@ public class WebComponents {
 
 	@Value("${app.cdn-origin}")
 	private String cdnOrigin;
+	@Value("${app.cdn-secret}")
+	private String cdnSecret;
 
 	@Bean
 	public CdnClient cdnClient() {
-		return new CdnClient(cdnOrigin);
+		return new CdnClient(cdnOrigin, cdnSecret);
 	}
 }

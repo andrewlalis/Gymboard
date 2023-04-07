@@ -15,7 +15,6 @@ import nl.andrewlalis.gymboard_api.domains.submission.model.SubmissionProperties
 import nl.andrewlalis.gymboard_api.util.ULID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
@@ -37,16 +36,15 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 	private final ExerciseRepository exerciseRepository;
 	private final SubmissionRepository submissionRepository;
 	private final ULID ulid;
+	private final CdnClient cdnClient;
 
-	@Value("${app.cdn-origin}")
-	private String cdnOrigin;
-
-	public SampleSubmissionGenerator(GymRepository gymRepository, UserRepository userRepository, ExerciseRepository exerciseRepository, SubmissionRepository submissionRepository, ULID ulid) {
+	public SampleSubmissionGenerator(GymRepository gymRepository, UserRepository userRepository, ExerciseRepository exerciseRepository, SubmissionRepository submissionRepository, ULID ulid, CdnClient cdnClient) {
 		this.gymRepository = gymRepository;
 		this.userRepository = userRepository;
 		this.exerciseRepository = exerciseRepository;
 		this.submissionRepository = submissionRepository;
 		this.ulid = ulid;
+		this.cdnClient = cdnClient;
 	}
 
 	@Override
@@ -143,8 +141,6 @@ public class SampleSubmissionGenerator implements SampleDataGenerator {
 	 * @throws Exception If an error occurs.
 	 */
 	private Map<Long, Pair<String, String>> generateUploads() throws Exception {
-		final CdnClient cdnClient = new CdnClient(cdnOrigin);
-
 		List<Long> taskIds = new ArrayList<>();
 		taskIds.add(cdnClient.uploads.uploadVideo(Path.of("sample_data", "sample_video_curl.mp4"), "video/mp4"));
 		taskIds.add(cdnClient.uploads.uploadVideo(Path.of("sample_data", "sample_video_ohp.mp4"), "video/mp4"));

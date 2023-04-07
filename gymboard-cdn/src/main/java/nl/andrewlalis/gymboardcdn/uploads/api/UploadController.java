@@ -1,6 +1,7 @@
 package nl.andrewlalis.gymboardcdn.uploads.api;
 
 import jakarta.servlet.http.HttpServletRequest;
+import nl.andrewlalis.gymboardcdn.ServiceOnly;
 import nl.andrewlalis.gymboardcdn.uploads.service.UploadService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +21,7 @@ public class UploadController {
 		return uploadService.processableVideoUpload(request);
 	}
 
-	@PostMapping(path = "/uploads/video/{taskId}/start")
+	@PostMapping(path = "/uploads/video/{taskId}/start") @ServiceOnly
 	public void startVideoProcessing(@PathVariable long taskId) {
 		uploadService.startVideoProcessing(taskId);
 	}

@@ -14,6 +14,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.concurrent.Executor;
@@ -21,11 +23,22 @@ import java.util.concurrent.Executors;
 
 @Configuration
 @EnableScheduling
-public class Config {
+public class Config implements WebMvcConfigurer {
 	@Value("${app.web-origin}")
 	private String webOrigin;
 	@Value("${app.api-origin}")
 	private String apiOrigin;
+
+	private final ServiceAccessInterceptor serviceAccessInterceptor;
+
+	public Config(ServiceAccessInterceptor serviceAccessInterceptor) {
+		this.serviceAccessInterceptor = serviceAccessInterceptor;
+	}
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(serviceAccessInterceptor);
+	}
 
 	@Bean
 	public CorsFilter corsFilter() {

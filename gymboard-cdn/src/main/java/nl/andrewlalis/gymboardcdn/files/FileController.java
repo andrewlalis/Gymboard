@@ -1,6 +1,7 @@
 package nl.andrewlalis.gymboardcdn.files;
 
 import jakarta.servlet.http.HttpServletResponse;
+import nl.andrewlalis.gymboardcdn.ServiceOnly;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,9 +38,8 @@ public class FileController {
 		}
 	}
 
-	@DeleteMapping(path = "/files/{id}")
+	@DeleteMapping(path = "/files/{id}") @ServiceOnly
 	public void deleteFile(@PathVariable String id) {
-		// TODO: Secure this so only API can access it!
 		try {
 			fileStorageService.delete(id);
 		} catch (IOException e) {

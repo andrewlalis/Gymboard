@@ -2,11 +2,11 @@ package nl.andrewlalis.gymboardcdn.uploads.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.andrewlalis.gymboardcdn.files.FileMetadata;
 import nl.andrewlalis.gymboardcdn.files.FileStorageService;
 import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTask;
 import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTaskRepository;
+import nl.andrewlalis.gymboardcdn.uploads.model.VideoProcessingTaskStatusUpdate;
 import nl.andrewlalis.gymboardcdn.uploads.service.process.ThumbnailGenerator;
 import nl.andrewlalis.gymboardcdn.uploads.service.process.VideoProcessor;
 import org.slf4j.Logger;
@@ -41,6 +41,9 @@ public class VideoProcessingService {
 
 	@Value("${app.api-origin}")
 	private String apiOrigin;
+
+	@Value("${app.api-secret}")
+	private String apiSecret;
 
 	public VideoProcessingService(Executor videoProcessingExecutor,
 								  VideoProcessingTaskRepository taskRepo,
@@ -80,15 +83,18 @@ public class VideoProcessingService {
 		for (var task : oldTasks) {
 			if (task.getStatus() == VideoProcessingTask.Status.COMPLETED) {
 				log.info("Deleting completed task {}.", task.getId());
+				deleteAllTaskFiles(task);
 				taskRepo.delete(task);
 			} else if (task.getStatus() == VideoProcessingTask.Status.FAILED) {
 				log.info("Deleting failed task {}.", task.getId());
 				taskRepo.delete(task);
 			} else if (task.getStatus() == VideoProcessingTask.Status.IN_PROGRESS) {
 				log.info("Task {} was in progress for too long; deleting.", task.getId());
+				deleteAllTaskFiles(task);
 				taskRepo.delete(task);
 			} else if (task.getStatus() == VideoProcessingTask.Status.WAITING) {
 				log.info("Task {} was waiting for too long; deleting.", task.getId());
+				deleteAllTaskFiles(task);
 				taskRepo.delete(task);
 			}
 		}
@@ -156,32 +162,21 @@ public class VideoProcessingService {
 			log.error("Failed to copy processed video to final storage location.", e);
 			updateTask(task, VideoProcessingTask.Status.FAILED);
 		} finally {
-			try {
-				fileStorageService.delete(task.getUploadFileId());
-				Files.deleteIfExists(rawUploadFile);
-				Files.deleteIfExists(videoFile);
-				Files.deleteIfExists(thumbnailFile);
-			} catch (IOException e) {
-				log.error("Couldn't delete temporary output files for uploaded video {}", uploadFile);
-				e.printStackTrace();
-			}
+			deleteAllTaskFiles(task);
 		}
 	}
 
 	/**
 	 * Sends an update message to the Gymboard API when a task finishes its
-	 * processing.
+	 * processing. Note that Gymboard API will also eventually poll the CDN's
+	 * own API to get task status if we fail to send it, so there's some
+	 * redundancy built-in.
 	 * @param task The task to send.
 	 */
 	private void sendTaskCompleteToApi(VideoProcessingTask task) {
-		ObjectNode obj = objectMapper.createObjectNode();
-		obj.put("taskId", task.getId());
-		obj.put("status", task.getStatus().name());
-		obj.put("videoFileId", task.getVideoFileId());
-		obj.put("thumbnailFileId", task.getThumbnailFileId());
 		String json;
 		try {
-			json = objectMapper.writeValueAsString(obj);
+			json = objectMapper.writeValueAsString(new VideoProcessingTaskStatusUpdate(task));
 		} catch (JsonProcessingException e) {
 			log.error("JSON error while sending task data to API for task " + task.getId(), e);
 			return;
@@ -189,6 +184,7 @@ public class VideoProcessingService {
 		HttpClient httpClient = HttpClient.newBuilder().build();
 		HttpRequest request = HttpRequest.newBuilder(URI.create(apiOrigin + "/submissions/video-processing-complete"))
 				.header("Content-Type", "application/json")
+				.header("X-Gymboard-Service-Secret", apiSecret)
 				.timeout(Duration.ofSeconds(3))
 				.POST(HttpRequest.BodyPublishers.ofString(json))
 				.build();
@@ -199,6 +195,35 @@ public class VideoProcessingService {
 			}
 		} catch (Exception e) {
 			log.error("Failed to send HTTP request to API.", e);
+		}
+	}
+
+	/**
+	 * Helper function to delete all temporary files related to a task's
+	 * processing operations. If the task is FAILED, then files are kept for
+	 * debugging purposes.
+	 * @param task The task to delete files for.
+	 */
+	private void deleteAllTaskFiles(VideoProcessingTask task) {
+		if (task.getStatus() == VideoProcessingTask.Status.FAILED) {
+			log.warn("Retaining files for failed task {}, upload id {}.", task.getId(), task.getUploadFileId());
+			return;
+		}
+		Path dir = fileStorageService.getStoragePathForFile(task.getUploadFileId()).getParent();
+		try (var s = Files.list(dir)) {
+			var files = s.toList();
+			for (var file : files) {
+				String filename = file.getFileName().toString().strip();
+				if (Files.isRegularFile(file) && filename.startsWith(task.getUploadFileId())) {
+					try {
+						Files.delete(file);
+					} catch (IOException e) {
+						log.error("Failed to delete file " + file + " related to task " + task.getId(), e);
+					}
+				}
+			}
+		} catch (IOException e) {
+			log.error("Failed to list files in " + dir + " when deleting files for task " + task.getId(), e);
 		}
 	}
 }
