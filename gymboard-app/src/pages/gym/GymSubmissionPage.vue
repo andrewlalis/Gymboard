@@ -48,7 +48,7 @@ A high-level overview of the submission process is as follows:
         </div>
         <div class="row">
           <q-input
-            v-model="submissionModel.date"
+            v-model="submissionModel.performedAt"
             type="date"
             :label="$t('gymPage.submitPage.date')"
             class="col-12"
@@ -91,28 +91,22 @@ A high-level overview of the submission process is as follows:
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, Ref } from 'vue';
-import { getGymFromRoute } from 'src/router/gym-routing';
+import {onMounted, ref, Ref} from 'vue';
+import {getGymFromRoute} from 'src/router/gym-routing';
 import SlimForm from 'components/SlimForm.vue';
 import api from 'src/api/main';
-import { Gym } from 'src/api/main/gyms';
-import { Exercise } from 'src/api/main/exercises';
-import { useRoute, useRouter } from 'vue-router';
-import { showApiErrorToast, sleep } from 'src/utils';
-import {
-  uploadVideoToCDN,
-  VideoProcessingStatus,
-  waitUntilVideoProcessingComplete,
-} from 'src/api/cdn';
-import { useAuthStore } from 'stores/auth-store';
-import { useI18n } from 'vue-i18n';
-import { useQuasar } from 'quasar';
+import {Gym} from 'src/api/main/gyms';
+import {Exercise} from 'src/api/main/exercises';
+import {useRoute, useRouter} from 'vue-router';
+import {showApiErrorToast, showWarningToast, sleep} from 'src/utils';
+import {uploadVideoToCDN,} from 'src/api/cdn';
+import {useAuthStore} from 'stores/auth-store';
+import {useI18n} from 'vue-i18n';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const i18n = useI18n();
-const quasar = useQuasar();
 
 interface Option {
   value: string;
@@ -127,8 +121,8 @@ let submissionModel = ref({
   weight: 100,
   weightUnit: 'Kg',
   reps: 1,
-  videoFileId: '',
-  date: new Date().toLocaleDateString('en-CA'),
+  performedAt: new Date().toLocaleDateString('en-CA'),
+  taskId: -1
 });
 const selectedVideoFile: Ref<File | undefined> = ref<File>();
 const weightUnits = ['KG', 'LBS'];
@@ -169,59 +163,53 @@ async function onSubmitted() {
   if (!selectedVideoFile.value || !gym.value) return;
 
   submitting.value = true;
+  if (await uploadVideo()) {
+    await createSubmission();
+  }
+  submitting.value = false;
+}
+
+/**
+ * Uploads the selected video and returns true if successful.
+ */
+async function uploadVideo(): Promise<boolean> {
+  if (!selectedVideoFile.value) return false;
   try {
     // 1. Upload the video to the CDN.
     submitButtonLabel.value = i18n.t('gymPage.submitPage.submitUploading');
     await sleep(1000);
-    submissionModel.value.videoFileId = await uploadVideoToCDN(
-      selectedVideoFile.value
-    );
-
-    // 2. Wait for the video to be processed.
-    submitButtonLabel.value = i18n.t(
-      'gymPage.submitPage.submitVideoProcessing'
-    );
-    const processingStatus = await waitUntilVideoProcessingComplete(
-      submissionModel.value.videoFileId
-    );
-
-    // 3. If successful upload, create the submission.
-    if (processingStatus === VideoProcessingStatus.COMPLETED) {
-      try {
-        submitButtonLabel.value = i18n.t(
-          'gymPage.submitPage.submitCreatingSubmission'
-        );
-        await sleep(1000);
-        const submission = await api.gyms.submissions.createSubmission(
-          gym.value,
-          submissionModel.value,
-          authStore
-        );
-        submitButtonLabel.value = i18n.t('gymPage.submitPage.submitComplete');
-        await sleep(2000);
-        await router.push(`/submissions/${submission.id}`);
-      } catch (error: any) {
-        if (error.response && error.response.status === 400) {
-          quasar.notify({
-            message: error.response.data.message,
-            type: 'warning',
-            position: 'top',
-          });
-          submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
-          await sleep(3000);
-        } else {
-          showApiErrorToast(error);
-        }
-      }
-      // Otherwise, report the failed submission and give up.
-    } else {
-      submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
-      await sleep(3000);
-    }
-  } catch (error: any) {
+    submissionModel.value.taskId = await uploadVideoToCDN(selectedVideoFile.value);
+    return true;
+  } catch (error) {
     showApiErrorToast(error);
-  } finally {
-    submitting.value = false;
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submitUploadFailed');
+    await sleep(1000);
+    selectedVideoFile.value = undefined;
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submit');
+    return false;
+  }
+}
+
+/**
+ * Tries to create a new submission, and if successful, redirects the user to it.
+ */
+async function createSubmission() {
+  if (!gym.value) return;
+  try {
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submitCreatingSubmission');
+    await sleep(1000);
+    const submission = await api.gyms.submissions.createSubmission(gym.value, submissionModel.value, authStore);
+    submitButtonLabel.value = i18n.t('gymPage.submitPage.submitComplete');
+    await sleep(2000);
+    await router.push(`/submissions/${submission.id}`);
+  } catch (error: any) {
+    if (error.response && error.response.status === 400) {
+      showWarningToast(error.response.data.message);
+      submitButtonLabel.value = i18n.t('gymPage.submitPage.submitFailed');
+    } else {
+      showApiErrorToast(error);
+    }
+    await sleep(3000);
     submitButtonLabel.value = i18n.t('gymPage.submitPage.submit');
   }
 }

@@ -8,6 +8,7 @@ const api = axios.create({
 });
 
 export enum VideoProcessingStatus {
+  NOT_STARTED = 'NOT_STARTED',
   WAITING = 'WAITING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
@@ -18,24 +19,21 @@ export interface FileMetadata {
   filename: string;
   mimeType: string;
   size: number;
-  uploadedAt: string;
-  availableForDownload: boolean;
+  createdAt: string;
 }
 
-export async function uploadVideoToCDN(file: File): Promise<string> {
+export async function uploadVideoToCDN(file: File): Promise<number> {
   const response = await api.post('/uploads/video', file, {
     headers: {
       'Content-Type': file.type,
     },
   });
-  return response.data.id;
+  return response.data.taskId;
 }
 
-export async function getVideoProcessingStatus(
-  id: string
-): Promise<VideoProcessingStatus | null> {
+export async function getVideoProcessingStatus(taskId: number): Promise<VideoProcessingStatus | null> {
   try {
-    const response = await api.get(`/uploads/video/${id}/status`);
+    const response = await api.get(`/uploads/video/${taskId}/status`);
     return response.data.status;
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
@@ -45,16 +43,14 @@ export async function getVideoProcessingStatus(
   }
 }
 
-export async function waitUntilVideoProcessingComplete(
-  id: string
-): Promise<VideoProcessingStatus> {
+export async function waitUntilVideoProcessingComplete(taskId: number): Promise<VideoProcessingStatus> {
   let failureCount = 0;
   let attemptCount = 0;
   while (failureCount < 5 && attemptCount < 60) {
     await sleep(1000);
     attemptCount++;
     try {
-      const status = await getVideoProcessingStatus(id);
+      const status = await getVideoProcessingStatus(taskId);
       failureCount = 0;
       if (
         status === VideoProcessingStatus.COMPLETED ||
