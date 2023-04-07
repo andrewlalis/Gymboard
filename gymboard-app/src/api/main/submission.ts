@@ -14,7 +14,7 @@ export interface ExerciseSubmissionPayload {
   weight: number;
   weightUnit: string;
   reps: number;
-  videoFileId: string;
+  taskId: number;
 }
 
 export enum WeightUnit {
@@ -29,30 +29,35 @@ export class WeightUnitUtil {
   }
 }
 
-export interface ExerciseSubmission {
+export interface Submission {
   id: string;
   createdAt: DateTime;
   gym: SimpleGym;
-  exercise: Exercise;
   user: User;
+
+  videoFileId: string | null;
+  thumbnailFileId: string | null;
+  processing: boolean;
+  verified: boolean;
+
+  exercise: Exercise;
   performedAt: DateTime;
-  videoFileId: string;
   rawWeight: number;
   weightUnit: WeightUnit;
   metricWeight: number;
   reps: number;
 }
 
-export function parseSubmission(data: any): ExerciseSubmission {
+export function parseSubmission(data: any): Submission {
   data.createdAt = DateTime.fromISO(data.createdAt);
   data.performedAt = DateTime.fromISO(data.performedAt);
-  return data as ExerciseSubmission;
+  return data as Submission;
 }
 
 class SubmissionsModule {
   public async getSubmission(
     submissionId: string
-  ): Promise<ExerciseSubmission> {
+  ): Promise<Submission> {
     const response = await api.get(`/submissions/${submissionId}`);
     return parseSubmission(response.data);
   }
@@ -61,7 +66,7 @@ class SubmissionsModule {
     gym: GymRoutable,
     payload: ExerciseSubmissionPayload,
     authStore: AuthStoreType
-  ): Promise<ExerciseSubmission> {
+  ): Promise<Submission> {
     const gymId = getGymCompoundId(gym);
     const response = await api.post(`/gyms/${gymId}/submissions`, payload, authStore.axiosConfig);
     return parseSubmission(response.data);

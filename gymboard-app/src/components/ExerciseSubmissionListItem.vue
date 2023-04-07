@@ -19,11 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import { ExerciseSubmission, WeightUnitUtil } from 'src/api/main/submission';
+import { Submission, WeightUnitUtil } from 'src/api/main/submission';
 import { DateTime } from 'luxon';
 
 interface Props {
-  submission: ExerciseSubmission;
+  submission: Submission;
   showName?: boolean;
   showGym?: boolean;
 }

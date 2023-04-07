@@ -1,4 +1,4 @@
-import { ExerciseSubmission, parseSubmission } from 'src/api/main/submission';
+import { Submission, parseSubmission } from 'src/api/main/submission';
 import { getGymCompoundId, GymRoutable } from 'src/router/gym-routing';
 import { api } from 'src/api/main/index';
 
@@ -29,7 +29,7 @@ interface RequestParams {
 class LeaderboardsModule {
   public async getLeaderboard(
     params: LeaderboardParams
-  ): Promise<Array<ExerciseSubmission>> {
+  ): Promise<Array<Submission>> {
     const requestParams: RequestParams = {};
     if (params.exerciseShortName) {
       requestParams.exercise = params.exerciseShortName;

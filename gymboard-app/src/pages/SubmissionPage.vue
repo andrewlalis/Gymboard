@@ -2,6 +2,7 @@
   <q-page>
     <StandardCenteredPage v-if="submission">
       <video
+        v-if="!submission.processing"
         class="submission-video"
         :src="getFileUrl(submission.videoFileId)"
         loop
@@ -10,6 +11,9 @@
         preload="metadata"
         autoplay
       />
+      <div v-if="submission.processing">
+        <p>This submission is still processing.</p>
+      </div>
       <h3>
           {{ submission.rawWeight }}&nbsp;{{ WeightUnitUtil.toAbbreviation(submission.weightUnit) }}
           {{ submission.exercise.displayName }}
@@ -23,7 +27,7 @@
 
       <!-- Deletion button is only visible if the user who submitted it is viewing it. -->
       <q-btn
-        v-if="authStore.user && authStore.user.id === submission.user.id"
+        v-if="authStore.user && authStore.user.id === submission.user.id && !submission.processing"
         label="Delete"
         @click="deleteSubmission"
       />
@@ -34,18 +38,18 @@
 <script setup lang="ts">
 import api from 'src/api/main';
 import StandardCenteredPage from 'src/components/StandardCenteredPage.vue';
-import { ExerciseSubmission, WeightUnitUtil } from 'src/api/main/submission';
+import { Submission, WeightUnitUtil } from 'src/api/main/submission';
 import { onMounted, ref, Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { DateTime } from 'luxon';
 import { getFileUrl } from 'src/api/cdn';
 import { getGymRoute } from 'src/router/gym-routing';
 import {useAuthStore} from 'stores/auth-store';
-import {confirm, showApiErrorToast} from 'src/utils';
+import {confirm, showApiErrorToast, showInfoToast} from 'src/utils';
 import {useI18n} from 'vue-i18n';
 import {useQuasar} from 'quasar';
 
-const submission: Ref<ExerciseSubmission | undefined> = ref();
+const submission: Ref<Submission | undefined> = ref();
 
 const route = useRoute();
 const router = useRouter();
@@ -54,14 +58,24 @@ const i18n = useI18n();
 const quasar = useQuasar();
 
 onMounted(async () => {
-    const submissionId = route.params.submissionId as string;
-    try {
-        submission.value = await api.gyms.submissions.getSubmission(submissionId);
-    } catch (error) {
-        console.error(error);
-        await router.push('/');
-    }
+  await loadSubmission();
+  if (submission.value?.processing) {
+    showInfoToast('This submission is still processing.');
+  }
 });
+
+async function loadSubmission() {
+  const submissionId = route.params.submissionId as string;
+  try {
+    submission.value = await api.gyms.submissions.getSubmission(submissionId);
+    if (submission.value.processing) {
+      setTimeout(loadSubmission, 3000);
+    }
+  } catch (error) {
+    showApiErrorToast(error);
+    await router.push('/');
+  }
+}
 
 /**
  * Shows a confirmation dialog asking the user if they really want to delete

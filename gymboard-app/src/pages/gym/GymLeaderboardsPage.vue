@@ -33,13 +33,13 @@ import api from 'src/api/main';
 import { Exercise } from 'src/api/main/exercises';
 import { Gym } from 'src/api/main/gyms';
 import { LeaderboardTimeframe } from 'src/api/main/leaderboards';
-import { ExerciseSubmission } from 'src/api/main/submission';
+import { Submission } from 'src/api/main/submission';
 import ExerciseSubmissionListItem from 'src/components/ExerciseSubmissionListItem.vue';
 import { getGymFromRoute } from 'src/router/gym-routing';
 import { sleep } from 'src/utils';
 import { onMounted, ref, Ref, watch, computed } from 'vue';
 
-const submissions: Ref<Array<ExerciseSubmission>> = ref([]);
+const submissions: Ref<Array<Submission>> = ref([]);
 const gym: Ref<Gym | undefined> = ref();
 const exercises: Ref<Array<Exercise>> = ref([]);
 

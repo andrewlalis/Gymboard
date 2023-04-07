@@ -21,7 +21,7 @@ import ExerciseSubmissionListItem from 'components/ExerciseSubmissionListItem.vu
 import {showApiErrorToast} from 'src/utils';
 import {PaginationHelpers} from 'src/api/main/models';
 import InfinitePageLoader from 'src/api/infinite-page-loader';
-import {ExerciseSubmission} from 'src/api/main/submission';
+import {Submission} from 'src/api/main/submission';
 
 interface Props {
   userId: string;
@@ -30,7 +30,7 @@ const props = defineProps<Props>();
 
 const authStore = useAuthStore();
 
-const submissions: Ref<ExerciseSubmission[]> = ref([]);
+const submissions: Ref<Submission[]> = ref([]);
 const loader = new InfinitePageLoader(submissions, async paginationOptions => {
   try {
     return await api.users.getSubmissions(props.userId, authStore, paginationOptions);
@@ -41,7 +41,7 @@ const loader = new InfinitePageLoader(submissions, async paginationOptions => {
 
 onMounted(async () => {
   loader.registerWindowScrollListener();
-  await loader.setPagination(PaginationHelpers.sortedDescBy('performedAt'));
+  await loader.setPagination(PaginationHelpers.sortedDescBy('properties.performedAt'));
 });
 </script>
 

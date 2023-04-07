@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { nextTick, onMounted, ref, Ref } from 'vue';
-import { ExerciseSubmission } from 'src/api/main/submission';
+import { Submission } from 'src/api/main/submission';
 import api from 'src/api/main';
 import { getGymFromRoute } from 'src/router/gym-routing';
 import ExerciseSubmissionListItem from 'components/ExerciseSubmissionListItem.vue';
@@ -51,7 +51,7 @@ import { Gym } from 'src/api/main/gyms';
 import 'leaflet/dist/leaflet.css';
 import { Map, Marker, TileLayer } from 'leaflet';
 
-const recentSubmissions: Ref<Array<ExerciseSubmission>> = ref([]);
+const recentSubmissions: Ref<Array<Submission>> = ref([]);
 const gym: Ref<Gym | undefined> = ref();
 
 const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';

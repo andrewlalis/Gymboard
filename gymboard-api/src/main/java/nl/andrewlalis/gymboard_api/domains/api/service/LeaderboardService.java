@@ -55,8 +55,10 @@ public class LeaderboardService {
 			query.distinct(true);
 			query.orderBy(criteriaBuilder.desc(root.get("metricWeight")));
 
+			// Basic predicates that should always hold.
 			PredicateBuilder pb = PredicateBuilder.and(criteriaBuilder)
-				.with(criteriaBuilder.isTrue(root.get("verified")));
+				.with(criteriaBuilder.isTrue(root.get("verified")))
+				.with(criteriaBuilder.isFalse(root.get("processing")));
 
 			cutoffTime.ifPresent(time -> pb.with(criteriaBuilder.greaterThan(root.get("performedAt"), time)));
 			optionalExercise.ifPresent(exercise -> pb.with(criteriaBuilder.equal(root.get("exercise"), exercise)));

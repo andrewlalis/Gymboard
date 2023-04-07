@@ -1,8 +1,10 @@
 package nl.andrewlalis.gymboard_api.domains.auth.service;
 
+import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionReportRepository;
 import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionRepository;
 import nl.andrewlalis.gymboard_api.domains.auth.dao.*;
 import nl.andrewlalis.gymboard_api.domains.auth.model.User;
+import nl.andrewlalis.gymboard_api.domains.submission.dao.SubmissionVoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,9 @@ public class UserAccountDeletionService {
 	private final EmailResetCodeRepository emailResetCodeRepository;
 	private final PasswordResetCodeRepository passwordResetCodeRepository;
 	private final SubmissionRepository submissionRepository;
+	private final SubmissionReportRepository submissionReportRepository;
+	private final SubmissionVoteRepository submissionVoteRepository;
+	private final UserAccountDataRequestRepository accountDataRequestRepository;
 
 	public UserAccountDeletionService(UserRepository userRepository,
 									  UserReportRepository userReportRepository,
@@ -26,7 +31,10 @@ public class UserAccountDeletionService {
 									  UserActivationCodeRepository userActivationCodeRepository,
 									  EmailResetCodeRepository emailResetCodeRepository,
 									  PasswordResetCodeRepository passwordResetCodeRepository,
-									  SubmissionRepository submissionRepository) {
+									  SubmissionRepository submissionRepository,
+									  SubmissionReportRepository submissionReportRepository,
+									  SubmissionVoteRepository submissionVoteRepository,
+									  UserAccountDataRequestRepository accountDataRequestRepository) {
 		this.userRepository = userRepository;
 		this.userReportRepository = userReportRepository;
 		this.userFollowingRepository = userFollowingRepository;
@@ -34,6 +42,9 @@ public class UserAccountDeletionService {
 		this.emailResetCodeRepository = emailResetCodeRepository;
 		this.passwordResetCodeRepository = passwordResetCodeRepository;
 		this.submissionRepository = submissionRepository;
+		this.submissionReportRepository = submissionReportRepository;
+		this.submissionVoteRepository = submissionVoteRepository;
+		this.accountDataRequestRepository = accountDataRequestRepository;
 	}
 
 	@Transactional
@@ -46,6 +57,9 @@ public class UserAccountDeletionService {
 		userReportRepository.deleteAllByUserOrReportedBy(user, user);
 		userFollowingRepository.deleteAllByFollowedUserOrFollowingUser(user, user);
 		submissionRepository.deleteAllByUser(user);
+		submissionReportRepository.deleteAllByUser(user);
+		submissionVoteRepository.deleteAllByUser(user);
+		accountDataRequestRepository.deleteAllByUser(user);
 		userRepository.deleteById(user.getId());
 	}
 }

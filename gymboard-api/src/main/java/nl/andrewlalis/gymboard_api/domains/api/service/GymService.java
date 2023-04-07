@@ -42,13 +42,14 @@ public class GymService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		return submissionRepository.findAll((root, query, criteriaBuilder) -> {
 			query.orderBy(
-					criteriaBuilder.desc(root.get("performedAt")),
+					criteriaBuilder.desc(root.get("properties").get("performedAt")),
 					criteriaBuilder.desc(root.get("createdAt"))
 			);
 			query.distinct(true);
 			return PredicateBuilder.and(criteriaBuilder)
 					.with(criteriaBuilder.equal(root.get("gym"), gym))
 					.with(criteriaBuilder.isTrue(root.get("verified")))
+					.with(criteriaBuilder.isFalse(root.get("processing")))
 					.build();
 		}, PageRequest.of(0, 5))
 				.map(SubmissionResponse::new)

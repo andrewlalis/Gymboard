@@ -25,7 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -85,8 +87,10 @@ public class ExerciseSubmissionService {
 		}
 
 		// Create the submission.
-		LocalDateTime performedAt = payload.performedAt();
-		if (performedAt == null) performedAt = LocalDateTime.now();
+		LocalDateTime performedAt = LocalDateTime.now();
+		if (payload.performedAt() != null) {
+			performedAt = LocalDate.parse(payload.performedAt()).atTime(performedAt.toLocalTime());
+		}
 		BigDecimal rawWeight = BigDecimal.valueOf(payload.weight());
 		WeightUnit weightUnit = WeightUnit.parse(payload.weightUnit());
 		BigDecimal metricWeight = BigDecimal.valueOf(payload.weight());
@@ -109,18 +113,26 @@ public class ExerciseSubmissionService {
 			log.error("Failed to start video processing task for submission.", e);
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to start video processing.");
 		}
-		submission = submissionRepository.save(submission);
+		submission = submissionRepository.saveAndFlush(submission);
 		return new SubmissionResponse(submission);
 	}
 
 	private ValidationResponse validateSubmissionData(Gym gym, User user, Exercise exercise, SubmissionPayload data) {
 		ValidationResponse response = new ValidationResponse();
+		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime cutoff = LocalDateTime.now().minusDays(3);
-		if (data.performedAt() != null && data.performedAt().isAfter(LocalDateTime.now())) {
-			response.addMessage("Cannot submit an exercise from the future.");
-		}
-		if (data.performedAt() != null && data.performedAt().isBefore(cutoff)) {
-			response.addMessage("Cannot submit an exercise too far in the past.");
+		if (data.performedAt() != null) {
+			try {
+				LocalDateTime performedAt = LocalDate.parse(data.performedAt()).atTime(now.toLocalTime());
+				if (performedAt.isAfter(now)) {
+					response.addMessage("Cannot submit an exercise from the future.");
+				}
+				if (performedAt.isBefore(cutoff)) {
+					response.addMessage("Cannot submit an exercise too far in the past.");
+				}
+			} catch (DateTimeParseException e) {
+				response.addMessage("Invalid performedAt format.");
+			}
 		}
 		if (data.reps() < 1 || data.reps() > 500) {
 			response.addMessage("Invalid rep count.");
@@ -179,7 +191,7 @@ public class ExerciseSubmissionService {
 		var submissionsToUpdate = submissionRepository.findUnprocessedByTaskId(payload.taskId());
 		log.info("Received video processing complete message from CDN: {}, affecting {} submissions.", payload, submissionsToUpdate.size());
 		for (var submission : submissionsToUpdate) {
-			if (payload.status().equalsIgnoreCase("COMPLETE")) {
+			if (payload.status().equalsIgnoreCase("COMPLETED")) {
 				submission.setVideoFileId(payload.videoFileId());
 				submission.setThumbnailFileId(payload.thumbnailFileId());
 				submission.setProcessing(false);
@@ -197,10 +209,10 @@ public class ExerciseSubmissionService {
 	 * stays in the "processing" state for too long.
 	 * TODO: Find some way to clean up this mess of logic!
 	 */
-	@Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
+	@Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
 	public void checkProcessingSubmissions() {
 		var processingSubmissions = submissionRepository.findAllByProcessingTrue();
-		LocalDateTime actionCutoff = LocalDateTime.now().minus(Duration.ofMinutes(10));
+		LocalDateTime actionCutoff = LocalDateTime.now().minus(Duration.ofMinutes(3));
 		LocalDateTime deleteCutoff = LocalDateTime.now().minus(Duration.ofMinutes(30));
 		for (var submission : processingSubmissions) {
 			if (submission.getCreatedAt().isBefore(actionCutoff)) {
