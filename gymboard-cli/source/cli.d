@@ -7,45 +7,7 @@ import std.typecons;
 
 import consolecolors;
 
-interface CliCommand {
-    void handle(string[] args);
-}
-
-class CliHandler {
-    private CliCommand[string] commands;
-    public bool shouldExit = false;
-
-    public void register(string name, CliCommand command) {
-        this.commands[name] = command;
-    }
-
-    public void readAndHandleCommand() {
-        string[] commandAndArgs = readln().strip().split!isWhite();
-        if (commandAndArgs.length == 0) return;
-        string command = commandAndArgs[0].toLower();
-        if (command == "help") {
-            showHelp();
-        } else if (command == "exit") {
-            shouldExit = true;
-        } else if (command in commands) {
-            commands[command].handle(commandAndArgs.length > 1 ? commandAndArgs[1 .. $] : []);
-        } else {
-            cwritefln("Unknown command: %s".red, command.orange);
-        }
-    }
-}
-
-void showHelp() {
-    writeln(q"HELP
-Gymboard CLI: A tool for streamlining development.
-
-Commands:
-
-help                    Shows this message.
-exit                    Exits the CLI, stopping any running services.
-HELP");
-}
-
+import command.base;
 import services;
 
 class ServiceCommand : CliCommand {
@@ -84,6 +46,14 @@ class ServiceCommand : CliCommand {
         } else {
             cwriteln("Unknown subcommand.".red);
         }
+    }
+
+    string name() const {
+        return "Service";
+    }
+
+    string description() const {
+        return "bleh";
     }
 
     /** 
