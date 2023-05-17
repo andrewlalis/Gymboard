@@ -4,7 +4,7 @@
  * for use. It compiles the CLI application, and copies a "cli" executable to
  * the project's root directory for use.
  */
-module build;
+module build_cli;
 
 import std.stdio;
 import std.process;
@@ -13,6 +13,8 @@ import std.path;
 
 int main() {
     writeln("Building...");
+    const mainDir = getcwd();
+    chdir("gymboard-cli");
     auto result = executeShell("dub build --build=release");
     if (result.status != 0) {
         stderr.writefln!"Build failed: %d"(result.status);
@@ -35,5 +37,6 @@ int main() {
             return result.status;
         }
     }
+    writeln("Done! Run ./cli to start using Gymboard CLI.");
     return 0;
 }

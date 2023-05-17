@@ -30,8 +30,11 @@ of services that may be used by one or more services. Install docker on your
 system if you haven't already, and run `docker-compose up -d` to start the
 services.
 
+Run `./build-cli.d` to build and prepare a `cli` executable that you can use to
+run the Gymboard CLI.
+
 **WIP:**
-A `build_apps.d` script is available to try and build all projects and collect
+A `build-apps.d` script is available to try and build all projects and collect
 their artifacts in a `build/` directory for deployment.
 > Eventually, this functionality will be merged into *gymboard-cli*.
 
