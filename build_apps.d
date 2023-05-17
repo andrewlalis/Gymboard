@@ -6,6 +6,8 @@
  * thread.
  *
  * Supply the "clean" command to remove all build artifacts instead of building.
+ *
+ * Eventually, this will be migrated to gymboard-cli.
  */
 module build_apps;
 
@@ -20,7 +22,8 @@ enum BUILDS_DIR = "build";
 
 int main(string[] args) {
     if (args.length > 1 && args[1] == "clean") {
-        rmdirRecurse(BUILDS_DIR);
+        writeln("Cleaning builds");
+        if (exists(BUILDS_DIR)) rmdirRecurse(BUILDS_DIR);
         return 0;
     }
     Thread[] buildThreads = [
@@ -91,8 +94,10 @@ int runBuild(const BuildSpec spec) {
     string buildDir = buildPath(BUILDS_DIR, spec.name);
     if (exists(buildDir)) rmdirRecurse(buildDir);
     mkdirRecurse(buildDir);
-    File buildLogFile = File(buildPath(buildDir, "build.log"), "w");
-    File buildErrorLogFile = File(buildPath(buildDir, "build-error.log"), "w");
+    const logFilePath = buildPath(buildDir, "build.log");
+    const errorLogFilePath = buildPath(buildDir, "build-error.log");
+    File buildLogFile = File(logFilePath, "w");
+    File buildErrorLogFile = File(errorLogFilePath, "w");
     Pid pid = spawnShell(
         spec.buildCommand,
         std.stdio.stdin,
@@ -104,7 +109,14 @@ int runBuild(const BuildSpec spec) {
         nativeShell()
     );
     int result = wait(pid);
-    if (result != 0) return result;
+    if (result != 0) {
+        writefln!"Build command failed for build \"%s\". Check %s for more info."(spec.name, errorLogFilePath);
+        return result;
+    }
+
+    // Clean up unused log files.
+    if (getSize(logFilePath) == 0) std.file.remove(logFilePath);
+    if (getSize(errorLogFilePath) == 0) std.file.remove(errorLogFilePath);
 
     // Find and extract artifacts.
     bool artifactFound = false;
